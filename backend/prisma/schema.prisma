@@ -1,0 +1,693 @@
+// ============================================================================
+// ERP PRESU - Schema de Base de Datos
+// Sistema Integral de Gestión de Proyectos de Instalación Embarcada
+// ============================================================================
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ============================================================================
+// ENUMS
+// ============================================================================
+
+enum RolEmpresa {
+  CONTRATANTE
+  PROPIETARIO_FLOTA
+  OPERADOR
+  PROPIETARIO_COCHERA
+}
+
+enum TipoCombustible {
+  DIESEL
+  HIBRIDO
+  ELECTRICO
+  GAS_NATURAL
+  HIDROGENO
+}
+
+enum UnidadTrabajo {
+  POR_BUS
+  POR_HORA
+  POR_VISITA
+  POR_UNIDAD
+}
+
+enum UnidadMaterial {
+  UNIDAD
+  METRO
+  METRO_CUADRADO
+  KILOGRAMO
+  LITRO
+  ROLLO
+  CAJA
+  BOLSA
+}
+
+enum EstadoReplanteo {
+  PENDIENTE
+  REVISADO
+  VALIDADO
+  CANCELADO
+}
+
+enum EstadoPresupuesto {
+  BORRADOR
+  ENVIADO
+  NEGOCIACION
+  ACEPTADO
+  RECHAZADO
+  EXPIRADO
+}
+
+enum EstadoCompra {
+  PENDIENTE
+  PEDIDO
+  RECIBIDO_PARCIAL
+  RECIBIDO
+  FACTURADO
+  CANCELADO
+}
+
+enum EstadoOrdenTrabajo {
+  PLANIFICADA
+  EN_CURSO
+  PAUSADA
+  COMPLETADA
+  CANCELADA
+}
+
+enum EstadoProyecto {
+  REPLANTEO
+  PRESUPUESTO
+  ACEPTADO
+  EN_EJECUCION
+  COMPLETADO
+  CANCELADO
+}
+
+enum PerfilUsuario {
+  DIRECCION
+  COMERCIAL
+  OFICINA_TECNICA
+  COMPRAS
+  TECNICO_INSTALADOR
+  ADMINISTRADOR
+}
+
+// ============================================================================
+// USUARIOS Y AUTENTICACIÓN
+// ============================================================================
+
+model Usuario {
+  id          Int      @id @default(autoincrement())
+  firebaseUid String?  @unique @map("firebase_uid")
+  nombre      String
+  apellidos   String
+  email       String   @unique
+  password    String   @default("")
+  perfil      PerfilUsuario
+  activo      Boolean  @default(true)
+  telefono    String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relaciones
+  replanteosTecnico    Replanteo[]      @relation("TecnicoReplanteo")
+  ordenesTrabajoAsignadas OrdenTrabajoTecnico[]
+  proyectosComercial   Proyecto[]       @relation("ComercialProyecto")
+
+  @@map("usuarios")
+}
+
+// ============================================================================
+// EMPRESAS
+// ============================================================================
+
+model Empresa {
+  id         Int      @id @default(autoincrement())
+  nombre     String
+  cif        String   @unique
+  direccion  String?
+  ciudad     String?
+  provincia  String?
+  cp         String?
+  telefono   String?
+  email      String?
+  web        String?
+  notas      String?
+  activa     Boolean  @default(true)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  // Relaciones
+  contactos     ContactoEmpresa[]
+  cocheras      Cochera[]
+  rolesProyecto EmpresaProyecto[]
+  proyectos     Proyecto[]         @relation("ClienteProyecto")
+
+  @@map("empresas")
+}
+
+model ContactoEmpresa {
+  id        Int      @id @default(autoincrement())
+  empresaId Int
+  nombre    String
+  cargo     String?
+  telefono  String?
+  email     String?
+  principal Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  empresa Empresa @relation(fields: [empresaId], references: [id], onDelete: Cascade)
+
+  @@map("contactos_empresa")
+}
+
+// ============================================================================
+// COCHERAS
+// ============================================================================
+
+model Cochera {
+  id                   Int      @id @default(autoincrement())
+  nombre               String
+  direccion            String
+  ciudad               String?
+  provincia            String?
+  cp                   String?
+  responsable          String?
+  telefonoResponsable  String?
+  horarioAcceso        String?
+  observacionesTecnicas String?
+  latitud              Float?
+  longitud             Float?
+  activa               Boolean  @default(true)
+  empresaId            Int
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+
+  empresa       Empresa        @relation(fields: [empresaId], references: [id])
+  replanteos    Replanteo[]
+  ordenesTrabajo OrdenTrabajo[]
+
+  @@map("cocheras")
+}
+
+// ============================================================================
+// TIPOS DE AUTOBÚS
+// ============================================================================
+
+model TipoAutobus {
+  id                    Int             @id @default(autoincrement())
+  marca                 String
+  modelo                String
+  longitud              Float?
+  tipoCombustible       TipoCombustible
+  configuracionEspecial String?
+  numPlazas             Int?
+  notas                 String?
+  activo                Boolean         @default(true)
+  createdAt             DateTime        @default(now())
+  updatedAt             DateTime        @updatedAt
+
+  // Relaciones
+  plantillasTrabajos PlantillaTrabajo[]
+  plantillasMateriales PlantillaMaterial[]
+  replanteos         Replanteo[]
+
+  @@unique([marca, modelo])
+  @@map("tipos_autobus")
+}
+
+// Plantilla: trabajos estándar por tipo de bus
+model PlantillaTrabajo {
+  id            Int     @id @default(autoincrement())
+  tipoAutobusId Int
+  trabajoId     Int
+  cantidad      Float   @default(1)
+  notas         String?
+
+  tipoAutobus TipoAutobus @relation(fields: [tipoAutobusId], references: [id], onDelete: Cascade)
+  trabajo     Trabajo     @relation(fields: [trabajoId], references: [id])
+
+  @@unique([tipoAutobusId, trabajoId])
+  @@map("plantillas_trabajos")
+}
+
+// Plantilla: materiales estándar por tipo de bus
+model PlantillaMaterial {
+  id            Int     @id @default(autoincrement())
+  tipoAutobusId Int
+  materialId    Int
+  cantidad      Float   @default(1)
+  notas         String?
+
+  tipoAutobus TipoAutobus @relation(fields: [tipoAutobusId], references: [id], onDelete: Cascade)
+  material    Material    @relation(fields: [materialId], references: [id])
+
+  @@unique([tipoAutobusId, materialId])
+  @@map("plantillas_materiales")
+}
+
+// ============================================================================
+// CATÁLOGO DE TRABAJOS
+// ============================================================================
+
+model Trabajo {
+  id                    Int           @id @default(autoincrement())
+  codigo                String        @unique
+  nombreComercial       String
+  descripcionTecnica    String?
+  unidad                UnidadTrabajo
+  tiempoEstandarHoras   Float         @default(0)
+  numTecnicosRequeridos Int           @default(1)
+  precioVentaEstandar   Float         @default(0)
+  costeInternoEstandar  Float         @default(0)
+  categoria             String?
+  activo                Boolean       @default(true)
+  createdAt             DateTime      @default(now())
+  updatedAt             DateTime      @updatedAt
+
+  // Relaciones
+  checklistItems       ChecklistItem[]
+  plantillas           PlantillaTrabajo[]
+  replanteoTrabajos    ReplanteoTrabajo[]
+  presupuestoLineasTrabajo PresupuestoLineaTrabajo[]
+  ordenTrabajoLineas   OrdenTrabajoLinea[]
+
+  @@map("trabajos")
+}
+
+model ChecklistItem {
+  id          Int     @id @default(autoincrement())
+  trabajoId   Int
+  descripcion String
+  orden       Int     @default(0)
+  obligatorio Boolean @default(true)
+
+  trabajo            Trabajo              @relation(fields: [trabajoId], references: [id], onDelete: Cascade)
+  ordenTrabajoChecks OrdenTrabajoCheck[]
+
+  @@map("checklist_items")
+}
+
+// ============================================================================
+// CATÁLOGO DE MATERIALES
+// ============================================================================
+
+model Material {
+  id               Int           @id @default(autoincrement())
+  sku              String        @unique
+  descripcion      String
+  categoria        String?
+  unidad           UnidadMaterial
+  proveedorHabitual String?
+  costeMedio       Float         @default(0)
+  precioEstandar   Float         @default(0)
+  stockMinimo      Float?
+  stockActual      Float?
+  notas            String?
+  activo           Boolean       @default(true)
+  createdAt        DateTime      @default(now())
+  updatedAt        DateTime      @updatedAt
+
+  // Relaciones
+  plantillas              PlantillaMaterial[]
+  replanteoMateriales     ReplanteoMaterial[]
+  presupuestoLineasMaterial PresupuestoLineaMaterial[]
+  compraLineas            CompraLinea[]
+  ordenTrabajoMateriales  OrdenTrabajoMaterial[]
+
+  @@map("materiales")
+}
+
+// ============================================================================
+// PROYECTO (entidad que unifica todo el flujo)
+// ============================================================================
+
+model Proyecto {
+  id           Int             @id @default(autoincrement())
+  codigo       String          @unique
+  nombre       String
+  descripcion  String?
+  clienteId    Int
+  comercialId  Int?
+  estado       EstadoProyecto  @default(REPLANTEO)
+  fechaInicio  DateTime?
+  fechaFinEstimada DateTime?
+  fechaFinReal DateTime?
+  notas        String?
+  createdAt    DateTime        @default(now())
+  updatedAt    DateTime        @updatedAt
+
+  cliente      Empresa          @relation("ClienteProyecto", fields: [clienteId], references: [id])
+  comercial    Usuario?         @relation("ComercialProyecto", fields: [comercialId], references: [id])
+  empresasRoles EmpresaProyecto[]
+  replanteos   Replanteo[]
+  presupuestos Presupuesto[]
+  ordenesTrabajo OrdenTrabajo[]
+  compras      SolicitudCompra[]
+
+  @@map("proyectos")
+}
+
+model EmpresaProyecto {
+  id         Int        @id @default(autoincrement())
+  empresaId  Int
+  proyectoId Int
+  rol        RolEmpresa
+
+  empresa  Empresa  @relation(fields: [empresaId], references: [id])
+  proyecto Proyecto @relation(fields: [proyectoId], references: [id], onDelete: Cascade)
+
+  @@unique([empresaId, proyectoId, rol])
+  @@map("empresas_proyectos")
+}
+
+// ============================================================================
+// REPLANTEO TÉCNICO
+// ============================================================================
+
+model Replanteo {
+  id                     Int             @id @default(autoincrement())
+  proyectoId             Int
+  cocheraId              Int
+  tipoAutobusId          Int
+  numBuses               Int
+  tecnicoResponsableId   Int
+  fecha                  DateTime        @default(now())
+  estado                 EstadoReplanteo @default(PENDIENTE)
+
+  // Información técnica estructurada
+  canalizacionesExistentes String?
+  espaciosDisponibles      String?
+  tipoInstalacionPrevia    String?
+  senalesDisponibles       String?
+  necesidadSelladoTecho    Boolean        @default(false)
+  complejidadEspecial      String?
+  observaciones            String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relaciones
+  proyecto          Proyecto           @relation(fields: [proyectoId], references: [id])
+  cochera           Cochera            @relation(fields: [cocheraId], references: [id])
+  tipoAutobus       TipoAutobus        @relation(fields: [tipoAutobusId], references: [id])
+  tecnicoResponsable Usuario           @relation("TecnicoReplanteo", fields: [tecnicoResponsableId], references: [id])
+  trabajos          ReplanteoTrabajo[]
+  materiales        ReplanteoMaterial[]
+  fotos             ReplanteoFoto[]
+  presupuestos      Presupuesto[]
+
+  @@map("replanteos")
+}
+
+model ReplanteoTrabajo {
+  id           Int     @id @default(autoincrement())
+  replanteoId  Int
+  trabajoId    Int
+  cantidad     Float   @default(1)
+  observaciones String?
+
+  replanteo Replanteo @relation(fields: [replanteoId], references: [id], onDelete: Cascade)
+  trabajo   Trabajo   @relation(fields: [trabajoId], references: [id])
+
+  @@unique([replanteoId, trabajoId])
+  @@map("replanteo_trabajos")
+}
+
+model ReplanteoMaterial {
+  id               Int     @id @default(autoincrement())
+  replanteoId      Int
+  materialId       Int
+  cantidadEstimada Float   @default(1)
+  observaciones    String?
+
+  replanteo Replanteo @relation(fields: [replanteoId], references: [id], onDelete: Cascade)
+  material  Material  @relation(fields: [materialId], references: [id])
+
+  @@unique([replanteoId, materialId])
+  @@map("replanteo_materiales")
+}
+
+model ReplanteoFoto {
+  id          Int      @id @default(autoincrement())
+  replanteoId Int
+  url         String
+  descripcion String?
+  createdAt   DateTime @default(now())
+
+  replanteo Replanteo @relation(fields: [replanteoId], references: [id], onDelete: Cascade)
+
+  @@map("replanteo_fotos")
+}
+
+// ============================================================================
+// PRESUPUESTOS (DOBLE CARA)
+// ============================================================================
+
+model Presupuesto {
+  id            Int                @id @default(autoincrement())
+  codigo        String             @unique
+  proyectoId    Int
+  replanteoId   Int?
+  fecha         DateTime           @default(now())
+  validezDias   Int                @default(30)
+  estado        EstadoPresupuesto  @default(BORRADOR)
+  
+  // Totales cara cliente
+  totalTrabajos     Float @default(0)
+  totalMateriales   Float @default(0)
+  totalDesplazamientos Float @default(0)
+  descuentoPorcentaje  Float @default(0)
+  totalCliente      Float @default(0)
+
+  // Totales cara interna
+  costeTrabajos     Float @default(0)
+  costeMateriales   Float @default(0)
+  costeDesplazamientos Float @default(0)
+  costeTotal        Float @default(0)
+  margenBruto       Float @default(0)
+  margenPorcentaje  Float @default(0)
+
+  observacionesCliente String?
+  observacionesInternas String?
+  
+  fechaEnvio     DateTime?
+  fechaRespuesta DateTime?
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relaciones
+  proyecto         Proyecto                   @relation(fields: [proyectoId], references: [id])
+  replanteo        Replanteo?                  @relation(fields: [replanteoId], references: [id])
+  lineasTrabajo    PresupuestoLineaTrabajo[]
+  lineasMaterial   PresupuestoLineaMaterial[]
+  lineasDesplazamiento PresupuestoLineaDesplazamiento[]
+
+  @@map("presupuestos")
+}
+
+model PresupuestoLineaTrabajo {
+  id                  Int     @id @default(autoincrement())
+  presupuestoId       Int
+  trabajoId           Int
+  descripcionCliente  String?
+  cantidad            Float   @default(1)
+  precioUnitarioCliente Float @default(0)
+  totalCliente        Float   @default(0)
+  costeUnitarioInterno Float  @default(0)
+  totalInterno        Float   @default(0)
+  margen              Float   @default(0)
+  orden               Int     @default(0)
+
+  presupuesto Presupuesto @relation(fields: [presupuestoId], references: [id], onDelete: Cascade)
+  trabajo     Trabajo     @relation(fields: [trabajoId], references: [id])
+
+  @@map("presupuesto_lineas_trabajo")
+}
+
+model PresupuestoLineaMaterial {
+  id                  Int     @id @default(autoincrement())
+  presupuestoId       Int
+  materialId          Int
+  descripcionCliente  String?
+  cantidad            Float   @default(1)
+  precioUnitarioCliente Float @default(0)
+  totalCliente        Float   @default(0)
+  costeUnitarioInterno Float  @default(0)
+  totalInterno        Float   @default(0)
+  margen              Float   @default(0)
+  orden               Int     @default(0)
+
+  presupuesto Presupuesto @relation(fields: [presupuestoId], references: [id], onDelete: Cascade)
+  material    Material    @relation(fields: [materialId], references: [id])
+
+  @@map("presupuesto_lineas_material")
+}
+
+model PresupuestoLineaDesplazamiento {
+  id            Int     @id @default(autoincrement())
+  presupuestoId Int
+  descripcion   String
+  precioCliente Float   @default(0)
+  costeInterno  Float   @default(0)
+  margen        Float   @default(0)
+  orden         Int     @default(0)
+
+  presupuesto Presupuesto @relation(fields: [presupuestoId], references: [id], onDelete: Cascade)
+
+  @@map("presupuesto_lineas_desplazamiento")
+}
+
+// ============================================================================
+// COMPRAS
+// ============================================================================
+
+model SolicitudCompra {
+  id           Int          @id @default(autoincrement())
+  codigo       String       @unique
+  proyectoId   Int
+  proveedor    String
+  estado       EstadoCompra @default(PENDIENTE)
+  fechaSolicitud DateTime   @default(now())
+  fechaPedido    DateTime?
+  fechaRecepcion DateTime?
+  fechaFactura   DateTime?
+  numPedido      String?
+  numFactura     String?
+  observaciones  String?
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+
+  proyecto Proyecto     @relation(fields: [proyectoId], references: [id])
+  lineas   CompraLinea[]
+
+  @@map("solicitudes_compra")
+}
+
+model CompraLinea {
+  id                Int     @id @default(autoincrement())
+  solicitudCompraId Int
+  materialId        Int
+  cantidad          Float   @default(1)
+  costeEstimado     Float   @default(0)
+  costeReal         Float?
+  cantidadRecibida  Float?
+  observaciones     String?
+
+  solicitudCompra SolicitudCompra @relation(fields: [solicitudCompraId], references: [id], onDelete: Cascade)
+  material        Material        @relation(fields: [materialId], references: [id])
+
+  @@map("compra_lineas")
+}
+
+// ============================================================================
+// ÓRDENES DE TRABAJO
+// ============================================================================
+
+model OrdenTrabajo {
+  id             Int                @id @default(autoincrement())
+  codigo         String             @unique
+  proyectoId     Int
+  cocheraId      Int
+  estado         EstadoOrdenTrabajo @default(PLANIFICADA)
+  fechaPlanificada DateTime?
+  fechaInicio    DateTime?
+  fechaFin       DateTime?
+  observaciones  String?
+  actaFirmada    Boolean            @default(false)
+  actaUrl        String?
+  createdAt      DateTime           @default(now())
+  updatedAt      DateTime           @updatedAt
+
+  proyecto   Proyecto              @relation(fields: [proyectoId], references: [id])
+  cochera    Cochera               @relation(fields: [cocheraId], references: [id])
+  tecnicos   OrdenTrabajoTecnico[]
+  lineas     OrdenTrabajoLinea[]
+  materiales OrdenTrabajoMaterial[]
+  checklist  OrdenTrabajoCheck[]
+  fotos      OrdenTrabajoFoto[]
+
+  @@map("ordenes_trabajo")
+}
+
+model OrdenTrabajoTecnico {
+  id              Int    @id @default(autoincrement())
+  ordenTrabajoId  Int
+  tecnicoId       Int
+  horasEstimadas  Float  @default(0)
+  horasReales     Float?
+  observaciones   String?
+
+  ordenTrabajo OrdenTrabajo @relation(fields: [ordenTrabajoId], references: [id], onDelete: Cascade)
+  tecnico      Usuario      @relation(fields: [tecnicoId], references: [id])
+
+  @@unique([ordenTrabajoId, tecnicoId])
+  @@map("orden_trabajo_tecnicos")
+}
+
+model OrdenTrabajoLinea {
+  id              Int    @id @default(autoincrement())
+  ordenTrabajoId  Int
+  trabajoId       Int
+  cantidad        Float  @default(1)
+  horasEstimadas  Float  @default(0)
+  horasReales     Float?
+  completado      Boolean @default(false)
+  observaciones   String?
+
+  ordenTrabajo OrdenTrabajo @relation(fields: [ordenTrabajoId], references: [id], onDelete: Cascade)
+  trabajo      Trabajo      @relation(fields: [trabajoId], references: [id])
+
+  @@map("orden_trabajo_lineas")
+}
+
+model OrdenTrabajoMaterial {
+  id                Int    @id @default(autoincrement())
+  ordenTrabajoId    Int
+  materialId        Int
+  cantidadEstimada  Float  @default(0)
+  cantidadReal      Float?
+  observaciones     String?
+
+  ordenTrabajo OrdenTrabajo @relation(fields: [ordenTrabajoId], references: [id], onDelete: Cascade)
+  material     Material     @relation(fields: [materialId], references: [id])
+
+  @@map("orden_trabajo_materiales")
+}
+
+model OrdenTrabajoCheck {
+  id              Int      @id @default(autoincrement())
+  ordenTrabajoId  Int
+  checklistItemId Int
+  completado      Boolean  @default(false)
+  observaciones   String?
+  fechaCheck      DateTime?
+
+  ordenTrabajo  OrdenTrabajo  @relation(fields: [ordenTrabajoId], references: [id], onDelete: Cascade)
+  checklistItem ChecklistItem @relation(fields: [checklistItemId], references: [id])
+
+  @@unique([ordenTrabajoId, checklistItemId])
+  @@map("orden_trabajo_checks")
+}
+
+model OrdenTrabajoFoto {
+  id             Int      @id @default(autoincrement())
+  ordenTrabajoId Int
+  url            String
+  descripcion    String?
+  tipo           String?  // "antes", "durante", "despues", "acta"
+  createdAt      DateTime @default(now())
+
+  ordenTrabajo OrdenTrabajo @relation(fields: [ordenTrabajoId], references: [id], onDelete: Cascade)
+
+  @@map("orden_trabajo_fotos")
+}

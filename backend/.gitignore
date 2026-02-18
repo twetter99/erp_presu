@@ -1,0 +1,16 @@
+node_modules
+dist
+
+# Variables de entorno
+.env
+.env.local
+.env.*.local
+
+# Firebase service account keys
+service-account*.json
+firebase-adminsdk*.json
+*-credentials.json
+
+# Uploads y temporales
+uploads
+*.log

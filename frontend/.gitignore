@@ -1,0 +1,10 @@
+node_modules
+dist
+
+# Variables de entorno
+.env
+.env.local
+.env.*.local
+
+# Temporales
+*.log

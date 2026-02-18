@@ -1,0 +1,17 @@
+node_modules
+dist
+
+# Variables de entorno (datos sensibles)
+.env
+.env.local
+.env.*.local
+
+# Firebase service account keys
+**/service-account*.json
+**/firebase-adminsdk*.json
+**/*-credentials.json
+
+# Archivos de sistema
+.DS_Store
+Thumbs.db
+*.log
