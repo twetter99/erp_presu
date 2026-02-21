@@ -5,6 +5,7 @@ import swaggerUi from 'swagger-ui-express';
 import swaggerJsdoc from 'swagger-jsdoc';
 import { errorHandler, notFoundHandler } from './middleware/errorHandler';
 import routes from './routes';
+import { startPresupuestoExpiryJob } from './services/presupuestoExpiry.service';
 
 dotenv.config();
 
@@ -56,6 +57,7 @@ app.use(notFoundHandler);
 app.use(errorHandler);
 
 app.listen(PORT, () => {
+  startPresupuestoExpiryJob();
   console.log(`🚀 ERP Presu API corriendo en http://localhost:${PORT}`);
   console.log(`📚 Swagger docs en http://localhost:${PORT}/api-docs`);
 });

@@ -486,6 +486,261 @@ async function main() {
 
   console.log('  ✅ Catálogo de materiales creado');
 
+  // ====== MOTOR DE PRESUPUESTOS (SOLUCIONES + SKUS + PLANTILLAS) ======
+  const [solucionVision360, solucionAfluencia] = await Promise.all([
+    prisma.solucionCatalogo.upsert({
+      where: { codigo: 'VISION360' },
+      update: {
+        nombre: 'Vision360',
+        descripcion: 'Sistema integral de visión 360º embarcada con registro y monitorización en cabina',
+        activa: true,
+        reglasJson: {
+          ajustes: {
+            nocturnidadMultiplicador: 1.1,
+            integracionesMultiplicador: 1.08,
+            pilotoMultiplicador: 1.05,
+          },
+          lineas: [
+            { sku: 'CAM-360-FRONT', bloque: 'A_SUMINISTRO_EQUIPOS', cantidad: { tipo: 'POR_VEHICULO', valor: 1 } },
+            { sku: 'CAM-360-LAT', bloque: 'A_SUMINISTRO_EQUIPOS', cantidad: { tipo: 'POR_VEHICULO', valor: 3 } },
+            { sku: 'DVR-EMB-1TB', bloque: 'A_SUMINISTRO_EQUIPOS', cantidad: { tipo: 'POR_VEHICULO', valor: 1 } },
+            { sku: 'MON-CAB-7', bloque: 'A_SUMINISTRO_EQUIPOS', cantidad: { tipo: 'POR_VEHICULO', valor: 1 } },
+            { sku: 'KIT-4G-GPS', bloque: 'A_SUMINISTRO_EQUIPOS', cantidad: { tipo: 'POR_VEHICULO', valor: 1 } },
+            { sku: 'CAB-CERT-M', bloque: 'B_MATERIALES_INSTALACION', cantidad: { tipo: 'POR_VEHICULO', valor: 28 } },
+            { sku: 'BORNERO-24V', bloque: 'B_MATERIALES_INSTALACION', cantidad: { tipo: 'POR_VEHICULO', valor: 1 } },
+            { sku: 'KIT-MONTAJE', bloque: 'B_MATERIALES_INSTALACION', cantidad: { tipo: 'POR_VEHICULO', valor: 1 } },
+            { sku: 'JOR-INST-BASE', bloque: 'C_MANO_OBRA', cantidad: { tipo: 'POR_VEHICULO', valor: 1 } },
+            { sku: 'JOR-CALIBRACION', bloque: 'C_MANO_OBRA', cantidad: { tipo: 'POR_VEHICULO', valor: 0.5 } },
+            { sku: 'JOR-PILOTO', bloque: 'C_MANO_OBRA', cantidad: { tipo: 'FIJO', valor: 2 }, soloSiPiloto: true },
+          ],
+        },
+      },
+      create: {
+        codigo: 'VISION360',
+        nombre: 'Vision360',
+        descripcion: 'Sistema integral de visión 360º embarcada con registro y monitorización en cabina',
+        activa: true,
+        reglasJson: {
+          ajustes: {
+            nocturnidadMultiplicador: 1.1,
+            integracionesMultiplicador: 1.08,
+            pilotoMultiplicador: 1.05,
+          },
+          lineas: [
+            { sku: 'CAM-360-FRONT', bloque: 'A_SUMINISTRO_EQUIPOS', cantidad: { tipo: 'POR_VEHICULO', valor: 1 } },
+            { sku: 'CAM-360-LAT', bloque: 'A_SUMINISTRO_EQUIPOS', cantidad: { tipo: 'POR_VEHICULO', valor: 3 } },
+            { sku: 'DVR-EMB-1TB', bloque: 'A_SUMINISTRO_EQUIPOS', cantidad: { tipo: 'POR_VEHICULO', valor: 1 } },
+            { sku: 'MON-CAB-7', bloque: 'A_SUMINISTRO_EQUIPOS', cantidad: { tipo: 'POR_VEHICULO', valor: 1 } },
+            { sku: 'KIT-4G-GPS', bloque: 'A_SUMINISTRO_EQUIPOS', cantidad: { tipo: 'POR_VEHICULO', valor: 1 } },
+            { sku: 'CAB-CERT-M', bloque: 'B_MATERIALES_INSTALACION', cantidad: { tipo: 'POR_VEHICULO', valor: 28 } },
+            { sku: 'BORNERO-24V', bloque: 'B_MATERIALES_INSTALACION', cantidad: { tipo: 'POR_VEHICULO', valor: 1 } },
+            { sku: 'KIT-MONTAJE', bloque: 'B_MATERIALES_INSTALACION', cantidad: { tipo: 'POR_VEHICULO', valor: 1 } },
+            { sku: 'JOR-INST-BASE', bloque: 'C_MANO_OBRA', cantidad: { tipo: 'POR_VEHICULO', valor: 1 } },
+            { sku: 'JOR-CALIBRACION', bloque: 'C_MANO_OBRA', cantidad: { tipo: 'POR_VEHICULO', valor: 0.5 } },
+            { sku: 'JOR-PILOTO', bloque: 'C_MANO_OBRA', cantidad: { tipo: 'FIJO', valor: 2 }, soloSiPiloto: true },
+          ],
+        },
+      },
+    }),
+    prisma.solucionCatalogo.upsert({
+      where: { codigo: 'AFLUENCIA' },
+      update: {
+        nombre: 'Afluencia',
+        descripcion: 'Sistema de conteo de pasajeros y explotación de datos de afluencia',
+        activa: true,
+        reglasJson: {
+          ajustes: {
+            nocturnidadMultiplicador: 1.05,
+            integracionesMultiplicador: 1.12,
+            pilotoMultiplicador: 1.04,
+          },
+          lineas: [
+            { sku: 'KIT-4G-GPS', bloque: 'A_SUMINISTRO_EQUIPOS', cantidad: { tipo: 'POR_VEHICULO', valor: 1 } },
+            { sku: 'MON-CAB-7', bloque: 'A_SUMINISTRO_EQUIPOS', cantidad: { tipo: 'POR_VEHICULO', valor: 1 } },
+            { sku: 'CAB-CERT-M', bloque: 'B_MATERIALES_INSTALACION', cantidad: { tipo: 'POR_VEHICULO', valor: 14 } },
+            { sku: 'KIT-MONTAJE', bloque: 'B_MATERIALES_INSTALACION', cantidad: { tipo: 'POR_VEHICULO', valor: 1 } },
+            { sku: 'JOR-INST-BASE', bloque: 'C_MANO_OBRA', cantidad: { tipo: 'POR_VEHICULO', valor: 0.75 } },
+            { sku: 'JOR-CALIBRACION', bloque: 'C_MANO_OBRA', cantidad: { tipo: 'POR_VEHICULO', valor: 0.5 } },
+            { sku: 'JOR-PILOTO', bloque: 'C_MANO_OBRA', cantidad: { tipo: 'FIJO', valor: 1 }, soloSiPiloto: true },
+          ],
+        },
+      },
+      create: {
+        codigo: 'AFLUENCIA',
+        nombre: 'Afluencia',
+        descripcion: 'Sistema de conteo de pasajeros y explotación de datos de afluencia',
+        activa: true,
+        reglasJson: {
+          ajustes: {
+            nocturnidadMultiplicador: 1.05,
+            integracionesMultiplicador: 1.12,
+            pilotoMultiplicador: 1.04,
+          },
+          lineas: [
+            { sku: 'KIT-4G-GPS', bloque: 'A_SUMINISTRO_EQUIPOS', cantidad: { tipo: 'POR_VEHICULO', valor: 1 } },
+            { sku: 'MON-CAB-7', bloque: 'A_SUMINISTRO_EQUIPOS', cantidad: { tipo: 'POR_VEHICULO', valor: 1 } },
+            { sku: 'CAB-CERT-M', bloque: 'B_MATERIALES_INSTALACION', cantidad: { tipo: 'POR_VEHICULO', valor: 14 } },
+            { sku: 'KIT-MONTAJE', bloque: 'B_MATERIALES_INSTALACION', cantidad: { tipo: 'POR_VEHICULO', valor: 1 } },
+            { sku: 'JOR-INST-BASE', bloque: 'C_MANO_OBRA', cantidad: { tipo: 'POR_VEHICULO', valor: 0.75 } },
+            { sku: 'JOR-CALIBRACION', bloque: 'C_MANO_OBRA', cantidad: { tipo: 'POR_VEHICULO', valor: 0.5 } },
+            { sku: 'JOR-PILOTO', bloque: 'C_MANO_OBRA', cantidad: { tipo: 'FIJO', valor: 1 }, soloSiPiloto: true },
+          ],
+        },
+      },
+    }),
+  ]);
+
+  const itemsMotor = [
+    { sku: 'CAM-360-FRONT', descripcion: 'Cámara frontal 360º', familia: 'EQUIPOS', unidad: 'UD', precioBase: 195, costeBase: 120 },
+    { sku: 'CAM-360-LAT', descripcion: 'Cámara lateral/trasera 360º', familia: 'EQUIPOS', unidad: 'UD', precioBase: 165, costeBase: 98 },
+    { sku: 'DVR-EMB-1TB', descripcion: 'DVR embarcado SSD 1TB', familia: 'EQUIPOS', unidad: 'UD', precioBase: 590, costeBase: 390 },
+    { sku: 'MON-CAB-7', descripcion: 'Monitor cabina 7 pulgadas', familia: 'EQUIPOS', unidad: 'UD', precioBase: 210, costeBase: 125 },
+    { sku: 'KIT-4G-GPS', descripcion: 'Kit conectividad 4G/WiFi/GPS con antena', familia: 'EQUIPOS', unidad: 'UD', precioBase: 320, costeBase: 210 },
+    { sku: 'CAB-CERT-M', descripcion: 'Cableado certificado por metro', familia: 'MATERIALES', unidad: 'METRO', precioBase: 2.3, costeBase: 1.35 },
+    { sku: 'BORNERO-24V', descripcion: 'Bornero / placa 24V', familia: 'MATERIALES', unidad: 'UD', precioBase: 34, costeBase: 19 },
+    { sku: 'KIT-MONTAJE', descripcion: 'Consumibles y kit de montaje', familia: 'MATERIALES', unidad: 'UD', precioBase: 38, costeBase: 20 },
+    { sku: 'JOR-INST-BASE', descripcion: 'Jornada instalación base', familia: 'MANO_OBRA', unidad: 'JORNADA', precioBase: 420, costeBase: 245 },
+    { sku: 'JOR-CALIBRACION', descripcion: 'Jornada calibración/verificación', familia: 'MANO_OBRA', unidad: 'JORNADA', precioBase: 390, costeBase: 230 },
+    { sku: 'JOR-PILOTO', descripcion: 'Jornada soporte fase piloto', familia: 'MANO_OBRA', unidad: 'JORNADA', precioBase: 440, costeBase: 270 },
+  ];
+
+  for (const item of itemsMotor) {
+    await prisma.itemCatalogo.upsert({
+      where: { sku: item.sku },
+      update: {
+        descripcion: item.descripcion,
+        familia: item.familia,
+        unidad: item.unidad,
+        precioBase: item.precioBase,
+        costeBase: item.costeBase,
+        activo: true,
+      },
+      create: {
+        ...item,
+        activo: true,
+      },
+    });
+  }
+
+  const plantillas = await Promise.all([
+    prisma.plantillaTexto.upsert({
+      where: { codigo: 'TPL-RESUMEN-EJECUTIVO' },
+      update: {
+        nombre: 'Resumen ejecutivo',
+        tipo: 'RESUMEN_EJECUTIVO',
+        contenido: 'Propuesta {{solucion}} para {{numVehiculos}} vehículos del proyecto {{proyecto}} para {{clienteContratante}}.',
+        activa: true,
+      },
+      create: {
+        codigo: 'TPL-RESUMEN-EJECUTIVO',
+        nombre: 'Resumen ejecutivo',
+        tipo: 'RESUMEN_EJECUTIVO',
+        contenido: 'Propuesta {{solucion}} para {{numVehiculos}} vehículos del proyecto {{proyecto}} para {{clienteContratante}}.',
+        activa: true,
+      },
+    }),
+    prisma.plantillaTexto.upsert({
+      where: { codigo: 'TPL-METODOLOGIA' },
+      update: {
+        nombre: 'Metodología de ejecución',
+        tipo: 'METODOLOGIA',
+        contenido: 'La ejecución se realizará por fases: replanteo, acopio, piloto, despliegue, verificación y entrega final.',
+        activa: true,
+      },
+      create: {
+        codigo: 'TPL-METODOLOGIA',
+        nombre: 'Metodología de ejecución',
+        tipo: 'METODOLOGIA',
+        contenido: 'La ejecución se realizará por fases: replanteo, acopio, piloto, despliegue, verificación y entrega final.',
+        activa: true,
+      },
+    }),
+    prisma.plantillaTexto.upsert({
+      where: { codigo: 'TPL-SUPUESTOS' },
+      update: {
+        nombre: 'Supuestos de cálculo',
+        tipo: 'SUPUESTOS',
+        contenido: 'Se asume disponibilidad de vehículos, acceso en horario acordado y alimentación eléctrica en condiciones operativas.',
+        activa: true,
+      },
+      create: {
+        codigo: 'TPL-SUPUESTOS',
+        nombre: 'Supuestos de cálculo',
+        tipo: 'SUPUESTOS',
+        contenido: 'Se asume disponibilidad de vehículos, acceso en horario acordado y alimentación eléctrica en condiciones operativas.',
+        activa: true,
+      },
+    }),
+    prisma.plantillaTexto.upsert({
+      where: { codigo: 'TPL-EXCLUSIONES' },
+      update: {
+        nombre: 'Exclusiones',
+        tipo: 'EXCLUSIONES',
+        contenido: 'No se incluyen costes de SIM/datos, plataformas de terceros, integraciones no especificadas ni trabajos de adecuación civil.',
+        activa: true,
+      },
+      create: {
+        codigo: 'TPL-EXCLUSIONES',
+        nombre: 'Exclusiones',
+        tipo: 'EXCLUSIONES',
+        contenido: 'No se incluyen costes de SIM/datos, plataformas de terceros, integraciones no especificadas ni trabajos de adecuación civil.',
+        activa: true,
+      },
+    }),
+    prisma.plantillaTexto.upsert({
+      where: { codigo: 'TPL-CONDICIONES' },
+      update: {
+        nombre: 'Condiciones comerciales',
+        tipo: 'CONDICIONES_COMERCIALES',
+        contenido: 'Validez 30 días. Forma de pago estándar 30/50/20. Garantía de 24 meses sobre instalación y materiales incluidos.',
+        activa: true,
+      },
+      create: {
+        codigo: 'TPL-CONDICIONES',
+        nombre: 'Condiciones comerciales',
+        tipo: 'CONDICIONES_COMERCIALES',
+        contenido: 'Validez 30 días. Forma de pago estándar 30/50/20. Garantía de 24 meses sobre instalación y materiales incluidos.',
+        activa: true,
+      },
+    }),
+  ]);
+
+  for (const solucion of [solucionVision360, solucionAfluencia]) {
+    await prisma.solucionPlantillaTexto.createMany({
+      data: plantillas.map((plantilla) => ({
+        solucionId: solucion.id,
+        plantillaId: plantilla.id,
+      })),
+      skipDuplicates: true,
+    });
+  }
+
+  await prisma.solucionAnexoTecnico.createMany({
+    data: [
+      {
+        solucionId: solucionVision360.id,
+        titulo: 'Ficha técnica cámara 360º',
+        url: 'https://example.com/fichas/camara-360.pdf',
+        orden: 1,
+      },
+      {
+        solucionId: solucionVision360.id,
+        titulo: 'Ficha técnica DVR embarcado',
+        url: 'https://example.com/fichas/dvr-embarcado.pdf',
+        orden: 2,
+      },
+      {
+        solucionId: solucionAfluencia.id,
+        titulo: 'Ficha técnica plataforma afluencia',
+        url: 'https://example.com/fichas/plataforma-afluencia.pdf',
+        orden: 1,
+      },
+    ],
+    skipDuplicates: true,
+  });
+
+  console.log('  ✅ Motor de presupuestos (soluciones, SKUs y plantillas) creado');
+
   // ====== PLANTILLAS POR TIPO BUS ======
   // Plantilla para Mercedes Citaro: cámaras + SAE
   await prisma.plantillaTrabajo.createMany({
@@ -514,8 +769,16 @@ async function main() {
   console.log('  ✅ Plantillas por tipo de bus creadas');
 
   // ====== PROYECTO DE EJEMPLO ======
-  const proyecto = await prisma.proyecto.create({
-    data: {
+  const proyecto = await prisma.proyecto.upsert({
+    where: { codigo: 'PRY-2026-0001' },
+    update: {
+      nombre: 'Videovigilancia + SAE flota Carabanchel',
+      descripcion: 'Instalación de sistema CCTV y SAE en 25 buses Mercedes Citaro de la cochera de Carabanchel',
+      clienteId: empresa1.id,
+      comercialId: comercial.id,
+      estado: 'REPLANTEO',
+    },
+    create: {
       codigo: 'PRY-2026-0001',
       nombre: 'Videovigilancia + SAE flota Carabanchel',
       descripcion: 'Instalación de sistema CCTV y SAE en 25 buses Mercedes Citaro de la cochera de Carabanchel',
@@ -535,7 +798,16 @@ async function main() {
   });
 
   // Replanteo
-  const replanteo = await prisma.replanteo.create({
+  const replanteoExistente = await prisma.replanteo.findFirst({
+    where: {
+      proyectoId: proyecto.id,
+      cocheraId: cochera1.id,
+      tipoAutobusId: bus1.id,
+      numBuses: 25,
+    },
+  });
+
+  const replanteo = replanteoExistente ?? await prisma.replanteo.create({
     data: {
       proyectoId: proyecto.id,
       cocheraId: cochera1.id,
@@ -560,6 +832,7 @@ async function main() {
       { replanteoId: replanteo.id, trabajoId: trabajos[1].id, cantidad: 1 },
       { replanteoId: replanteo.id, trabajoId: trabajos[2].id, cantidad: 1 },
     ],
+    skipDuplicates: true,
   });
 
   // Materiales del replanteo (multiplicados x 25 buses)
@@ -574,6 +847,7 @@ async function main() {
       { replanteoId: replanteo.id, materialId: materiales[8].id, cantidadEstimada: 300 },
       { replanteoId: replanteo.id, materialId: materiales[9].id, cantidadEstimada: 50 },
     ],
+    skipDuplicates: true,
   });
 
   console.log('  ✅ Proyecto de ejemplo con replanteo creado');

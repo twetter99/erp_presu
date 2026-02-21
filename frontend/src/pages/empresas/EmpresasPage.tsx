@@ -5,6 +5,7 @@ import DataTable from '../../components/ui/DataTable';
 import Button from '../../components/ui/Button';
 import Modal from '../../components/ui/Modal';
 import Card from '../../components/ui/Card';
+import Input from '../../components/ui/Input';
 import { HiPlus, HiSearch } from 'react-icons/hi';
 
 export default function EmpresasPage() {
@@ -62,22 +63,25 @@ export default function EmpresasPage() {
   ];
 
   return (
-    <div>
-      <div className="flex items-center justify-between mb-6">
-        <h1 className="page-title">Empresas</h1>
-        <Button onClick={openCreate}><HiPlus className="w-4 h-4" /> Nueva Empresa</Button>
+    <div className="flex flex-col gap-6">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <h1 className="page-title">Clientes</h1>
+          <p className="text-sm text-muted-foreground mt-1">Directorio de empresas para presupuestación.</p>
+        </div>
+        <Button variant="outline" onClick={openCreate}><HiPlus className="w-4 h-4" /> Nueva Empresa</Button>
       </div>
 
       <Card>
         <div className="mb-4">
           <div className="relative">
-            <HiSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5" />
-            <input
+            <HiSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground w-4 h-4" />
+            <Input
               type="text"
               placeholder="Buscar por nombre o CIF..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="input-field pl-10"
+              className="pl-9"
             />
           </div>
         </div>
@@ -89,43 +93,43 @@ export default function EmpresasPage() {
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="label-field">Nombre *</label>
-              <input className="input-field" value={form.nombre} onChange={(e) => setForm({ ...form, nombre: e.target.value })} required />
+              <Input value={form.nombre} onChange={(e) => setForm({ ...form, nombre: e.target.value })} required />
             </div>
             <div>
               <label className="label-field">CIF *</label>
-              <input className="input-field" value={form.cif} onChange={(e) => setForm({ ...form, cif: e.target.value })} required />
+              <Input value={form.cif} onChange={(e) => setForm({ ...form, cif: e.target.value })} required />
             </div>
           </div>
           <div>
             <label className="label-field">Dirección</label>
-            <input className="input-field" value={form.direccion} onChange={(e) => setForm({ ...form, direccion: e.target.value })} />
+            <Input value={form.direccion} onChange={(e) => setForm({ ...form, direccion: e.target.value })} />
           </div>
           <div className="grid grid-cols-3 gap-4">
             <div>
               <label className="label-field">Ciudad</label>
-              <input className="input-field" value={form.ciudad} onChange={(e) => setForm({ ...form, ciudad: e.target.value })} />
+              <Input value={form.ciudad} onChange={(e) => setForm({ ...form, ciudad: e.target.value })} />
             </div>
             <div>
               <label className="label-field">Provincia</label>
-              <input className="input-field" value={form.provincia} onChange={(e) => setForm({ ...form, provincia: e.target.value })} />
+              <Input value={form.provincia} onChange={(e) => setForm({ ...form, provincia: e.target.value })} />
             </div>
             <div>
               <label className="label-field">C.P.</label>
-              <input className="input-field" value={form.cp} onChange={(e) => setForm({ ...form, cp: e.target.value })} />
+              <Input value={form.cp} onChange={(e) => setForm({ ...form, cp: e.target.value })} />
             </div>
           </div>
           <div className="grid grid-cols-3 gap-4">
             <div>
               <label className="label-field">Teléfono</label>
-              <input className="input-field" value={form.telefono} onChange={(e) => setForm({ ...form, telefono: e.target.value })} />
+              <Input value={form.telefono} onChange={(e) => setForm({ ...form, telefono: e.target.value })} />
             </div>
             <div>
               <label className="label-field">Email</label>
-              <input className="input-field" type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} />
+              <Input type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} />
             </div>
             <div>
               <label className="label-field">Web</label>
-              <input className="input-field" value={form.web} onChange={(e) => setForm({ ...form, web: e.target.value })} />
+              <Input value={form.web} onChange={(e) => setForm({ ...form, web: e.target.value })} />
             </div>
           </div>
           <div>

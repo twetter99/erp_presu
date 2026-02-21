@@ -6,10 +6,12 @@ dist
 .env.local
 .env.*.local
 
-# Firebase service account keys
+# Firebase / GCP service account keys
 **/service-account*.json
 **/firebase-adminsdk*.json
 **/*-credentials.json
+**/erppresu-*.json
+Claves/
 
 # Archivos de sistema
 .DS_Store

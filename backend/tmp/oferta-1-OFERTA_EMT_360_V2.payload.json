@@ -1,0 +1,271 @@
+{
+  "template": {
+    "codigo": "OFERTA_EMT_360_V2",
+    "version": "2.0.0",
+    "secciones": [
+      "CABECERA",
+      "CLIENTE_ALCANCE",
+      "PARTIDAS_ECONOMICAS",
+      "TOTALES",
+      "CONDICIONES_NOTAS"
+    ]
+  },
+  "cabecera": {
+    "presupuestoId": 1,
+    "codigo": "PRE-2026-875793",
+    "codigoOferta": "OF-VERIFY-2026-1",
+    "versionOferta": 1,
+    "fechaEmision": "2026-02-20T22:54:00.492Z",
+    "templateCode": "OFERTA_EMT_360_V2",
+    "cliente": "Transportes Metropolitanos de Madrid",
+    "proyecto": "Videovigilancia + SAE flota Carabanchel",
+    "validezDias": 30
+  },
+  "contexto": null,
+  "economico": {
+    "baseImponible": 176707.5,
+    "ivaPorcentaje": 21,
+    "ivaImporte": 37108.57,
+    "totalConIva": 213816.07,
+    "precioUnitarioVehiculo": 0,
+    "totalesBloque": {
+      "A": 0,
+      "B": 47957.5,
+      "C": 128750,
+      "D": 0,
+      "E": 0
+    },
+    "totalDesplazamientos": 0,
+    "totalOpcionales": 0
+  },
+  "lineas": {
+    "motor": [],
+    "trabajo": [
+      {
+        "id": 1,
+        "presupuestoId": 1,
+        "trabajoId": 1,
+        "descripcionCliente": "Instalación de cámaras de videovigilancia",
+        "cantidad": 25,
+        "precioUnitarioCliente": 1800,
+        "totalCliente": 45000,
+        "costeUnitarioInterno": 950,
+        "totalInterno": 23750,
+        "margen": 21250,
+        "orden": 1
+      },
+      {
+        "id": 2,
+        "presupuestoId": 1,
+        "trabajoId": 3,
+        "descripcionCliente": "Instalación SAE (Sistema de Ayuda a la Explotación)",
+        "cantidad": 25,
+        "precioUnitarioCliente": 2500,
+        "totalCliente": 62500,
+        "costeUnitarioInterno": 1300,
+        "totalInterno": 32500,
+        "margen": 30000,
+        "orden": 2
+      },
+      {
+        "id": 3,
+        "presupuestoId": 1,
+        "trabajoId": 2,
+        "descripcionCliente": "Instalación WiFi pasajeros",
+        "cantidad": 25,
+        "precioUnitarioCliente": 850,
+        "totalCliente": 21250,
+        "costeUnitarioInterno": 420,
+        "totalInterno": 10500,
+        "margen": 10750,
+        "orden": 3
+      }
+    ],
+    "material": [
+      {
+        "id": 1,
+        "presupuestoId": 1,
+        "materialId": 408,
+        "descripcionCliente": "Cámara domo IP 2MP antivandálica",
+        "cantidad": 150,
+        "precioUnitarioCliente": 145,
+        "totalCliente": 21750,
+        "costeUnitarioInterno": 85,
+        "totalInterno": 12750,
+        "margen": 9000,
+        "orden": 1
+      },
+      {
+        "id": 2,
+        "presupuestoId": 1,
+        "materialId": 405,
+        "descripcionCliente": "NVR 8 canales embarcado con SSD 1TB",
+        "cantidad": 25,
+        "precioUnitarioCliente": 520,
+        "totalCliente": 13000,
+        "costeUnitarioInterno": 320,
+        "totalInterno": 8000,
+        "margen": 5000,
+        "orden": 2
+      },
+      {
+        "id": 3,
+        "presupuestoId": 1,
+        "materialId": 406,
+        "descripcionCliente": "Cable CAT6 apantallado por metro",
+        "cantidad": 750,
+        "precioUnitarioCliente": 1.5,
+        "totalCliente": 1125,
+        "costeUnitarioInterno": 0.85,
+        "totalInterno": 637.5,
+        "margen": 487.5,
+        "orden": 3
+      },
+      {
+        "id": 4,
+        "presupuestoId": 1,
+        "materialId": 407,
+        "descripcionCliente": "Antena combinada GPS/4G para techo",
+        "cantidad": 25,
+        "precioUnitarioCliente": 110,
+        "totalCliente": 2750,
+        "costeUnitarioInterno": 65,
+        "totalInterno": 1625,
+        "margen": 1125,
+        "orden": 4
+      },
+      {
+        "id": 5,
+        "presupuestoId": 1,
+        "materialId": 403,
+        "descripcionCliente": "Modem 4G industrial router embarcado",
+        "cantidad": 25,
+        "precioUnitarioCliente": 295,
+        "totalCliente": 7375,
+        "costeUnitarioInterno": 180,
+        "totalInterno": 4500,
+        "margen": 2875,
+        "orden": 5
+      },
+      {
+        "id": 6,
+        "presupuestoId": 1,
+        "materialId": 411,
+        "descripcionCliente": "Canaleta adhesiva 30x15mm por metro",
+        "cantidad": 375,
+        "precioUnitarioCliente": 2.5,
+        "totalCliente": 937.5,
+        "costeUnitarioInterno": 1.2,
+        "totalInterno": 450,
+        "margen": 487.5,
+        "orden": 6
+      },
+      {
+        "id": 7,
+        "presupuestoId": 1,
+        "materialId": 410,
+        "descripcionCliente": "Conector RJ45 blindado Cat6",
+        "cantidad": 300,
+        "precioUnitarioCliente": 0.9,
+        "totalCliente": 270,
+        "costeUnitarioInterno": 0.45,
+        "totalInterno": 135,
+        "margen": 135,
+        "orden": 7
+      },
+      {
+        "id": 8,
+        "presupuestoId": 1,
+        "materialId": 409,
+        "descripcionCliente": "Sellador poliuretano para techo bus",
+        "cantidad": 50,
+        "precioUnitarioCliente": 15,
+        "totalCliente": 750,
+        "costeUnitarioInterno": 8.5,
+        "totalInterno": 425,
+        "margen": 325,
+        "orden": 8
+      }
+    ],
+    "desplazamiento": [],
+    "opcionales": []
+  },
+  "opcionales": {
+    "totalOpcionales": 0,
+    "incluidosEnTotal": false
+  },
+  "modulosDocumento": [
+    {
+      "key": "RESUMEN_EJECUTIVO",
+      "title": "1. Resumen ejecutivo",
+      "content": "La presente oferta técnico-económica recoge el alcance de suministro, implantación y soporte inicial de la solución EMT 360 para la flota y centros operativos definidos por el Cliente.\n\nLos importes y condiciones incluidos en este documento constituyen una propuesta cerrada para los conceptos expresamente descritos en partidas y módulos documentales.",
+      "enabled": true,
+      "order": 10
+    },
+    {
+      "key": "ALCANCE_TECNICO",
+      "title": "2. Alcance técnico",
+      "content": "El alcance técnico incluye, en los términos indicados en la oferta: suministro de equipamiento, materiales de instalación, mano de obra de implantación, parametrización, pruebas funcionales y entrega de documentación técnica de cierre.\n\nCualquier prestación no indicada de forma expresa en el presente documento se considerará fuera de alcance y requerirá valoración adicional.",
+      "enabled": true,
+      "order": 20
+    },
+    {
+      "key": "METODOLOGIA_PLAN",
+      "title": "3. Metodología y plan de ejecución",
+      "content": "La ejecución se organizará en fases: (i) preparación y coordinación, (ii) despliegue en campo, (iii) validación funcional y (iv) cierre documental.\n\nLa planificación definitiva, hitos y ventanas de intervención se acordarán con el Cliente antes del inicio operativo, en coherencia con la disponibilidad de vehículos, cocheras y personal autorizado.",
+      "enabled": true,
+      "order": 30
+    },
+    {
+      "key": "SUPUESTOS",
+      "title": "4. Supuestos",
+      "content": "La presente oferta se formula bajo los siguientes supuestos: acceso operativo a vehículos e instalaciones, disponibilidad de ventanas de trabajo acordadas, suministro eléctrico y condiciones de seguridad adecuadas, y designación de interlocutores técnicos por parte del Cliente.\n\nLa alteración sustancial de estos supuestos podrá implicar revisión de plazos y/o costes.",
+      "enabled": true,
+      "order": 40
+    },
+    {
+      "key": "EXCLUSIONES",
+      "title": "5. Exclusiones",
+      "content": "Quedan excluidos del alcance: obras civiles, adecuaciones estructurales, legalizaciones administrativas no previstas, correcciones por patologías preexistentes y cualquier trabajo no identificado de forma explícita en las partidas económicas.\n\nLas actuaciones adicionales derivadas de cambios de alcance se presupuestarán y aprobarán por separado.",
+      "enabled": true,
+      "order": 50
+    },
+    {
+      "key": "CONDICIONES_COMERCIALES",
+      "title": "6. Condiciones comerciales",
+      "content": "La validez de la oferta, los hitos de facturación y las condiciones de ejecución serán las establecidas en la propuesta comercial y en su aceptación por el Cliente.\n\nLos plazos indicados se consideran estimados y quedarán condicionados a la disponibilidad de materiales, accesos y planificación conjunta de los trabajos.",
+      "enabled": true,
+      "order": 60
+    },
+    {
+      "key": "CONDICIONES_ECONOMICAS",
+      "title": "7. Condiciones económicas",
+      "content": "Los importes económicos incluidos en este documento corresponden exclusivamente a los conceptos descritos en partidas.\n\nLos elementos opcionales, cuando existan, no forman parte del total base de adjudicación y se activarán únicamente mediante aceptación expresa por parte del Cliente.",
+      "enabled": true,
+      "order": 70
+    },
+    {
+      "key": "GARANTIAS",
+      "title": "8. Garantías",
+      "content": "Se aplicarán las garantías estándar de fabricante sobre suministros y la garantía de instalación conforme a normativa vigente y alcance contratado.\n\nQuedan excluidas de garantía las incidencias derivadas de uso inadecuado, manipulación por terceros no autorizados o condiciones operativas fuera de especificación.",
+      "enabled": true,
+      "order": 80
+    },
+    {
+      "key": "CONFIDENCIALIDAD",
+      "title": "9. Confidencialidad",
+      "content": "La presente oferta, así como su contenido técnico y económico, tiene carácter confidencial.\n\nNinguna de las partes podrá divulgarla total o parcialmente sin autorización previa y por escrito de la otra parte, salvo obligación legal o requerimiento administrativo aplicable.",
+      "enabled": true,
+      "order": 90
+    },
+    {
+      "key": "ACEPTACION_FIRMA",
+      "title": "10. Aceptación de oferta",
+      "content": "La firma del presente documento implica la aceptación del alcance, importes y condiciones aquí recogidos, así como de los anexos que, en su caso, formen parte integrante de la propuesta.\n\nCualquier modificación posterior deberá formalizarse por escrito y con aceptación de ambas partes.",
+      "enabled": true,
+      "order": 100
+    }
+  ],
+  "anexosTecnicos": [],
+  "textos": []
+}

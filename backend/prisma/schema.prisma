@@ -100,6 +100,28 @@ enum PerfilUsuario {
   ADMINISTRADOR
 }
 
+enum BloqueEconomico {
+  A_SUMINISTRO_EQUIPOS
+  B_MATERIALES_INSTALACION
+  C_MANO_OBRA
+  D_MANTENIMIENTO_1_3
+  E_OPCIONALES_4_5
+}
+
+enum TipoPlantillaTexto {
+  RESUMEN_EJECUTIVO
+  METODOLOGIA
+  SUPUESTOS
+  EXCLUSIONES
+  CONDICIONES_COMERCIALES
+  CONFIDENCIALIDAD
+}
+
+enum TipoAjuste {
+  MULTIPLICADOR
+  IMPORTE_FIJO
+}
+
 // ============================================================================
 // USUARIOS Y AUTENTICACIÓN
 // ============================================================================
@@ -307,12 +329,17 @@ model Material {
   categoria        String?
   unidad           UnidadMaterial
   proveedorHabitual String?
-  costeMedio       Float         @default(0)
-  precioEstandar   Float         @default(0)
-  stockMinimo      Float?
-  stockActual      Float?
+  codigoProveedor  String?       // supplierProductCode de OrderFlow
+  costeMedio            Float         @default(0)
+  precioEstandar        Float         @default(0)
+  precioVenta           Float         @default(0)
+  margenPersonalizado   Float?        // Margen % individual (sobreescribe categoría y general)
+  stockMinimo           Float?
+  stockActual           Float?
   notas            String?
   activo           Boolean       @default(true)
+  firestoreId      String?       @unique // ID del doc en Firestore (OrderFlow inventory)
+  origenExterno    Boolean       @default(false) // true = importado de OrderFlow
   createdAt        DateTime      @default(now())
   updatedAt        DateTime      @updatedAt
 
@@ -455,11 +482,16 @@ model ReplanteoFoto {
 model Presupuesto {
   id            Int                @id @default(autoincrement())
   codigo        String             @unique
+  codigoOferta  String?            @unique
+  versionOferta Int                @default(1)
   proyectoId    Int
   replanteoId   Int?
   fecha         DateTime           @default(now())
   validezDias   Int                @default(30)
   estado        EstadoPresupuesto  @default(BORRADOR)
+  confidencial  Boolean            @default(false)
+  textoConfidencialidad String?
+  clienteOperativoNombre String?
   
   // Totales cara cliente
   totalTrabajos     Float @default(0)
@@ -467,6 +499,16 @@ model Presupuesto {
   totalDesplazamientos Float @default(0)
   descuentoPorcentaje  Float @default(0)
   totalCliente      Float @default(0)
+  baseImponible     Float @default(0)
+  ivaPorcentaje     Float @default(21)
+  ivaImporte        Float @default(0)
+  totalConIva       Float @default(0)
+  precioUnitarioVehiculo Float @default(0)
+  totalBloqueA      Float @default(0)
+  totalBloqueB      Float @default(0)
+  totalBloqueC      Float @default(0)
+  totalBloqueD      Float @default(0)
+  totalBloqueE      Float @default(0)
 
   // Totales cara interna
   costeTrabajos     Float @default(0)
@@ -491,6 +533,10 @@ model Presupuesto {
   lineasTrabajo    PresupuestoLineaTrabajo[]
   lineasMaterial   PresupuestoLineaMaterial[]
   lineasDesplazamiento PresupuestoLineaDesplazamiento[]
+  contexto         PresupuestoContexto?
+  lineasMotor      PresupuestoLineaMotor[]
+  textos           PresupuestoTexto[]
+  snapshot         PresupuestoSnapshot?
 
   @@map("presupuestos")
 }
@@ -545,6 +591,167 @@ model PresupuestoLineaDesplazamiento {
   presupuesto Presupuesto @relation(fields: [presupuestoId], references: [id], onDelete: Cascade)
 
   @@map("presupuesto_lineas_desplazamiento")
+}
+
+model SolucionCatalogo {
+  id          Int      @id @default(autoincrement())
+  codigo      String   @unique
+  nombre      String
+  descripcion String?
+  activa      Boolean  @default(true)
+  reglasJson  Json
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  contextos   PresupuestoContexto[]
+  plantillas  SolucionPlantillaTexto[]
+  anexos      SolucionAnexoTecnico[]
+
+  @@map("soluciones_catalogo")
+}
+
+model ItemCatalogo {
+  id            Int      @id @default(autoincrement())
+  sku           String   @unique
+  descripcion   String
+  familia       String
+  unidad        String
+  precioBase    Float
+  costeBase     Float    @default(0)
+  tipoAjuste    TipoAjuste @default(MULTIPLICADOR)
+  activo        Boolean  @default(true)
+  vigenciaDesde DateTime @default(now())
+  vigenciaHasta DateTime?
+  metadatos     Json?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  lineasMotor   PresupuestoLineaMotor[]
+
+  @@map("items_catalogo")
+}
+
+model PlantillaTexto {
+  id        Int      @id @default(autoincrement())
+  codigo    String   @unique
+  nombre    String
+  tipo      TipoPlantillaTexto
+  version   Int      @default(1)
+  contenido String
+  activa    Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  soluciones SolucionPlantillaTexto[]
+  textos     PresupuestoTexto[]
+
+  @@map("plantillas_texto")
+}
+
+model SolucionPlantillaTexto {
+  id          Int @id @default(autoincrement())
+  solucionId  Int
+  plantillaId Int
+
+  solucion  SolucionCatalogo @relation(fields: [solucionId], references: [id], onDelete: Cascade)
+  plantilla PlantillaTexto   @relation(fields: [plantillaId], references: [id], onDelete: Cascade)
+
+  @@unique([solucionId, plantillaId])
+  @@map("solucion_plantillas_texto")
+}
+
+model SolucionAnexoTecnico {
+  id         Int      @id @default(autoincrement())
+  solucionId Int
+  titulo     String
+  url        String
+  orden      Int      @default(0)
+  createdAt  DateTime @default(now())
+
+  solucion SolucionCatalogo @relation(fields: [solucionId], references: [id], onDelete: Cascade)
+
+  @@unique([solucionId, titulo])
+  @@map("solucion_anexos_tecnicos")
+}
+
+model PresupuestoContexto {
+  id                  Int      @id @default(autoincrement())
+  presupuestoId       Int      @unique
+  clienteOperativoId  Int?
+  solucionId          Int?
+  numVehiculos        Int      @default(1)
+  tipologiaVehiculo   String?
+  fabricantesModelos  String?
+  piloto              Boolean  @default(false)
+  horarioIntervencion String?
+  nocturnidad         Boolean  @default(false)
+  integraciones       Boolean  @default(false)
+  extrasJson          Json?
+  objetivoProyecto    String?
+  ubicacionesJson     Json?
+  ventanaIntervencion String?
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+
+  presupuesto Presupuesto      @relation(fields: [presupuestoId], references: [id], onDelete: Cascade)
+  solucion    SolucionCatalogo? @relation(fields: [solucionId], references: [id])
+
+  @@map("presupuesto_contexto")
+}
+
+model PresupuestoLineaMotor {
+  id             Int            @id @default(autoincrement())
+  presupuestoId  Int
+  bloque         BloqueEconomico
+  itemCatalogoId Int?
+  codigo         String
+  descripcion    String
+  unidad         String
+  cantidad       Float          @default(1)
+  precioUnitario Float          @default(0)
+  subtotal       Float          @default(0)
+  costeUnitario  Float          @default(0)
+  costeSubtotal  Float          @default(0)
+  origen         String?
+  orden          Int            @default(0)
+
+  presupuesto Presupuesto @relation(fields: [presupuestoId], references: [id], onDelete: Cascade)
+  itemCatalogo ItemCatalogo? @relation(fields: [itemCatalogoId], references: [id])
+
+  @@index([presupuestoId, bloque])
+  @@map("presupuesto_lineas_motor")
+}
+
+model PresupuestoTexto {
+  id               Int               @id @default(autoincrement())
+  presupuestoId    Int
+  tipo             TipoPlantillaTexto
+  titulo           String
+  contenido        String
+  plantillaId      Int?
+  versionPlantilla Int?
+  orden            Int               @default(0)
+
+  presupuesto Presupuesto  @relation(fields: [presupuestoId], references: [id], onDelete: Cascade)
+  plantilla   PlantillaTexto? @relation(fields: [plantillaId], references: [id])
+
+  @@index([presupuestoId, tipo])
+  @@map("presupuesto_textos")
+}
+
+model PresupuestoSnapshot {
+  id              Int      @id @default(autoincrement())
+  presupuestoId   Int      @unique
+  fechaEmision    DateTime @default(now())
+  versionOferta   Int      @default(1)
+  reglasJson      Json
+  preciosJson     Json
+  payloadOfertaJson Json
+  hashContenido   String?
+
+  presupuesto Presupuesto @relation(fields: [presupuestoId], references: [id], onDelete: Cascade)
+
+  @@map("presupuesto_snapshots")
 }
 
 // ============================================================================
@@ -690,4 +897,32 @@ model OrdenTrabajoFoto {
   ordenTrabajo OrdenTrabajo @relation(fields: [ordenTrabajoId], references: [id], onDelete: Cascade)
 
   @@map("orden_trabajo_fotos")
+}
+
+// ============================================================================
+// CONFIGURACIÓN GENERAL DEL ERP
+// ============================================================================
+
+model Configuracion {
+  id                       Int      @id @default(autoincrement())
+  clave                    String   @unique
+  valor                    String
+  descripcion              String?
+  updatedAt                DateTime @updatedAt
+
+  @@map("configuracion")
+}
+
+// ============================================================================
+// MÁRGENES POR CATEGORÍA DE MATERIAL
+// ============================================================================
+
+model MargenCategoria {
+  id         Int      @id @default(autoincrement())
+  categoria  String   @unique
+  margen     Float    // porcentaje (ej: 30.0 = 30%)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@map("margenes_categoria")
 }

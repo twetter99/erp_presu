@@ -11,6 +11,7 @@ import presupuestosRoutes from './presupuestos.routes';
 import comprasRoutes from './compras.routes';
 import ordenesRoutes from './ordenes.routes';
 import controlRoutes from './control.routes';
+import margenesRoutes from './margenes.routes';
 
 const router = Router();
 
@@ -26,5 +27,6 @@ router.use('/presupuestos', presupuestosRoutes);
 router.use('/compras', comprasRoutes);
 router.use('/ordenes-trabajo', ordenesRoutes);
 router.use('/control', controlRoutes);
+router.use('/margenes', margenesRoutes);
 
 export default router;

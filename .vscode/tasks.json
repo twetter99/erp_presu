@@ -1,0 +1,12 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"label": "Verify oferta E2E (PDF)",
+			"type": "shell",
+			"command": "Set-Location backend; $env:OFERTA_PDF_PROVIDER='puppeteer'; npm run verify:oferta -- --presupuestoId=1 --template=OFERTA_EMT_360_V2 --outDir=./tmp",
+			"isBackground": false,
+			"group": "test"
+		}
+	]
+}

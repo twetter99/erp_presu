@@ -1,0 +1,69 @@
+# ============================================
+# docker-compose.prod.yml
+# Producción con Google Cloud SQL (sin PG local)
+# ============================================
+# Uso:
+#   docker-compose -f docker-compose.prod.yml up -d
+#
+# Requiere Cloud SQL Auth Proxy corriendo o conexión directa.
+# Variables de entorno en .env (raíz)
+
+version: '3.8'
+
+services:
+  # Cloud SQL Auth Proxy - conexión segura a Cloud SQL
+  cloudsql-proxy:
+    image: gcr.io/cloud-sql-connectors/cloud-sql-proxy:2
+    container_name: erp_cloudsql_proxy
+    restart: unless-stopped
+    command:
+      - "${GCP_PROJECT_ID}:${GCP_REGION}:${CLOUD_SQL_INSTANCE}"
+      - "--port=5432"
+      - "--address=0.0.0.0"
+    # Autenticación: usa service account o Application Default Credentials
+    volumes:
+      - ./service-account.json:/config/service-account.json:ro
+    environment:
+      GOOGLE_APPLICATION_CREDENTIALS: /config/service-account.json
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD", "nc", "-z", "localhost", "5432"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: erp_presu_api
+    restart: unless-stopped
+    depends_on:
+      cloudsql-proxy:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@cloudsql-proxy:5432/${POSTGRES_DB}
+      FIREBASE_PROJECT_ID: ${FIREBASE_PROJECT_ID}
+      PORT: 4000
+      NODE_ENV: production
+    ports:
+      - "4000:4000"
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        VITE_FIREBASE_API_KEY: ${VITE_FIREBASE_API_KEY}
+        VITE_FIREBASE_AUTH_DOMAIN: ${VITE_FIREBASE_AUTH_DOMAIN}
+        VITE_FIREBASE_PROJECT_ID: ${VITE_FIREBASE_PROJECT_ID}
+        VITE_FIREBASE_STORAGE_BUCKET: ${VITE_FIREBASE_STORAGE_BUCKET}
+        VITE_FIREBASE_MESSAGING_SENDER_ID: ${VITE_FIREBASE_MESSAGING_SENDER_ID}
+        VITE_FIREBASE_APP_ID: ${VITE_FIREBASE_APP_ID}
+    container_name: erp_presu_web
+    restart: unless-stopped
+    depends_on:
+      - backend
+    ports:
+      - "3000:80"

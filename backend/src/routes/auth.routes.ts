@@ -196,8 +196,9 @@ router.post('/setup', async (req: Request, res: Response) => {
       message: `Admin ${email} creado en Firebase y vinculado.`,
       firebaseUid: firebaseUser.uid,
     });
-  } catch (error) {
-    res.status(500).json({ error: 'Error en el servidor' });
+  } catch (error: any) {
+    console.error('Setup error:', error?.code, error?.message || error);
+    res.status(500).json({ error: 'Error en el servidor', detail: error?.message });
   }
 });
 

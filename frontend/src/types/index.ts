@@ -13,6 +13,7 @@ export type EstadoPresupuesto = 'BORRADOR' | 'ENVIADO' | 'NEGOCIACION' | 'ACEPTA
 export type EstadoCompra = 'PENDIENTE' | 'PEDIDO' | 'RECIBIDO_PARCIAL' | 'RECIBIDO' | 'FACTURADO' | 'CANCELADO';
 export type EstadoOrdenTrabajo = 'PLANIFICADA' | 'EN_CURSO' | 'PAUSADA' | 'COMPLETADA' | 'CANCELADA';
 export type EstadoProyecto = 'REPLANTEO' | 'PRESUPUESTO' | 'ACEPTADO' | 'EN_EJECUCION' | 'COMPLETADO' | 'CANCELADO';
+export type BloqueEconomico = 'A_SUMINISTRO_EQUIPOS' | 'B_MATERIALES_INSTALACION' | 'C_MANO_OBRA' | 'D_MANTENIMIENTO_1_3' | 'E_OPCIONALES_4_5';
 
 // --- Entidades ---
 export interface Usuario {
@@ -114,6 +115,8 @@ export interface Material {
   proveedorHabitual?: string;
   costeMedio: number;
   precioEstandar: number;
+  precioVenta: number;
+  margenPersonalizado?: number | null;
   stockMinimo?: number;
   stockActual?: number;
   notas?: string;
@@ -166,16 +169,30 @@ export interface Replanteo {
 export interface Presupuesto {
   id: number;
   codigo: string;
+  codigoOferta?: string;
+  versionOferta?: number;
   proyectoId: number;
   replanteoId?: number;
   fecha: string;
   validezDias: number;
   estado: EstadoPresupuesto;
+  confidencial?: boolean;
+  textoConfidencialidad?: string;
   totalTrabajos: number;
   totalMateriales: number;
   totalDesplazamientos: number;
   descuentoPorcentaje: number;
   totalCliente: number;
+  baseImponible?: number;
+  ivaPorcentaje?: number;
+  ivaImporte?: number;
+  totalConIva?: number;
+  precioUnitarioVehiculo?: number;
+  totalBloqueA?: number;
+  totalBloqueB?: number;
+  totalBloqueC?: number;
+  totalBloqueD?: number;
+  totalBloqueE?: number;
   costeTrabajos: number;
   costeMateriales: number;
   costeDesplazamientos: number;
@@ -184,11 +201,123 @@ export interface Presupuesto {
   margenPorcentaje: number;
   observacionesCliente?: string;
   observacionesInternas?: string;
+  fechaEnvio?: string;
+  fechaRespuesta?: string;
+  ultimaActividadTipo?: 'ACEPTADO' | 'RECHAZADO' | 'RESPUESTA' | 'OFERTA_EMITIDA' | 'ENVIADO' | 'CREADO';
+  ultimaActividadFecha?: string;
   proyecto?: any;
   replanteo?: any;
+  contexto?: PresupuestoContexto;
+  lineasMotor?: PresupuestoLineaMotor[];
+  textos?: PresupuestoTexto[];
+  snapshot?: PresupuestoSnapshot;
   lineasTrabajo?: any[];
   lineasMaterial?: any[];
   lineasDesplazamiento?: any[];
+}
+
+export interface PresupuestoContexto {
+  id: number;
+  presupuestoId: number;
+  clienteOperativoId?: number;
+  solucionId?: number;
+  numVehiculos: number;
+  tipologiaVehiculo?: string;
+  fabricantesModelos?: string;
+  piloto: boolean;
+  horarioIntervencion?: string;
+  nocturnidad: boolean;
+  integraciones: boolean;
+}
+
+export interface PresupuestoLineaMotor {
+  id: number;
+  presupuestoId: number;
+  bloque: BloqueEconomico;
+  itemCatalogoId?: number;
+  codigo: string;
+  descripcion: string;
+  unidad: string;
+  cantidad: number;
+  precioUnitario: number;
+  subtotal: number;
+  costeUnitario: number;
+  costeSubtotal: number;
+  origen?: string;
+  orden: number;
+}
+
+export interface PresupuestoTexto {
+  id: number;
+  presupuestoId: number;
+  tipo: string;
+  titulo: string;
+  contenido: string;
+  orden: number;
+}
+
+export interface PresupuestoSnapshot {
+  id: number;
+  presupuestoId: number;
+  fechaEmision: string;
+  versionOferta: number;
+}
+
+export interface PresupuestoVersionItem {
+  id: number;
+  codigo: string;
+  codigoOferta?: string | null;
+  versionOferta?: number | null;
+  estado: EstadoPresupuesto;
+  fecha: string;
+  totalCliente: number;
+  totalConIva?: number | null;
+  snapshot?: {
+    fechaEmision: string;
+    versionOferta: number;
+  } | null;
+}
+
+export interface PresupuestoVersionesResponse {
+  familiaCodigoOferta: string | null;
+  totalVersiones: number;
+  versiones: PresupuestoVersionItem[];
+}
+
+export interface PresupuestoImpactoAceptacion {
+  presupuestoId: number;
+  estado: EstadoPresupuesto;
+  compras: Array<{
+    id: number;
+    codigo: string;
+    proveedor: string;
+    estado: EstadoCompra;
+    fechaSolicitud: string;
+  }>;
+  ordenesTrabajo: Array<{
+    id: number;
+    codigo: string;
+    estado: EstadoOrdenTrabajo;
+    fechaPlanificada?: string | null;
+    createdAt: string;
+  }>;
+  resumen: {
+    totalCompras: number;
+    totalOrdenesTrabajo: number;
+  };
+}
+
+export interface EmisionCheck {
+  key: string;
+  label: string;
+  ok: boolean;
+  required: boolean;
+}
+
+export interface EmisionValidacion {
+  ready: boolean;
+  checks: EmisionCheck[];
+  pendientes: EmisionCheck[];
 }
 
 export interface SolicitudCompra {
