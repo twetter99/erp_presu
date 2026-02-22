@@ -1,0 +1,430 @@
+{
+  "template": {
+    "codigo": "OFERTA_WINFIN_LIC_V1",
+    "version": "1.0.0",
+    "secciones": [
+      "PORTADA",
+      "CONFIDENCIALIDAD",
+      "RESUMEN_EJECUTIVO",
+      "ALCANCE_TECNICO",
+      "ARQUITECTURA_FUNCIONAL",
+      "METODOLOGIA",
+      "PLANIFICACION_METRICAS",
+      "EXPERIENCIA_RELEVANTE",
+      "ECONOMICA",
+      "SUPUESTOS",
+      "EXCLUSIONES",
+      "FIRMA",
+      "ANEXOS"
+    ]
+  },
+  "cabecera": {
+    "presupuestoId": 1,
+    "codigo": "PRE-2026-875793",
+    "codigoOferta": "OF-VERIFY-2026-1",
+    "versionOferta": 1,
+    "fechaEmision": "2026-02-22T18:52:43.623Z",
+    "templateCode": "OFERTA_WINFIN_LIC_V1",
+    "cliente": "Transportes Metropolitanos de Madrid",
+    "proyecto": "Videovigilancia + SAE flota Carabanchel",
+    "validezDias": 30
+  },
+  "contexto": null,
+  "economico": {
+    "baseImponible": 176707.5,
+    "ivaPorcentaje": 21,
+    "ivaImporte": 37108.57,
+    "totalConIva": 213816.07,
+    "precioUnitarioVehiculo": 176707.5,
+    "baseAdjudicacion": 176707.5,
+    "opcionalTotal": 0,
+    "totalPropuesta": 176707.5,
+    "totalesBloque": {
+      "A": 0,
+      "B": 47957.5,
+      "C": 128750,
+      "D": 0,
+      "E": 0
+    },
+    "porcentajesBloque": {
+      "A": 0,
+      "B": 27.14,
+      "C": 72.86,
+      "D": 0,
+      "E": 0
+    },
+    "precioUnitarioDetalle": {
+      "baseAdjudicacion": 176707.5,
+      "opcional": 0,
+      "totalSinIva": 176707.5,
+      "iva": 37108.57,
+      "totalConIva": 213816.08,
+      "numeroVehiculos": 0
+    },
+    "totalDesplazamientos": 0,
+    "totalOpcionales": 0
+  },
+  "documento": {
+    "tipo": "OFERTA_TEC_ECON_LICITACION",
+    "estructura": [
+      "PORTADA",
+      "CONFIDENCIALIDAD",
+      "RESUMEN_EJECUTIVO",
+      "ALCANCE_TECNICO",
+      "ARQUITECTURA_FUNCIONAL",
+      "METODOLOGIA",
+      "PLANIFICACION_METRICAS",
+      "EXPERIENCIA_RELEVANTE",
+      "ECONOMICA",
+      "SUPUESTOS",
+      "EXCLUSIONES",
+      "FIRMA",
+      "ANEXOS"
+    ],
+    "versionEstructura": "3.0.0"
+  },
+  "lineas": {
+    "motor": [],
+    "trabajo": [
+      {
+        "id": 1,
+        "presupuestoId": 1,
+        "trabajoId": 1,
+        "descripcionCliente": "Instalación de cámaras de videovigilancia",
+        "cantidad": 25,
+        "precioUnitarioCliente": 1800,
+        "totalCliente": 45000,
+        "costeUnitarioInterno": 950,
+        "totalInterno": 23750,
+        "margen": 21250,
+        "orden": 1
+      },
+      {
+        "id": 2,
+        "presupuestoId": 1,
+        "trabajoId": 3,
+        "descripcionCliente": "Instalación SAE (Sistema de Ayuda a la Explotación)",
+        "cantidad": 25,
+        "precioUnitarioCliente": 2500,
+        "totalCliente": 62500,
+        "costeUnitarioInterno": 1300,
+        "totalInterno": 32500,
+        "margen": 30000,
+        "orden": 2
+      },
+      {
+        "id": 3,
+        "presupuestoId": 1,
+        "trabajoId": 2,
+        "descripcionCliente": "Instalación WiFi pasajeros",
+        "cantidad": 25,
+        "precioUnitarioCliente": 850,
+        "totalCliente": 21250,
+        "costeUnitarioInterno": 420,
+        "totalInterno": 10500,
+        "margen": 10750,
+        "orden": 3
+      }
+    ],
+    "material": [
+      {
+        "id": 1,
+        "presupuestoId": 1,
+        "materialId": 408,
+        "descripcionCliente": "Cámara domo IP 2MP antivandálica",
+        "cantidad": 150,
+        "precioUnitarioCliente": 145,
+        "totalCliente": 21750,
+        "costeUnitarioInterno": 85,
+        "totalInterno": 12750,
+        "margen": 9000,
+        "orden": 1
+      },
+      {
+        "id": 2,
+        "presupuestoId": 1,
+        "materialId": 405,
+        "descripcionCliente": "NVR 8 canales embarcado con SSD 1TB",
+        "cantidad": 25,
+        "precioUnitarioCliente": 520,
+        "totalCliente": 13000,
+        "costeUnitarioInterno": 320,
+        "totalInterno": 8000,
+        "margen": 5000,
+        "orden": 2
+      },
+      {
+        "id": 3,
+        "presupuestoId": 1,
+        "materialId": 406,
+        "descripcionCliente": "Cable CAT6 apantallado por metro",
+        "cantidad": 750,
+        "precioUnitarioCliente": 1.5,
+        "totalCliente": 1125,
+        "costeUnitarioInterno": 0.85,
+        "totalInterno": 637.5,
+        "margen": 487.5,
+        "orden": 3
+      },
+      {
+        "id": 4,
+        "presupuestoId": 1,
+        "materialId": 407,
+        "descripcionCliente": "Antena combinada GPS/4G para techo",
+        "cantidad": 25,
+        "precioUnitarioCliente": 110,
+        "totalCliente": 2750,
+        "costeUnitarioInterno": 65,
+        "totalInterno": 1625,
+        "margen": 1125,
+        "orden": 4
+      },
+      {
+        "id": 5,
+        "presupuestoId": 1,
+        "materialId": 403,
+        "descripcionCliente": "Modem 4G industrial router embarcado",
+        "cantidad": 25,
+        "precioUnitarioCliente": 295,
+        "totalCliente": 7375,
+        "costeUnitarioInterno": 180,
+        "totalInterno": 4500,
+        "margen": 2875,
+        "orden": 5
+      },
+      {
+        "id": 6,
+        "presupuestoId": 1,
+        "materialId": 411,
+        "descripcionCliente": "Canaleta adhesiva 30x15mm por metro",
+        "cantidad": 375,
+        "precioUnitarioCliente": 2.5,
+        "totalCliente": 937.5,
+        "costeUnitarioInterno": 1.2,
+        "totalInterno": 450,
+        "margen": 487.5,
+        "orden": 6
+      },
+      {
+        "id": 7,
+        "presupuestoId": 1,
+        "materialId": 410,
+        "descripcionCliente": "Conector RJ45 blindado Cat6",
+        "cantidad": 300,
+        "precioUnitarioCliente": 0.9,
+        "totalCliente": 270,
+        "costeUnitarioInterno": 0.45,
+        "totalInterno": 135,
+        "margen": 135,
+        "orden": 7
+      },
+      {
+        "id": 8,
+        "presupuestoId": 1,
+        "materialId": 409,
+        "descripcionCliente": "Sellador poliuretano para techo bus",
+        "cantidad": 50,
+        "precioUnitarioCliente": 15,
+        "totalCliente": 750,
+        "costeUnitarioInterno": 8.5,
+        "totalInterno": 425,
+        "margen": 325,
+        "orden": 8
+      }
+    ],
+    "desplazamiento": [],
+    "opcionales": [],
+    "bloques": {
+      "A": [],
+      "B": [
+        {
+          "bloque": "B_MATERIALES_INSTALACION",
+          "codigo": "MAT-408",
+          "descripcion": "Cámara domo IP 2MP antivandálica",
+          "unidad": "UD",
+          "cantidad": 150,
+          "precio": 145,
+          "subtotal": 21750
+        },
+        {
+          "bloque": "B_MATERIALES_INSTALACION",
+          "codigo": "MAT-405",
+          "descripcion": "NVR 8 canales embarcado con SSD 1TB",
+          "unidad": "UD",
+          "cantidad": 25,
+          "precio": 520,
+          "subtotal": 13000
+        },
+        {
+          "bloque": "B_MATERIALES_INSTALACION",
+          "codigo": "MAT-406",
+          "descripcion": "Cable CAT6 apantallado por metro",
+          "unidad": "UD",
+          "cantidad": 750,
+          "precio": 1.5,
+          "subtotal": 1125
+        },
+        {
+          "bloque": "B_MATERIALES_INSTALACION",
+          "codigo": "MAT-407",
+          "descripcion": "Antena combinada GPS/4G para techo",
+          "unidad": "UD",
+          "cantidad": 25,
+          "precio": 110,
+          "subtotal": 2750
+        },
+        {
+          "bloque": "B_MATERIALES_INSTALACION",
+          "codigo": "MAT-403",
+          "descripcion": "Modem 4G industrial router embarcado",
+          "unidad": "UD",
+          "cantidad": 25,
+          "precio": 295,
+          "subtotal": 7375
+        },
+        {
+          "bloque": "B_MATERIALES_INSTALACION",
+          "codigo": "MAT-411",
+          "descripcion": "Canaleta adhesiva 30x15mm por metro",
+          "unidad": "UD",
+          "cantidad": 375,
+          "precio": 2.5,
+          "subtotal": 937.5
+        },
+        {
+          "bloque": "B_MATERIALES_INSTALACION",
+          "codigo": "MAT-410",
+          "descripcion": "Conector RJ45 blindado Cat6",
+          "unidad": "UD",
+          "cantidad": 300,
+          "precio": 0.9,
+          "subtotal": 270
+        },
+        {
+          "bloque": "B_MATERIALES_INSTALACION",
+          "codigo": "MAT-409",
+          "descripcion": "Sellador poliuretano para techo bus",
+          "unidad": "UD",
+          "cantidad": 50,
+          "precio": 15,
+          "subtotal": 750
+        }
+      ],
+      "C": [
+        {
+          "bloque": "C_MANO_OBRA",
+          "codigo": "TRB-1",
+          "descripcion": "Instalación de cámaras de videovigilancia",
+          "unidad": "UD",
+          "cantidad": 25,
+          "precio": 1800,
+          "subtotal": 45000
+        },
+        {
+          "bloque": "C_MANO_OBRA",
+          "codigo": "TRB-3",
+          "descripcion": "Instalación SAE (Sistema de Ayuda a la Explotación)",
+          "unidad": "UD",
+          "cantidad": 25,
+          "precio": 2500,
+          "subtotal": 62500
+        },
+        {
+          "bloque": "C_MANO_OBRA",
+          "codigo": "TRB-2",
+          "descripcion": "Instalación WiFi pasajeros",
+          "unidad": "UD",
+          "cantidad": 25,
+          "precio": 850,
+          "subtotal": 21250
+        }
+      ],
+      "D": [],
+      "E": []
+    }
+  },
+  "opcionales": {
+    "totalOpcionales": 0,
+    "incluidosEnTotal": false
+  },
+  "modulosDocumento": [
+    {
+      "key": "RESUMEN_EJECUTIVO",
+      "title": "1. Resumen ejecutivo",
+      "content": "La presente propuesta técnico-económica se formula para proceso de licitación pública y recoge de forma integrada alcance, metodología, planificación y estructura económica con trazabilidad técnica y financiera.\n\nWINFIN acredita capacidad operativa para ejecución en flotas de transporte y entornos de alta exigencia, garantizando control de hitos, calidad documental y continuidad de servicio durante el despliegue.",
+      "enabled": true,
+      "order": 10
+    },
+    {
+      "key": "CONFIDENCIALIDAD",
+      "title": "2. Confidencialidad",
+      "content": "Este documento contiene información técnica, operativa y económica de carácter reservado, entregada exclusivamente para evaluación de la licitación de referencia.\n\nLa reproducción, difusión o cesión total o parcial queda prohibida sin autorización previa y por escrito de WINFIN, salvo requerimiento legal o administrativo aplicable.",
+      "enabled": true,
+      "order": 20
+    },
+    {
+      "key": "ALCANCE_TECNICO",
+      "title": "3. Alcance técnico",
+      "content": "El alcance incluye ingeniería de detalle, suministro de equipamiento, materiales de instalación, ejecución en campo, validación funcional, soporte de arranque y cierre documental con evidencias por hito.\n\nCualquier elemento no descrito expresamente se considerará fuera de alcance y requerirá tramitación mediante control de cambios y aprobación formal.",
+      "enabled": true,
+      "order": 30
+    },
+    {
+      "key": "ARQUITECTURA_FUNCIONAL",
+      "title": "4. Arquitectura funcional",
+      "content": "La arquitectura funcional propuesta se organiza en capas de captura embarcada, comunicaciones seguras, plataforma de supervisión y explotación operativa. El diseño prioriza mantenibilidad, escalabilidad y trazabilidad extremo a extremo.",
+      "enabled": true,
+      "order": 40
+    },
+    {
+      "key": "METODOLOGIA_PLAN",
+      "title": "5. Metodología de ejecución",
+      "content": "La metodología se estructura en fases de arranque, implantación, validación y transferencia a operación. Cada fase incorpora actividades, entregables, criterios de aceptación y gestión de riesgos.",
+      "enabled": true,
+      "order": 50
+    },
+    {
+      "key": "METRICAS_PLANIFICACION",
+      "title": "6. Planificación temporal",
+      "content": "Planificación basada en ventanas operativas de flota, productividad por cuadrilla, hitos de aceptación y dependencias críticas con el Cliente.\n\nSe propone un modelo de seguimiento semanal con comité técnico, actas de avance y tablero de riesgos.",
+      "enabled": true,
+      "order": 60
+    },
+    {
+      "key": "EXPERIENCIA_RELEVANTE",
+      "title": "7. Capacidad técnica y experiencia",
+      "content": "WINFIN dispone de equipo especializado en sistemas embarcados e integración en transporte público, con experiencia demostrada en despliegues multi-vehículo, coordinación en cocheras y operación en servicio.",
+      "enabled": true,
+      "order": 70
+    },
+    {
+      "key": "CONDICIONES_ECONOMICAS",
+      "title": "8. Oferta económica y narrativa de valor",
+      "content": "La oferta económica se presenta en estructura A/B/C/D/E para facilitar su evaluación técnica y financiera. La base de adjudicación y los opcionales se separan de forma explícita para asegurar transparencia presupuestaria.",
+      "enabled": true,
+      "order": 80
+    },
+    {
+      "key": "SUPUESTOS",
+      "title": "9. Supuestos técnicos y operativos",
+      "content": "Disponibilidad de activos e instalaciones según planificación acordada|Coordinación semanal con interlocutor técnico del Cliente\nAcceso a energía y condiciones de seguridad conforme normativa|Incidencias de acceso se tratarán en comité de seguimiento\nVentanas de intervención compatibles con operación de flota|Replanificación consensuada ante restricciones operativas",
+      "enabled": true,
+      "order": 90
+    },
+    {
+      "key": "EXCLUSIONES",
+      "title": "10. Exclusiones",
+      "content": "Obra civil, legalizaciones y adecuaciones estructurales no incluidas en partidas|Se valorarán mediante anexo específico\nCorrección de patologías preexistentes no inventariadas|Requiere aprobación previa por cambio de alcance\nIntervenciones de terceros no autorizados durante garantía|Fuera de cobertura contractual",
+      "enabled": true,
+      "order": 100
+    },
+    {
+      "key": "ACEPTACION_FIRMA",
+      "title": "11. Aceptación y firma",
+      "content": "La aceptación de la propuesta implica conformidad con alcance, condiciones, planificación y anexos técnicos incluidos en esta oferta.\n\nCualquier modificación posterior deberá formalizarse por escrito y aprobada por ambas partes.",
+      "enabled": true,
+      "order": 110
+    }
+  ],
+  "anexosTecnicos": []
+}

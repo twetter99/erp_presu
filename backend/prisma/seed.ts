@@ -622,6 +622,86 @@ async function main() {
     });
   }
 
+  const itemsCatalogo = await prisma.itemCatalogo.findMany({
+    where: { sku: { in: itemsMotor.map((item) => item.sku) } },
+    select: { id: true, sku: true, descripcion: true, familia: true, unidad: true },
+  });
+
+  const fichasPorSku: Record<string, { codigo: string; titulo: string; descripcion: string; contenido: string; url: string; orden: number }> = {
+    'CAM-360-FRONT': {
+      codigo: 'FT-CAM-360-FRONT-V1',
+      titulo: 'Ficha técnica cámara frontal 360º',
+      descripcion: 'Cámara frontal embarcada para captura de entorno en flota urbana.',
+      contenido: 'Resolución HD, compatibilidad con red embarcada, operación en vibración y temperatura de servicio de transporte público.',
+      url: 'https://example.com/fichas/cam-360-front.pdf',
+      orden: 10,
+    },
+    'CAM-360-LAT': {
+      codigo: 'FT-CAM-360-LAT-V1',
+      titulo: 'Ficha técnica cámara lateral/trasera 360º',
+      descripcion: 'Cámara lateral y trasera para cobertura de ángulos de maniobra.',
+      contenido: 'Integración con DVR embarcado, sellado para uso exterior y operación continua.',
+      url: 'https://example.com/fichas/cam-360-lat.pdf',
+      orden: 20,
+    },
+    'DVR-EMB-1TB': {
+      codigo: 'FT-DVR-EMB-1TB-V1',
+      titulo: 'Ficha técnica DVR embarcado SSD 1TB',
+      descripcion: 'Unidad de grabación embarcada para evidencias y explotación operativa.',
+      contenido: 'Almacenamiento SSD 1TB, exportación segura de evidencias y gestión remota de estado.',
+      url: 'https://example.com/fichas/dvr-emb-1tb.pdf',
+      orden: 30,
+    },
+    'MON-CAB-7': {
+      codigo: 'FT-MON-CAB-7-V1',
+      titulo: 'Ficha técnica monitor de cabina 7"',
+      descripcion: 'Monitor para visualización de cámaras y soporte a conducción asistida.',
+      contenido: 'Pantalla de 7 pulgadas para entorno de cabina con soporte de señales de vídeo embarcadas.',
+      url: 'https://example.com/fichas/mon-cab-7.pdf',
+      orden: 40,
+    },
+    'KIT-4G-GPS': {
+      codigo: 'FT-KIT-4G-GPS-V1',
+      titulo: 'Ficha técnica kit 4G/WiFi/GPS',
+      descripcion: 'Conectividad embarcada para transmisión de datos y geolocalización.',
+      contenido: 'Módem 4G, posicionamiento GPS y conectividad para diagnóstico y explotación.',
+      url: 'https://example.com/fichas/kit-4g-gps.pdf',
+      orden: 50,
+    },
+  };
+
+  for (const item of itemsCatalogo) {
+    const ficha = fichasPorSku[item.sku];
+    if (!ficha) continue;
+
+    await prisma.productoFichaTecnica.upsert({
+      where: {
+        itemCatalogoId_codigo: {
+          itemCatalogoId: item.id,
+          codigo: ficha.codigo,
+        },
+      },
+      update: {
+        titulo: ficha.titulo,
+        descripcion: ficha.descripcion,
+        contenido: ficha.contenido,
+        url: ficha.url,
+        orden: ficha.orden,
+        activa: true,
+      },
+      create: {
+        itemCatalogoId: item.id,
+        codigo: ficha.codigo,
+        titulo: ficha.titulo,
+        descripcion: ficha.descripcion,
+        contenido: ficha.contenido,
+        url: ficha.url,
+        orden: ficha.orden,
+        activa: true,
+      },
+    });
+  }
+
   const plantillas = await Promise.all([
     prisma.plantillaTexto.upsert({
       where: { codigo: 'TPL-RESUMEN-EJECUTIVO' },

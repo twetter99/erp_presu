@@ -4,7 +4,7 @@ import prisma from '../config/database';
 import { authMiddleware, requirePerfil } from '../middleware/auth';
 import { validate } from '../middleware/validate';
 import { z } from 'zod';
-import { OFERTA_TEMPLATE_CATALOG, OFERTA_TEMPLATE_DEFAULT_CODE } from '../config/ofertaTemplate.spec';
+import { OFERTA_TEMPLATE_CATALOG, OFERTA_TEMPLATE_DEFAULT_CODE, isOfertaTemplateCode } from '../config/ofertaTemplate.spec';
 import { buildOfertaHtmlDocument, buildOfertaPayload } from '../services/ofertaDocument.service';
 import {
   getGlobalTemplateModuleOverrides,
@@ -69,6 +69,76 @@ type EmisionCheck = {
   ok: boolean;
   required: boolean;
 };
+
+type OfertaAnexoTecnico = {
+  titulo: string;
+  url: string;
+  orden: number;
+  sku?: string;
+  descripcion?: string;
+  familia?: string;
+  fuente?: 'PRODUCTO' | 'SOLUCION';
+  contenido?: string;
+};
+
+function templateInvalida(code?: string): boolean {
+  return Boolean(code) && !isOfertaTemplateCode(code as string);
+}
+
+async function resolverAnexosTecnicosOferta(presupuesto: any): Promise<OfertaAnexoTecnico[]> {
+  const itemCatalogoIds = Array.from(
+    new Set(
+      (presupuesto.lineasMotor || [])
+        .map((linea: any) => linea.itemCatalogoId)
+        .filter((value: unknown) => typeof value === 'number')
+    )
+  ) as number[];
+
+  const anexosPorProducto = itemCatalogoIds.length > 0
+    ? await prisma.productoFichaTecnica.findMany({
+        where: {
+          itemCatalogoId: { in: itemCatalogoIds },
+          activa: true,
+        },
+        include: {
+          itemCatalogo: {
+            select: { sku: true, descripcion: true, familia: true },
+          },
+        },
+        orderBy: [{ itemCatalogoId: 'asc' }, { orden: 'asc' }],
+      })
+    : [];
+
+  const anexosTecnicos: OfertaAnexoTecnico[] = anexosPorProducto.map((anexo) => ({
+    titulo: anexo.titulo,
+    url: anexo.url || '',
+    orden: anexo.orden,
+    sku: anexo.itemCatalogo.sku,
+    descripcion: anexo.itemCatalogo.descripcion,
+    familia: anexo.itemCatalogo.familia,
+    contenido: anexo.contenido || undefined,
+    fuente: 'PRODUCTO',
+  }));
+
+  if (presupuesto.contexto?.solucionId) {
+    const anexosLegacy = await prisma.solucionAnexoTecnico.findMany({
+      where: { solucionId: presupuesto.contexto.solucionId },
+      select: { titulo: true, url: true, orden: true },
+      orderBy: { orden: 'asc' },
+    });
+
+    for (const anexoLegacy of anexosLegacy) {
+      anexosTecnicos.push({
+        titulo: anexoLegacy.titulo,
+        url: anexoLegacy.url,
+        orden: anexoLegacy.orden,
+        fuente: 'SOLUCION',
+      });
+    }
+  }
+
+  return anexosTecnicos.sort((left, right) => left.orden - right.orden);
+}
 
 function construirValidacionEmision(presupuesto: any) {
   const tieneLineasEconomicas = presupuesto.lineasMotor.length > 0
@@ -1892,6 +1962,12 @@ router.get('/:id/oferta-html', async (req: Request, res: Response) => {
   try {
     const id = Number(req.params.id);
     const templateCode = typeof req.query.template === 'string' ? req.query.template : undefined;
+
+    if (templateInvalida(templateCode)) {
+      res.status(400).send('Plantilla de oferta no válida');
+      return;
+    }
+
     const presupuesto = await prisma.presupuesto.findUnique({
       where: { id },
       include: {
@@ -1910,13 +1986,7 @@ router.get('/:id/oferta-html', async (req: Request, res: Response) => {
       return;
     }
 
-    const anexosTecnicos = presupuesto.contexto?.solucionId
-      ? await prisma.solucionAnexoTecnico.findMany({
-          where: { solucionId: presupuesto.contexto.solucionId },
-          select: { titulo: true, url: true, orden: true },
-          orderBy: { orden: 'asc' },
-        })
-      : [];
+    const anexosTecnicos = await resolverAnexosTecnicosOferta(presupuesto);
 
     const modulosDocumento = await resolvePresupuestoModules(presupuesto, templateCode);
 
@@ -1949,6 +2019,10 @@ router.get('/oferta-templates/catalogo', (_req: Request, res: Response) => {
 router.get('/oferta-templates/:code/modulos', requirePerfil('ADMINISTRADOR', 'DIRECCION'), async (req: Request, res: Response) => {
   try {
     const templateCode = req.params.code;
+    if (!isOfertaTemplateCode(templateCode)) {
+      res.status(400).json({ error: 'Plantilla de oferta no válida' });
+      return;
+    }
     const defaults = await resolveTemplateModules(templateCode);
     const overrides = await getGlobalTemplateModuleOverrides(templateCode);
 
@@ -1966,6 +2040,10 @@ router.get('/oferta-templates/:code/modulos', requirePerfil('ADMINISTRADOR', 'DI
 router.put('/oferta-templates/:code/modulos', requirePerfil('ADMINISTRADOR', 'DIRECCION'), validate(ofertaModulosPayloadSchema), async (req: Request, res: Response) => {
   try {
     const templateCode = req.params.code;
+    if (!isOfertaTemplateCode(templateCode)) {
+      res.status(400).json({ error: 'Plantilla de oferta no válida' });
+      return;
+    }
     const { overrides } = req.body;
 
     await saveGlobalTemplateModuleOverrides(templateCode, overrides);
@@ -1985,6 +2063,11 @@ router.get('/:id/oferta-modulos', async (req: Request, res: Response) => {
   try {
     const id = Number(req.params.id);
     const templateCode = typeof req.query.template === 'string' ? req.query.template : undefined;
+
+    if (templateInvalida(templateCode)) {
+      res.status(400).json({ error: 'Plantilla de oferta no válida' });
+      return;
+    }
 
     const presupuesto = await prisma.presupuesto.findUnique({
       where: { id },
@@ -2052,6 +2135,11 @@ router.get('/:id/oferta-pdf', async (req: Request, res: Response) => {
     const id = Number(req.params.id);
     const templateCode = typeof req.query.template === 'string' ? req.query.template : undefined;
 
+    if (templateInvalida(templateCode)) {
+      res.status(400).json({ error: 'Plantilla de oferta no válida' });
+      return;
+    }
+
     const presupuesto = await prisma.presupuesto.findUnique({
       where: { id },
       include: {
@@ -2070,13 +2158,7 @@ router.get('/:id/oferta-pdf', async (req: Request, res: Response) => {
       return;
     }
 
-    const anexosTecnicos = presupuesto.contexto?.solucionId
-      ? await prisma.solucionAnexoTecnico.findMany({
-          where: { solucionId: presupuesto.contexto.solucionId },
-          select: { titulo: true, url: true, orden: true },
-          orderBy: { orden: 'asc' },
-        })
-      : [];
+    const anexosTecnicos = await resolverAnexosTecnicosOferta(presupuesto);
 
     const modulosDocumento = await resolvePresupuestoModules(presupuesto, templateCode);
 
@@ -2110,6 +2192,12 @@ router.post('/:id/emitir', async (req: Request, res: Response) => {
   try {
     const id = Number(req.params.id);
     const templateCode = typeof req.body?.templateCode === 'string' ? req.body.templateCode : undefined;
+
+    if (templateInvalida(templateCode)) {
+      res.status(400).json({ error: 'Plantilla de oferta no válida' });
+      return;
+    }
+
     const presupuesto = await prisma.presupuesto.findUnique({
       where: { id },
       include: {
@@ -2142,13 +2230,7 @@ router.post('/:id/emitir', async (req: Request, res: Response) => {
       ? presupuesto.snapshot.versionOferta + 1
       : (presupuesto.versionOferta || 1);
     const codigoOferta = presupuesto.codigoOferta || generarCodigoOferta();
-    const anexosTecnicos = presupuesto.contexto?.solucionId
-      ? await prisma.solucionAnexoTecnico.findMany({
-          where: { solucionId: presupuesto.contexto.solucionId },
-          select: { titulo: true, url: true, orden: true },
-          orderBy: { orden: 'asc' },
-        })
-      : [];
+    const anexosTecnicos = await resolverAnexosTecnicosOferta(presupuesto);
 
     const modulosDocumento = await resolvePresupuestoModules(presupuesto, templateCode);
 

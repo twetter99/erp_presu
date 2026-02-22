@@ -1,4 +1,6 @@
 import { resolveOfertaTemplateSpec } from '../config/ofertaTemplate.spec';
+import { readFileSync } from 'node:fs';
+import path from 'node:path';
 
 type OfertaLinea = {
   bloque: string;
@@ -16,15 +18,26 @@ type BuildOfertaPayloadArgs = {
   versionOferta: number;
   fechaEmisionIso: string;
   templateCode?: string | null;
-  anexosTecnicos?: Array<{ titulo: string; url: string; orden: number }>;
+  anexosTecnicos?: OfertaAnexoTecnico[];
   modulosDocumento?: Array<{ key: string; title: string; content: string; enabled: boolean; order: number }>;
 };
 
 type BuildOfertaHtmlArgs = {
   presupuesto: any;
   templateCode?: string | null;
-  anexosTecnicos?: Array<{ titulo: string; url: string; orden: number }>;
+  anexosTecnicos?: OfertaAnexoTecnico[];
   modulosDocumento?: Array<{ key: string; title: string; content: string; enabled: boolean; order: number }>;
+};
+
+type OfertaAnexoTecnico = {
+  titulo: string;
+  url: string;
+  orden: number;
+  sku?: string;
+  descripcion?: string;
+  familia?: string;
+  contenido?: string;
+  fuente?: 'PRODUCTO' | 'SOLUCION';
 };
 
 type OfertaEconomico = {
@@ -85,6 +98,30 @@ function roundCurrency(value: number): number {
 
 function formatPercent(value: number): string {
   return `${new Intl.NumberFormat('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(value || 0)}%`;
+}
+
+let cachedWinfinLogoDataUri: string | null = null;
+
+function resolveWinfinLogoDataUri(): string | null {
+  if (cachedWinfinLogoDataUri) return cachedWinfinLogoDataUri;
+
+  const logoCandidates = [
+    path.resolve(process.cwd(), '..', 'Archivos', 'WINFIN_logo_maxresolucion v3.png'),
+    path.resolve(process.cwd(), 'Archivos', 'WINFIN_logo_maxresolucion v3.png'),
+    path.resolve(process.cwd(), '..', '..', 'Archivos', 'WINFIN_logo_maxresolucion v3.png'),
+  ];
+
+  for (const logoPath of logoCandidates) {
+    try {
+      const logoBuffer = readFileSync(logoPath);
+      cachedWinfinLogoDataUri = `data:image/png;base64,${logoBuffer.toString('base64')}`;
+      return cachedWinfinLogoDataUri;
+    } catch {
+      continue;
+    }
+  }
+
+  return null;
 }
 
 function buildOfertaLineas(presupuesto: any): OfertaLinea[] {
@@ -386,6 +423,24 @@ export function buildOfertaHtmlDocument({ presupuesto, templateCode, anexosTecni
   const moduloCondicionesEconomicas = resolveModule(modulosVisibles, 'CONDICIONES_ECONOMICAS');
   const fechaDocumento = presupuesto.snapshot?.fechaEmision || presupuesto.fecha;
   const fechaDocumentoFmt = new Date(fechaDocumento).toLocaleDateString('es-ES');
+  const logoDataUri = resolveWinfinLogoDataUri();
+  const anexosAgrupadosPorProducto = anexosTecnicos
+    .filter((anexo) => anexo.fuente === 'PRODUCTO' || anexo.sku)
+    .reduce((acc, anexo) => {
+      const key = anexo.sku || `PRODUCTO_${anexo.orden}`;
+      if (!acc[key]) {
+        acc[key] = {
+          sku: anexo.sku || '-',
+          descripcion: anexo.descripcion || anexo.titulo,
+          familia: anexo.familia || '-',
+          anexos: [] as OfertaAnexoTecnico[],
+        };
+      }
+      acc[key].anexos.push(anexo);
+      return acc;
+    }, {} as Record<string, { sku: string; descripcion: string; familia: string; anexos: OfertaAnexoTecnico[] }>);
+
+  const anexosLegacy = anexosTecnicos.filter((anexo) => anexo.fuente !== 'PRODUCTO' && !anexo.sku);
 
   const lineasA = lineas.filter((linea) => linea.bloque === 'A_SUMINISTRO_EQUIPOS');
   const lineasB = lineas.filter((linea) => linea.bloque === 'B_MATERIALES_INSTALACION');
@@ -415,6 +470,14 @@ export function buildOfertaHtmlDocument({ presupuesto, templateCode, anexosTecni
     'Intervenciones por terceros no autorizados durante garantía|Fuera de cobertura contractual',
   ]);
 
+  const fasesPlan = [
+    { fase: 'Fase 1 · Ingeniería y arranque', objetivo: 'Revisión de requisitos, plan de despliegue y aprobación de ingeniería de detalle.', entregable: 'Plan de proyecto y matriz de riesgos aprobada.' },
+    { fase: 'Fase 2 · Suministro y preconfiguración', objetivo: 'Acopio, preparación de equipos y verificación de compatibilidad técnica.', entregable: 'Lote preconfigurado y protocolo FAT.' },
+    { fase: 'Fase 3 · Implantación en campo', objetivo: 'Despliegue por ventanas operativas en cocheras y unidades planificadas.', entregable: 'Actas de instalación por vehículo.' },
+    { fase: 'Fase 4 · Validación y aceptación', objetivo: 'Pruebas funcionales, correcciones y cierre de pendientes críticos.', entregable: 'Informe SAT y acta de aceptación técnica.' },
+    { fase: 'Fase 5 · Transferencia y cierre', objetivo: 'Entrega documental final y transferencia a operación/mantenimiento.', entregable: 'Dossier final y acta de cierre.' },
+  ];
+
   return `<!doctype html>
 <html lang="es">
 <head>
@@ -434,6 +497,9 @@ export function buildOfertaHtmlDocument({ presupuesto, templateCode, anexosTecni
     .portada { display: flex; flex-direction: column; justify-content: space-between; border: 1px solid #d1d5db; padding: 18mm 14mm; }
     .portada-band { border-top: 10px solid #0f172a; padding-top: 10mm; }
     .portada-kicker { font-size: 11px; color: #475569; text-transform: uppercase; letter-spacing: .08em; font-weight: 700; }
+    .brand-wrap { display: flex; align-items: center; justify-content: space-between; gap: 12mm; }
+    .brand-logo { width: 80mm; max-width: 100%; object-fit: contain; }
+    .brand-logo-fallback { font-size: 24px; font-weight: 800; letter-spacing: .04em; color: #0f172a; }
     .portada-title { margin-top: 9mm; font-size: 34px; line-height: 1.12; letter-spacing: -.01em; text-transform: uppercase; font-weight: 800; color: #0f172a; max-width: 85%; }
     .portada-sub { margin-top: 5mm; font-size: 13px; color: #334155; max-width: 80%; }
     .portada-grid { margin-top: 14mm; display: grid; grid-template-columns: 1fr 1fr; gap: 8mm; }
@@ -481,23 +547,38 @@ export function buildOfertaHtmlDocument({ presupuesto, templateCode, anexosTecni
     .signature-line { border-bottom: 1px dashed #94a3b8; margin-top: 14px; height: 16px; }
     .footer-note { margin-top: 16px; border-top: 1px solid #cbd5e1; padding-top: 7px; color: #64748b; font-size: 9px; text-transform: uppercase; letter-spacing: .04em; }
     .page-break { page-break-before: always; }
+    .fichas-grid { display: grid; grid-template-columns: 1fr; gap: 8px; }
+    .ficha-card { border: 1px solid #cbd5e1; border-radius: 4px; padding: 8px 10px; }
+    .ficha-head { display: flex; justify-content: space-between; gap: 8px; margin-bottom: 6px; }
+    .ficha-title { font-size: 11px; font-weight: 700; text-transform: uppercase; color: #0f172a; }
+    .ficha-meta { font-size: 10px; color: #475569; }
+    .ficha-list { margin: 0; padding-left: 16px; }
+    .ficha-list li { margin-bottom: 4px; }
+    .toc { border: 1px solid #cbd5e1; border-radius: 4px; padding: 8px 10px; margin-top: 8px; }
+    .toc-row { display: flex; justify-content: space-between; border-bottom: 1px dashed #cbd5e1; padding: 4px 0; font-size: 10.5px; }
+    .toc-row:last-child { border-bottom: 0; }
   </style>
 </head>
 <body>
   <div class="page-header-fixed">
-    <span>EMT 360 · Propuesta técnico-económica de licitación</span>
+    <span>WINFIN · Propuesta técnico-económica de licitación</span>
     <span>${escapeHtml(presupuesto.codigoOferta || presupuesto.codigo)} · v${escapeHtml(presupuesto.versionOferta || 1)}</span>
   </div>
   <div class="page-footer-fixed">
-    <span>EMT 360 · Documento corporativo confidencial · Uso exclusivo de licitación</span>
+    <span>WINFIN · Documento corporativo confidencial · Uso exclusivo de licitación</span>
     <span class="page-counter"></span>
   </div>
 
   <section class="page portada">
     <div class="portada-band">
+      <div class="brand-wrap">
+        ${logoDataUri
+    ? `<img src="${logoDataUri}" alt="WINFIN" class="brand-logo" />`
+    : '<div class="brand-logo-fallback">WINFIN</div>'}
+      </div>
       <div class="portada-kicker">Propuesta técnico-económica · Licitación</div>
       <h1 class="portada-title">${escapeHtml(labels.tituloOferta)}</h1>
-      <p class="portada-sub">${escapeHtml(presupuesto.proyecto?.nombre || 'Proyecto técnico de instalación')} · Documento estándar OFERTA-TÉC-EC-EMT-360</p>
+      <p class="portada-sub">${escapeHtml(presupuesto.proyecto?.nombre || 'Proyecto técnico de instalación')} · Documento estándar OFERTA-TÉC-EC-WINFIN</p>
       <div class="portada-grid">
         <article class="portada-card">
           <h4>Cliente licitador</h4>
@@ -517,13 +598,13 @@ export function buildOfertaHtmlDocument({ presupuesto, templateCode, anexosTecni
         </article>
       </div>
     </div>
-    <p class="footer-note">EMT 360 · Dirección Técnica y Económica · Oferta corporativa normalizada</p>
+    <p class="footer-note">WINFIN · Dirección Técnica y Económica · Oferta corporativa normalizada</p>
   </section>
 
   <section class="page confid-page">
     <span class="confid-badge">Confidencial</span>
     <h2 class="confid-title">Declaración de confidencialidad</h2>
-    <p class="confid-text">${escapeHtmlWithBreaks(moduloConfidencialidad?.content || 'La presente propuesta técnico-económica es propiedad de EMT 360 y se entrega exclusivamente para fines de evaluación en el proceso de licitación indicado. Queda prohibida su reproducción, cesión o difusión total o parcial sin autorización previa y por escrito. La información técnica, económica y metodológica contenida en este documento tiene carácter reservado.')}</p>
+    <p class="confid-text">${escapeHtmlWithBreaks(moduloConfidencialidad?.content || 'La presente propuesta técnico-económica es propiedad de WINFIN y se entrega exclusivamente para fines de evaluación en el proceso de licitación indicado. Queda prohibida su reproducción, cesión o difusión total o parcial sin autorización previa y por escrito. La información técnica, económica y metodológica contenida en este documento tiene carácter reservado.')}</p>
     <p class="confid-text" style="margin-top:5mm;">El receptor se compromete a custodiar la documentación conforme a los principios de confidencialidad, seguridad de la información y uso restringido al equipo evaluador autorizado.</p>
   </section>
 
@@ -540,6 +621,18 @@ export function buildOfertaHtmlDocument({ presupuesto, templateCode, anexosTecni
         <div class="docbox-row"><span>Fecha</span><strong>${escapeHtml(fechaDocumentoFmt)}</strong></div>
       </div>
     </div>
+
+    <section class="section">
+      <h2 class="section-title">Índice de contenidos</h2>
+      <div class="toc">
+        <div class="toc-row"><span>1. Resumen ejecutivo</span><span>Sección técnica</span></div>
+        <div class="toc-row"><span>2. Alcance técnico y arquitectura funcional</span><span>Sección técnica</span></div>
+        <div class="toc-row"><span>3. Metodología y planificación por fases</span><span>Sección técnica</span></div>
+        <div class="toc-row"><span>4. Capacidad técnica y experiencia</span><span>Sección técnica</span></div>
+        <div class="toc-row"><span>5. Oferta económica y desglose estratégico</span><span>Sección económica</span></div>
+        <div class="toc-row"><span>6. Supuestos, exclusiones y anexos</span><span>Sección contractual</span></div>
+      </div>
+    </section>
 
     <div class="grid">
       <div class="card">
@@ -589,11 +682,19 @@ export function buildOfertaHtmlDocument({ presupuesto, templateCode, anexosTecni
       <p style="margin-top:8px;"><strong>Plazo planificado:</strong> ${escapeHtml(metricas.plazo)}</p>
       <p class="muted"><strong>Hitos:</strong> ${escapeHtml(metricas.hitos)}</p>
       ${moduloMetricas ? `<p class="muted" style="margin-top:4px;">${escapeHtmlWithBreaks(moduloMetricas.content)}</p>` : ''}
+      <table style="margin-top:8px;">
+        <thead>
+          <tr><th style="width:22%;">Fase</th><th style="width:48%;">Objetivo</th><th style="width:30%;">Entregable</th></tr>
+        </thead>
+        <tbody>
+          ${fasesPlan.map((fase) => `<tr><td><strong>${escapeHtml(fase.fase)}</strong></td><td>${escapeHtml(fase.objetivo)}</td><td>${escapeHtml(fase.entregable)}</td></tr>`).join('')}
+        </tbody>
+      </table>
     </section>
 
     <section class="section">
       <h2 class="section-title">Experiencia relevante</h2>
-      <p>${escapeHtmlWithBreaks(moduloExperiencia?.content || 'EMT 360 aporta experiencia acreditada en despliegues de soluciones embarcadas, integración operativa en flota y ejecución en entornos de alta exigencia de servicio público.')}</p>
+      <p>${escapeHtmlWithBreaks(moduloExperiencia?.content || 'WINFIN aporta experiencia acreditada en despliegues de soluciones embarcadas, integración operativa en flota y ejecución en entornos de alta exigencia de servicio público.')}</p>
     </section>
 
     <section class="section">
@@ -665,10 +766,13 @@ export function buildOfertaHtmlDocument({ presupuesto, templateCode, anexosTecni
     ${renderSupExcTable('Supuestos técnicos y operativos', supuestosRows)}
     ${renderSupExcTable('Exclusiones de alcance', exclusionesRows)}
 
-    ${moduloAceptacion ? `<section class="section signature-section"><h2 class="section-title">${escapeHtml(moduloAceptacion.title)}</h2><p class="muted">${escapeHtmlWithBreaks(moduloAceptacion.content)}</p><div class="signature-grid"><article class="signature-box"><h4>Cliente</h4><p>Nombre y cargo:</p><div class="signature-line"></div><p>Fecha:</p><div class="signature-line"></div><p>Firma:</p><div class="signature-line"></div></article><article class="signature-box"><h4>EMT 360</h4><p>Responsable comercial:</p><div class="signature-line"></div><p>Fecha:</p><div class="signature-line"></div><p>Firma y sello:</p><div class="signature-line"></div></article></div></section>` : ''}
-    ${anexosTecnicos.length > 0 ? `<section class="section"><h2 class="section-title">Anexos técnicos</h2><ul>${anexosTecnicos.map((anexo) => `<li><strong>${escapeHtml(anexo.titulo)}</strong>${anexo.url ? ` · ${escapeHtml(anexo.url)}` : ''}</li>`).join('')}</ul></section>` : ''}
+    ${moduloAceptacion ? `<section class="section signature-section"><h2 class="section-title">${escapeHtml(moduloAceptacion.title)}</h2><p class="muted">${escapeHtmlWithBreaks(moduloAceptacion.content)}</p><div class="signature-grid"><article class="signature-box"><h4>Cliente</h4><p>Nombre y cargo:</p><div class="signature-line"></div><p>Fecha:</p><div class="signature-line"></div><p>Firma:</p><div class="signature-line"></div></article><article class="signature-box"><h4>WINFIN</h4><p>Responsable comercial:</p><div class="signature-line"></div><p>Fecha:</p><div class="signature-line"></div><p>Firma y sello:</p><div class="signature-line"></div></article></div></section>` : ''}
+    ${(Object.keys(anexosAgrupadosPorProducto).length > 0 || anexosLegacy.length > 0) ? `<section class="section"><h2 class="section-title">Fichas técnicas anexas</h2>
+      ${Object.keys(anexosAgrupadosPorProducto).length > 0 ? `<div class="fichas-grid">${Object.values(anexosAgrupadosPorProducto).map((ficha) => `<article class="ficha-card"><div class="ficha-head"><div><div class="ficha-title">${escapeHtml(ficha.sku)} · ${escapeHtml(ficha.descripcion)}</div><div class="ficha-meta">Familia: ${escapeHtml(ficha.familia)}</div></div></div><ul class="ficha-list">${ficha.anexos.map((anexo) => `<li><strong>${escapeHtml(anexo.titulo)}</strong>${anexo.url ? ` · ${escapeHtml(anexo.url)}` : ''}${anexo.contenido ? `<br/><span class="muted">${escapeHtmlWithBreaks(anexo.contenido)}</span>` : ''}</li>`).join('')}</ul></article>`).join('')}</div>` : ''}
+      ${anexosLegacy.length > 0 ? `<h3 class="subsection-title">Anexos complementarios de solución</h3><ul>${anexosLegacy.map((anexo) => `<li><strong>${escapeHtml(anexo.titulo)}</strong>${anexo.url ? ` · ${escapeHtml(anexo.url)}` : ''}</li>`).join('')}</ul>` : ''}
+    </section>` : ''}
 
-    <p class="footer-note">EMT 360 · Propuesta técnica pública · ${escapeHtml(templateSpec.codigo)} · ${escapeHtml(templateSpec.version)}</p>
+    <p class="footer-note">WINFIN · Propuesta técnica pública · ${escapeHtml(templateSpec.codigo)} · ${escapeHtml(templateSpec.version)}</p>
   </div>
 </body>
 </html>`;

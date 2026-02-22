@@ -112,7 +112,7 @@ export default function PlantillasOfertaPage() {
             className="h-9 rounded-md border border-border bg-background px-2 text-sm"
           >
             {(!templateCatalog?.templates || templateCatalog.templates.length === 0) && (
-              <option value="OFERTA_EMT_360_V2">Oferta Técnica-Económica · 2.0.0</option>
+              <option value={templateCode}>Plantilla por defecto</option>
             )}
             {(templateCatalog?.templates || []).map((template) => (
               <option key={template.codigo} value={template.codigo}>

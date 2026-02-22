@@ -121,6 +121,39 @@ export const OFERTA_TEMPLATE_SPEC_V1: OfertaTemplateSpec = {
   },
 };
 
+export const OFERTA_TEMPLATE_SPEC_WINFIN_LIC_V1: OfertaTemplateSpec = {
+  codigo: 'OFERTA_WINFIN_LIC_V1',
+  version: '1.0.0',
+  idioma: 'es-ES',
+  secciones: [
+    'PORTADA',
+    'CONFIDENCIALIDAD',
+    'RESUMEN_EJECUTIVO',
+    'ALCANCE_TECNICO',
+    'ARQUITECTURA_FUNCIONAL',
+    'METODOLOGIA',
+    'PLANIFICACION_METRICAS',
+    'EXPERIENCIA_RELEVANTE',
+    'ECONOMICA',
+    'SUPUESTOS',
+    'EXCLUSIONES',
+    'FIRMA',
+    'ANEXOS',
+  ],
+  etiquetas: {
+    tituloOferta: 'Propuesta Técnico-Económica Corporativa',
+    cliente: 'Órgano de contratación',
+    alcance: 'Objeto y alcance',
+    partidas: 'Desglose económico',
+    baseImponible: 'Base imponible',
+    iva: 'IVA',
+    totalConIva: 'Total con IVA',
+    condicionesNotas: 'Supuestos, exclusiones y notas de ejecución',
+    proyecto: 'Expediente',
+    vehiculos: 'Vehículos / unidades objetivo',
+  },
+};
+
 const OFERTA_TEMPLATE_MODULES_EMT_360_V2: OfertaTemplateModule[] = [
   {
     key: 'RESUMEN_EJECUTIVO',
@@ -302,26 +335,113 @@ const OFERTA_TEMPLATE_MODULES_V1: OfertaTemplateModule[] = [
   },
 ];
 
+const OFERTA_TEMPLATE_MODULES_WINFIN_LIC_V1: OfertaTemplateModule[] = [
+  {
+    key: 'RESUMEN_EJECUTIVO',
+    title: '1. Resumen ejecutivo',
+    content: 'La presente propuesta técnico-económica se formula para proceso de licitación pública y recoge de forma integrada alcance, metodología, planificación y estructura económica con trazabilidad técnica y financiera.\n\nWINFIN acredita capacidad operativa para ejecución en flotas de transporte y entornos de alta exigencia, garantizando control de hitos, calidad documental y continuidad de servicio durante el despliegue.',
+    enabled: true,
+    order: 10,
+  },
+  {
+    key: 'CONFIDENCIALIDAD',
+    title: '2. Confidencialidad',
+    content: 'Este documento contiene información técnica, operativa y económica de carácter reservado, entregada exclusivamente para evaluación de la licitación de referencia.\n\nLa reproducción, difusión o cesión total o parcial queda prohibida sin autorización previa y por escrito de WINFIN, salvo requerimiento legal o administrativo aplicable.',
+    enabled: true,
+    order: 20,
+  },
+  {
+    key: 'ALCANCE_TECNICO',
+    title: '3. Alcance técnico',
+    content: 'El alcance incluye ingeniería de detalle, suministro de equipamiento, materiales de instalación, ejecución en campo, validación funcional, soporte de arranque y cierre documental con evidencias por hito.\n\nCualquier elemento no descrito expresamente se considerará fuera de alcance y requerirá tramitación mediante control de cambios y aprobación formal.',
+    enabled: true,
+    order: 30,
+  },
+  {
+    key: 'ARQUITECTURA_FUNCIONAL',
+    title: '4. Arquitectura funcional',
+    content: 'La arquitectura funcional propuesta se organiza en capas de captura embarcada, comunicaciones seguras, plataforma de supervisión y explotación operativa. El diseño prioriza mantenibilidad, escalabilidad y trazabilidad extremo a extremo.',
+    enabled: true,
+    order: 40,
+  },
+  {
+    key: 'METODOLOGIA_PLAN',
+    title: '5. Metodología de ejecución',
+    content: 'La metodología se estructura en fases de arranque, implantación, validación y transferencia a operación. Cada fase incorpora actividades, entregables, criterios de aceptación y gestión de riesgos.',
+    enabled: true,
+    order: 50,
+  },
+  {
+    key: 'METRICAS_PLANIFICACION',
+    title: '6. Planificación temporal',
+    content: 'Planificación basada en ventanas operativas de flota, productividad por cuadrilla, hitos de aceptación y dependencias críticas con el Cliente.\n\nSe propone un modelo de seguimiento semanal con comité técnico, actas de avance y tablero de riesgos.',
+    enabled: true,
+    order: 60,
+  },
+  {
+    key: 'EXPERIENCIA_RELEVANTE',
+    title: '7. Capacidad técnica y experiencia',
+    content: 'WINFIN dispone de equipo especializado en sistemas embarcados e integración en transporte público, con experiencia demostrada en despliegues multi-vehículo, coordinación en cocheras y operación en servicio.',
+    enabled: true,
+    order: 70,
+  },
+  {
+    key: 'CONDICIONES_ECONOMICAS',
+    title: '8. Oferta económica y narrativa de valor',
+    content: 'La oferta económica se presenta en estructura A/B/C/D/E para facilitar su evaluación técnica y financiera. La base de adjudicación y los opcionales se separan de forma explícita para asegurar transparencia presupuestaria.',
+    enabled: true,
+    order: 80,
+  },
+  {
+    key: 'SUPUESTOS',
+    title: '9. Supuestos técnicos y operativos',
+    content: 'Disponibilidad de activos e instalaciones según planificación acordada|Coordinación semanal con interlocutor técnico del Cliente\nAcceso a energía y condiciones de seguridad conforme normativa|Incidencias de acceso se tratarán en comité de seguimiento\nVentanas de intervención compatibles con operación de flota|Replanificación consensuada ante restricciones operativas',
+    enabled: true,
+    order: 90,
+  },
+  {
+    key: 'EXCLUSIONES',
+    title: '10. Exclusiones',
+    content: 'Obra civil, legalizaciones y adecuaciones estructurales no incluidas en partidas|Se valorarán mediante anexo específico\nCorrección de patologías preexistentes no inventariadas|Requiere aprobación previa por cambio de alcance\nIntervenciones de terceros no autorizados durante garantía|Fuera de cobertura contractual',
+    enabled: true,
+    order: 100,
+  },
+  {
+    key: 'ACEPTACION_FIRMA',
+    title: '11. Aceptación y firma',
+    content: 'La aceptación de la propuesta implica conformidad con alcance, condiciones, planificación y anexos técnicos incluidos en esta oferta.\n\nCualquier modificación posterior deberá formalizarse por escrito y aprobada por ambas partes.',
+    enabled: true,
+    order: 110,
+  },
+];
+
 const specsByCode: Record<string, OfertaTemplateSpec> = {
   [OFERTA_TEMPLATE_SPEC_V1.codigo]: OFERTA_TEMPLATE_SPEC_V1,
   [OFERTA_TEMPLATE_SPEC_EMT_360_V2.codigo]: OFERTA_TEMPLATE_SPEC_EMT_360_V2,
+  [OFERTA_TEMPLATE_SPEC_WINFIN_LIC_V1.codigo]: OFERTA_TEMPLATE_SPEC_WINFIN_LIC_V1,
 };
 
 const modulesByCode: Record<string, OfertaTemplateModule[]> = {
   [OFERTA_TEMPLATE_SPEC_EMT_360_V2.codigo]: OFERTA_TEMPLATE_MODULES_EMT_360_V2,
   [OFERTA_TEMPLATE_SPEC_V1.codigo]: OFERTA_TEMPLATE_MODULES_V1,
+  [OFERTA_TEMPLATE_SPEC_WINFIN_LIC_V1.codigo]: OFERTA_TEMPLATE_MODULES_WINFIN_LIC_V1,
 };
 
 export const OFERTA_TEMPLATE_CATALOG: OfertaTemplateSpec[] = [
+  OFERTA_TEMPLATE_SPEC_WINFIN_LIC_V1,
   OFERTA_TEMPLATE_SPEC_EMT_360_V2,
   OFERTA_TEMPLATE_SPEC_V1,
 ];
 
-export const OFERTA_TEMPLATE_DEFAULT_CODE = OFERTA_TEMPLATE_SPEC_EMT_360_V2.codigo;
+export const OFERTA_TEMPLATE_DEFAULT_CODE = OFERTA_TEMPLATE_SPEC_WINFIN_LIC_V1.codigo;
+
+export function isOfertaTemplateCode(code: string): boolean {
+  return Boolean(specsByCode[code]);
+}
 
 export function resolveOfertaTemplateSpec(code?: string | null): OfertaTemplateSpec {
-  if (!code) return OFERTA_TEMPLATE_SPEC_EMT_360_V2;
-  return specsByCode[code] || OFERTA_TEMPLATE_SPEC_EMT_360_V2;
+  if (!code) return specsByCode[OFERTA_TEMPLATE_DEFAULT_CODE];
+  return specsByCode[code] || specsByCode[OFERTA_TEMPLATE_DEFAULT_CODE];
 }
 
 export function resolveOfertaTemplateModules(code?: string | null): OfertaTemplateModule[] {

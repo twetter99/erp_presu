@@ -11,6 +11,61 @@ type CliArgs = {
   outDir: string;
 };
 
+async function resolverAnexosTecnicosOferta(presupuesto: any) {
+  const itemCatalogoIds = Array.from(
+    new Set(
+      (presupuesto.lineasMotor || [])
+        .map((linea: any) => linea.itemCatalogoId)
+        .filter((value: unknown) => typeof value === 'number')
+    )
+  ) as number[];
+
+  const anexosPorProducto = itemCatalogoIds.length > 0
+    ? await prisma.productoFichaTecnica.findMany({
+        where: {
+          itemCatalogoId: { in: itemCatalogoIds },
+          activa: true,
+        },
+        include: {
+          itemCatalogo: {
+            select: { sku: true, descripcion: true, familia: true },
+          },
+        },
+        orderBy: [{ itemCatalogoId: 'asc' }, { orden: 'asc' }],
+      })
+    : [];
+
+  const anexosTecnicos = anexosPorProducto.map((anexo) => ({
+    titulo: anexo.titulo,
+    url: anexo.url || '',
+    orden: anexo.orden,
+    sku: anexo.itemCatalogo.sku,
+    descripcion: anexo.itemCatalogo.descripcion,
+    familia: anexo.itemCatalogo.familia,
+    contenido: anexo.contenido || undefined,
+    fuente: 'PRODUCTO' as const,
+  }));
+
+  if (presupuesto.contexto?.solucionId) {
+    const anexosLegacy = await prisma.solucionAnexoTecnico.findMany({
+      where: { solucionId: presupuesto.contexto.solucionId },
+      select: { titulo: true, url: true, orden: true },
+      orderBy: { orden: 'asc' },
+    });
+
+    for (const anexoLegacy of anexosLegacy) {
+      anexosTecnicos.push({
+        titulo: anexoLegacy.titulo,
+        url: anexoLegacy.url,
+        orden: anexoLegacy.orden,
+        fuente: 'SOLUCION' as const,
+      });
+    }
+  }
+
+  return anexosTecnicos.sort((left, right) => left.orden - right.orden);
+}
+
 function parseArgs(argv: string[]): CliArgs {
   const parsed: Record<string, string> = {};
 
@@ -53,13 +108,7 @@ async function main() {
     throw new Error(`Presupuesto ${presupuestoId} no encontrado`);
   }
 
-  const anexosTecnicos = presupuesto.contexto?.solucionId
-    ? await prisma.solucionAnexoTecnico.findMany({
-        where: { solucionId: presupuesto.contexto.solucionId },
-        select: { titulo: true, url: true, orden: true },
-        orderBy: { orden: 'asc' },
-      })
-    : [];
+  const anexosTecnicos = await resolverAnexosTecnicosOferta(presupuesto);
 
   const versionOferta = presupuesto.snapshot
     ? presupuesto.snapshot.versionOferta + 1
