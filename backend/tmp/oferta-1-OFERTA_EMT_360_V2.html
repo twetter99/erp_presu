@@ -5,64 +5,116 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Oferta Técnica-Económica PRE-2026-875793</title>
   <style>
-    @page { size: A4; margin: 26mm 12mm 20mm 12mm; }
-    body { font-family: Inter, "Segoe UI", Arial, sans-serif; color: #0f172a; margin: 0; font-size: 11.5px; line-height: 1.42; letter-spacing: .001em; }
+    @page { size: A4; margin: 20mm 12mm 18mm 12mm; }
+    body { font-family: "Segoe UI", Inter, Arial, sans-serif; color: #0f172a; margin: 0; font-size: 11.2px; line-height: 1.45; letter-spacing: .001em; background: #fff; }
     h1,h2,h3,h4 { margin: 0; }
+    .page { page-break-after: always; min-height: calc(297mm - 38mm); position: relative; }
+    .page:last-child { page-break-after: auto; }
     .sheet { width: 100%; }
-    .page-header-fixed { position: fixed; top: -22mm; left: 0; right: 0; border-bottom: 1px solid #cbd5e1; padding: 4mm 0 2mm; font-size: 10px; color: #334155; display: flex; justify-content: space-between; }
-    .page-footer-fixed { position: fixed; bottom: -16mm; left: 0; right: 0; border-top: 1px solid #cbd5e1; padding: 2mm 0 0; font-size: 10px; color: #64748b; display: flex; justify-content: space-between; }
+    .page-header-fixed { position: fixed; top: -16mm; left: 0; right: 0; border-bottom: 1px solid #d1d5db; padding: 3mm 0 2mm; font-size: 9.5px; color: #334155; display: flex; justify-content: space-between; text-transform: uppercase; letter-spacing: .04em; }
+    .page-footer-fixed { position: fixed; bottom: -13mm; left: 0; right: 0; border-top: 1px solid #d1d5db; padding: 2mm 0 0; font-size: 9.5px; color: #475569; display: flex; justify-content: space-between; }
     .page-counter::after { content: "Página " counter(page); }
-    .header { border-bottom: 2px solid #1e293b; padding-bottom: 10px; margin-bottom: 14px; display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; }
+    .portada { display: flex; flex-direction: column; justify-content: space-between; border: 1px solid #d1d5db; padding: 18mm 14mm; }
+    .portada-band { border-top: 10px solid #0f172a; padding-top: 10mm; }
+    .portada-kicker { font-size: 11px; color: #475569; text-transform: uppercase; letter-spacing: .08em; font-weight: 700; }
+    .portada-title { margin-top: 9mm; font-size: 34px; line-height: 1.12; letter-spacing: -.01em; text-transform: uppercase; font-weight: 800; color: #0f172a; max-width: 85%; }
+    .portada-sub { margin-top: 5mm; font-size: 13px; color: #334155; max-width: 80%; }
+    .portada-grid { margin-top: 14mm; display: grid; grid-template-columns: 1fr 1fr; gap: 8mm; }
+    .portada-card { border: 1px solid #cbd5e1; padding: 4mm; min-height: 22mm; }
+    .portada-card h4 { font-size: 10px; text-transform: uppercase; color: #64748b; margin-bottom: 2mm; letter-spacing: .05em; }
+    .portada-card p { margin: 0; font-size: 13px; color: #0f172a; }
+    .confid-page { border: 1px solid #d1d5db; padding: 14mm 12mm; }
+    .confid-badge { display: inline-block; border: 1px solid #94a3b8; padding: 2mm 3mm; font-size: 10px; text-transform: uppercase; letter-spacing: .05em; color: #334155; margin-bottom: 5mm; }
+    .confid-title { font-size: 24px; font-weight: 800; margin-bottom: 4mm; text-transform: uppercase; }
+    .confid-text { font-size: 12px; color: #334155; max-width: 95%; }
+    .header { border-bottom: 2px solid #1e293b; padding-bottom: 8px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: flex-start; gap: 14px; }
     .title-wrap { flex: 1; }
-    .title { font-size: 27px; font-weight: 800; letter-spacing: -0.015em; margin-bottom: 5px; text-transform: uppercase; }
+    .title { font-size: 25px; font-weight: 800; letter-spacing: -0.01em; margin-bottom: 4px; text-transform: uppercase; }
     .sub { color: #475569; font-size: 11px; }
-    .docbox { min-width: 180px; border: 1px solid #cbd5e1; border-radius: 6px; overflow: hidden; }
-    .docbox-head { background: #e2e8f0; font-size: 10px; font-weight: 700; padding: 4px 8px; text-transform: uppercase; color: #334155; }
-    .docbox-row { display: flex; justify-content: space-between; gap: 8px; font-size: 10.5px; padding: 4px 8px; border-top: 1px solid #e2e8f0; }
-    .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 12px 0 18px; }
-    .card { border: 1px solid #cbd5e1; border-radius: 8px; padding: 10px 12px; }
-    .card h3 { font-size: 13px; font-weight: 700; margin-bottom: 7px; text-transform: uppercase; letter-spacing: .02em; }
-    .card p { margin: 0 0 3px; font-size: 11.5px; }
+    .docbox { min-width: 190px; border: 1px solid #cbd5e1; border-radius: 4px; overflow: hidden; }
+    .docbox-head { background: #f1f5f9; font-size: 9.5px; font-weight: 700; padding: 4px 8px; text-transform: uppercase; color: #334155; letter-spacing: .04em; }
+    .docbox-row { display: flex; justify-content: space-between; gap: 8px; font-size: 10px; padding: 4px 8px; border-top: 1px solid #e2e8f0; }
+    .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 10px 0 14px; }
+    .card { border: 1px solid #cbd5e1; border-radius: 4px; padding: 9px 10px; }
+    .card h3 { font-size: 11px; font-weight: 700; margin-bottom: 5px; text-transform: uppercase; letter-spacing: .05em; color: #334155; }
+    .card p { margin: 0 0 2px; font-size: 11px; }
     .section { margin-top: 14px; page-break-inside: avoid; }
-    .section-title { font-size: 14px; font-weight: 800; margin-bottom: 7px; text-transform: uppercase; border-bottom: 1px solid #cbd5e1; padding-bottom: 4px; letter-spacing: .012em; }
-    .block-title { font-size: 12px; font-weight: 700; margin: 10px 0 5px; color: #1e293b; }
+    .section-title { font-size: 13px; font-weight: 800; margin-bottom: 6px; text-transform: uppercase; border-bottom: 1px solid #cbd5e1; padding-bottom: 4px; letter-spacing: .03em; }
+    .subsection-title { font-size: 11px; font-weight: 700; margin: 9px 0 4px; color: #334155; text-transform: uppercase; letter-spacing: .04em; }
     table { width: 100%; border-collapse: collapse; table-layout: fixed; }
-    th, td { border: 1px solid #cbd5e1; padding: 6px 7px; text-align: left; font-size: 10.5px; vertical-align: top; }
-    th { background: #e2e8f0; font-weight: 700; }
+    th, td { border: 1px solid #cbd5e1; padding: 5px 6px; text-align: left; font-size: 10px; vertical-align: top; }
+    th { background: #f1f5f9; font-weight: 700; text-transform: uppercase; letter-spacing: .03em; font-size: 9.3px; color: #334155; }
     .right { text-align: right; }
-    .muted { color: #64748b; font-size: 10.5px; }
-    .resumen-economico { margin-top: 10px; }
+    .muted { color: #64748b; font-size: 10px; }
+    .resumen-economico { margin-top: 8px; }
     .resumen-economico td:first-child { font-weight: 600; }
-    .totals-wrap { display: flex; justify-content: flex-end; margin-top: 10px; }
-    .totals { width: 340px; border: 1px solid #cbd5e1; border-radius: 8px; padding: 10px 12px; }
-    .totals-row { display: flex; justify-content: space-between; padding: 3px 0; font-size: 11.5px; }
-    .totals-main { font-weight: 800; border-top: 1px solid #cbd5e1; margin-top: 6px; padding-top: 7px; font-size: 12.5px; }
-    .module { margin-top: 10px; page-break-inside: avoid; }
-    .module h4 { font-size: 12px; font-weight: 700; margin-bottom: 3px; }
-    .module p { margin: 0; line-height: 1.4; color: #1e293b; font-size: 11px; }
-    .signature-section { page-break-inside: avoid; }
+    .totals-wrap { display: flex; justify-content: flex-end; margin-top: 8px; }
+    .totals { width: 350px; border: 1px solid #cbd5e1; border-radius: 4px; padding: 9px 10px; }
+    .totals-row { display: flex; justify-content: space-between; padding: 2px 0; font-size: 10.8px; }
+    .totals-main { font-weight: 800; border-top: 1px solid #cbd5e1; margin-top: 5px; padding-top: 6px; font-size: 12px; }
+    .lic-grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
+    .metric-card { border: 1px solid #cbd5e1; border-radius: 4px; padding: 8px; }
+    .metric-card .label { font-size: 9px; text-transform: uppercase; color: #64748b; letter-spacing: .04em; }
+    .metric-card .value { margin-top: 3px; font-size: 14px; font-weight: 700; color: #0f172a; }
+    .signature-section { page-break-inside: avoid; margin-top: 16px; }
     .signature-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 10px; }
-    .signature-box { border: 1px solid #cbd5e1; border-radius: 8px; min-height: 115px; padding: 10px 12px; }
-    .signature-box h4 { font-size: 11px; text-transform: uppercase; margin-bottom: 8px; letter-spacing: .02em; }
-    .signature-box p { font-size: 10.5px; margin: 0; }
+    .signature-box { border: 1px solid #cbd5e1; border-radius: 4px; min-height: 110px; padding: 10px 12px; }
+    .signature-box h4 { font-size: 10px; text-transform: uppercase; margin-bottom: 8px; letter-spacing: .04em; color: #334155; }
+    .signature-box p { font-size: 10px; margin: 0; }
     .signature-line { border-bottom: 1px dashed #94a3b8; margin-top: 14px; height: 16px; }
-    .footer-note { margin-top: 16px; border-top: 1px solid #cbd5e1; padding-top: 7px; color: #64748b; font-size: 9.5px; }
+    .footer-note { margin-top: 16px; border-top: 1px solid #cbd5e1; padding-top: 7px; color: #64748b; font-size: 9px; text-transform: uppercase; letter-spacing: .04em; }
+    .page-break { page-break-before: always; }
   </style>
 </head>
 <body>
   <div class="page-header-fixed">
-    <span>EMT 360 · Oferta técnica-económica</span>
+    <span>EMT 360 · Propuesta técnico-económica de licitación</span>
     <span>PRE-2026-875793 · v1</span>
   </div>
   <div class="page-footer-fixed">
-    <span>Documento confidencial para Transportes Metropolitanos de Madrid</span>
+    <span>EMT 360 · Documento corporativo confidencial · Uso exclusivo de licitación</span>
     <span class="page-counter"></span>
   </div>
-  <div class="sheet">
+
+  <section class="page portada">
+    <div class="portada-band">
+      <div class="portada-kicker">Propuesta técnico-económica · Licitación</div>
+      <h1 class="portada-title">Oferta Técnica-Económica</h1>
+      <p class="portada-sub">Videovigilancia + SAE flota Carabanchel · Documento estándar OFERTA-TÉC-EC-EMT-360</p>
+      <div class="portada-grid">
+        <article class="portada-card">
+          <h4>Cliente licitador</h4>
+          <p>Transportes Metropolitanos de Madrid</p>
+        </article>
+        <article class="portada-card">
+          <h4>Referencia oferta</h4>
+          <p>PRE-2026-875793</p>
+        </article>
+        <article class="portada-card">
+          <h4>Versión</h4>
+          <p>1</p>
+        </article>
+        <article class="portada-card">
+          <h4>Fecha de emisión</h4>
+          <p>20/2/2026</p>
+        </article>
+      </div>
+    </div>
+    <p class="footer-note">EMT 360 · Dirección Técnica y Económica · Oferta corporativa normalizada</p>
+  </section>
+
+  <section class="page confid-page">
+    <span class="confid-badge">Confidencial</span>
+    <h2 class="confid-title">Declaración de confidencialidad</h2>
+    <p class="confid-text">La presente oferta, así como su contenido técnico y económico, tiene carácter confidencial.<br/><br/>Ninguna de las partes podrá divulgarla total o parcialmente sin autorización previa y por escrito de la otra parte, salvo obligación legal o requerimiento administrativo aplicable.</p>
+    <p class="confid-text" style="margin-top:5mm;">El receptor se compromete a custodiar la documentación conforme a los principios de confidencialidad, seguridad de la información y uso restringido al equipo evaluador autorizado.</p>
+  </section>
+
+  <div class="sheet page-break">
     <div class="header">
       <div class="title-wrap">
         <h1 class="title">Oferta Técnica-Económica</h1>
-        <p class="sub">Documento comercial EMT 360 · Videovigilancia + SAE flota Carabanchel</p>
+        <p class="sub">Propuesta tipo licitación pública · Videovigilancia + SAE flota Carabanchel</p>
       </div>
       <div class="docbox">
         <div class="docbox-head">Control de documento</div>
@@ -86,62 +138,168 @@
     </div>
 
     <section class="section">
-      <h2 class="section-title">Resumen económico</h2>
+      <h2 class="section-title">Resumen ejecutivo</h2>
+      <div class="card">
+        <p><strong>Alcance:</strong> Videovigilancia + SAE flota Carabanchel</p>
+        <p><strong>Valor:</strong> Base adjudicación 176.707,50 €.</p>
+        <p><strong>Plazo:</strong> Ejecución prevista: A definir en planificación conjunta.</p>
+        <p class="muted" style="margin-top:4px;">La presente oferta técnico-económica recoge el alcance de suministro, implantación y soporte inicial de la solución EMT 360 para la flota y centros operativos definidos por el Cliente.<br/><br/>Los importes y condiciones incluidos en este documento constituyen una propuesta cerrada para los conceptos expresamente descritos en partidas y módulos documentales.</p>
+      </div>
+    </section>
+
+    <section class="section">
+      <h2 class="section-title">Alcance técnico</h2>
+      <p>El alcance técnico incluye, en los términos indicados en la oferta: suministro de equipamiento, materiales de instalación, mano de obra de implantación, parametrización, pruebas funcionales y entrega de documentación técnica de cierre.<br/><br/>Cualquier prestación no indicada de forma expresa en el presente documento se considerará fuera de alcance y requerirá valoración adicional.</p>
+    </section>
+
+    <section class="section">
+      <h2 class="section-title">Arquitectura funcional</h2>
+      <p>La arquitectura funcional propuesta contempla subsistemas de captura, comunicaciones, supervisión y explotación operativa. Se define una topología modular orientada a escalabilidad, mantenibilidad y continuidad de servicio, con trazabilidad integral de eventos y actuaciones.</p>
+    </section>
+
+    <section class="section">
+      <h2 class="section-title">Metodología de ejecución</h2>
+      <p>La ejecución se organizará en fases: (i) preparación y coordinación, (ii) despliegue en campo, (iii) validación funcional y (iv) cierre documental.<br/><br/>La planificación definitiva, hitos y ventanas de intervención se acordarán con el Cliente antes del inicio operativo, en coherencia con la disponibilidad de vehículos, cocheras y personal autorizado.</p>
+    </section>
+
+    <section class="section">
+      <h2 class="section-title">Planificación y métricas de instalación</h2>
+      <div class="lic-grid-3">
+        <article class="metric-card"><span class="label">Vehículos objetivo</span><div class="value">-</div></article>
+        <article class="metric-card"><span class="label">Partidas de instalación</span><div class="value">11</div></article>
+        <article class="metric-card"><span class="label">Partidas totales</span><div class="value">11</div></article>
+      </div>
+      <p style="margin-top:8px;"><strong>Plazo planificado:</strong> A definir en planificación de arranque</p>
+      <p class="muted"><strong>Hitos:</strong> Ingeniería de detalle · Implantación · Pruebas de aceptación · Cierre documental</p>
+      <p class="muted" style="margin-top:4px;">Se establecen métricas de ejecución vinculadas a volumen de activos, productividad por fase, hitos de aceptación y cumplimiento de ventanas operativas. El seguimiento se realizará mediante actas de avance y control de riesgos.</p>
+    </section>
+
+    <section class="section">
+      <h2 class="section-title">Experiencia relevante</h2>
+      <p>EMT 360 acredita experiencia en despliegues de soluciones técnicas embarcadas, integración operativa y ejecución en entornos de alta exigencia de disponibilidad. La metodología propuesta incorpora lecciones aprendidas y estándares de calidad en proyectos comparables.</p>
+    </section>
+
+    <section class="section">
+      <h2 class="section-title">Resumen económico (Base + Opcional)</h2>
       <table class="resumen-economico">
         <thead>
-          <tr><th>Bloque</th><th class="right">Importe</th></tr>
+          <tr><th>Concepto</th><th class="right">Importe</th><th class="right">% sobre base</th></tr>
         </thead>
         <tbody>
-          <tr><td>A · Suministro de equipos</td><td class="right">0,00 €</td></tr>
-          <tr><td>B · Materiales de instalación</td><td class="right">47.957,50 €</td></tr>
-          <tr><td>C · Mano de obra</td><td class="right">128.750,00 €</td></tr>
-          <tr><td>D · Mantenimiento (1-3)</td><td class="right">0,00 €</td></tr>
-          <tr><td>Desplazamientos</td><td class="right">0,00 €</td></tr>
-          <tr><td>Precio unitario por vehículo</td><td class="right">0,00 €</td></tr>
+          <tr><td>A · Suministro de equipos</td><td class="right">0,00 €</td><td class="right">0,00%</td></tr>
+          <tr><td>B · Materiales de instalación</td><td class="right">47.957,50 €</td><td class="right">27,14%</td></tr>
+          <tr><td>C · Mano de obra</td><td class="right">128.750,00 €</td><td class="right">72,86%</td></tr>
+          <tr><td>D · Mantenimiento (1-3)</td><td class="right">0,00 €</td><td class="right">0,00%</td></tr>
+          <tr><td>E · Opcionales</td><td class="right">0,00 €</td><td class="right">0,00%</td></tr>
+          <tr><td><strong>Base adjudicación</strong></td><td class="right"><strong>176.707,50 €</strong></td><td class="right">100,00%</td></tr>
+          <tr><td>Opcional total</td><td class="right">0,00 €</td><td class="right">0,00%</td></tr>
         </tbody>
       </table>
     </section>
 
     <section class="section">
-      <h2 class="section-title">Partidas económicas</h2>
-      
-            <h3 class="block-title">B · Materiales de instalación</h3>
-            <table>
-              <thead>
-                <tr><th style="width:17%;">Código</th><th style="width:45%;">Descripción</th><th style="width:8%;">Unidad</th><th style="width:10%;" class="right">Cantidad</th><th style="width:10%;" class="right">Precio</th><th style="width:10%;" class="right">Subtotal</th></tr>
-              </thead>
-              <tbody>
-                <tr><td>MAT-408</td><td>Cámara domo IP 2MP antivandálica</td><td>UD</td><td class="right">150</td><td class="right">145,00 €</td><td class="right">21.750,00 €</td></tr><tr><td>MAT-405</td><td>NVR 8 canales embarcado con SSD 1TB</td><td>UD</td><td class="right">25</td><td class="right">520,00 €</td><td class="right">13.000,00 €</td></tr><tr><td>MAT-406</td><td>Cable CAT6 apantallado por metro</td><td>UD</td><td class="right">750</td><td class="right">1,50 €</td><td class="right">1125,00 €</td></tr><tr><td>MAT-407</td><td>Antena combinada GPS/4G para techo</td><td>UD</td><td class="right">25</td><td class="right">110,00 €</td><td class="right">2750,00 €</td></tr><tr><td>MAT-403</td><td>Modem 4G industrial router embarcado</td><td>UD</td><td class="right">25</td><td class="right">295,00 €</td><td class="right">7375,00 €</td></tr><tr><td>MAT-411</td><td>Canaleta adhesiva 30x15mm por metro</td><td>UD</td><td class="right">375</td><td class="right">2,50 €</td><td class="right">937,50 €</td></tr><tr><td>MAT-410</td><td>Conector RJ45 blindado Cat6</td><td>UD</td><td class="right">300</td><td class="right">0,90 €</td><td class="right">270,00 €</td></tr><tr><td>MAT-409</td><td>Sellador poliuretano para techo bus</td><td>UD</td><td class="right">50</td><td class="right">15,00 €</td><td class="right">750,00 €</td></tr>
-              </tbody>
-            </table>
-          
-            <h3 class="block-title">C · Mano de obra</h3>
-            <table>
-              <thead>
-                <tr><th style="width:17%;">Código</th><th style="width:45%;">Descripción</th><th style="width:8%;">Unidad</th><th style="width:10%;" class="right">Cantidad</th><th style="width:10%;" class="right">Precio</th><th style="width:10%;" class="right">Subtotal</th></tr>
-              </thead>
-              <tbody>
-                <tr><td>TRB-1</td><td>Instalación de cámaras de videovigilancia</td><td>UD</td><td class="right">25</td><td class="right">1800,00 €</td><td class="right">45.000,00 €</td></tr><tr><td>TRB-3</td><td>Instalación SAE (Sistema de Ayuda a la Explotación)</td><td>UD</td><td class="right">25</td><td class="right">2500,00 €</td><td class="right">62.500,00 €</td></tr><tr><td>TRB-2</td><td>Instalación WiFi pasajeros</td><td>UD</td><td class="right">25</td><td class="right">850,00 €</td><td class="right">21.250,00 €</td></tr>
-              </tbody>
-            </table>
-          
+      <h2 class="section-title">Partidas económicas detalladas</h2>
+
+      <h3 class="subsection-title">Partida A · Suministro de equipos</h3>
+      <p class="muted">No hay partidas en este bloque.</p>
+
+      <h3 class="subsection-title">Partida B · Materiales de instalación</h3>
+      <table>
+    <thead>
+      <tr>
+        <th style="width:15%;">Código</th>
+        <th style="width:41%;">Descripción</th>
+        <th style="width:8%;">Unidad</th>
+        <th style="width:12%;" class="right">Cantidad</th>
+        <th style="width:12%;" class="right">Precio</th>
+        <th style="width:12%;" class="right">Subtotal</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr><td>MAT-408</td><td>Cámara domo IP 2MP antivandálica</td><td>UD</td><td class="right">150</td><td class="right">145,00 €</td><td class="right">21.750,00 €</td></tr><tr><td>MAT-405</td><td>NVR 8 canales embarcado con SSD 1TB</td><td>UD</td><td class="right">25</td><td class="right">520,00 €</td><td class="right">13.000,00 €</td></tr><tr><td>MAT-406</td><td>Cable CAT6 apantallado por metro</td><td>UD</td><td class="right">750</td><td class="right">1,50 €</td><td class="right">1125,00 €</td></tr><tr><td>MAT-407</td><td>Antena combinada GPS/4G para techo</td><td>UD</td><td class="right">25</td><td class="right">110,00 €</td><td class="right">2750,00 €</td></tr><tr><td>MAT-403</td><td>Modem 4G industrial router embarcado</td><td>UD</td><td class="right">25</td><td class="right">295,00 €</td><td class="right">7375,00 €</td></tr><tr><td>MAT-411</td><td>Canaleta adhesiva 30x15mm por metro</td><td>UD</td><td class="right">375</td><td class="right">2,50 €</td><td class="right">937,50 €</td></tr><tr><td>MAT-410</td><td>Conector RJ45 blindado Cat6</td><td>UD</td><td class="right">300</td><td class="right">0,90 €</td><td class="right">270,00 €</td></tr><tr><td>MAT-409</td><td>Sellador poliuretano para techo bus</td><td>UD</td><td class="right">50</td><td class="right">15,00 €</td><td class="right">750,00 €</td></tr>
+    </tbody>
+  </table>
+
+      <h3 class="subsection-title">Partida C · Mano de obra</h3>
+      <table>
+    <thead>
+      <tr>
+        <th style="width:15%;">Código</th>
+        <th style="width:41%;">Descripción</th>
+        <th style="width:8%;">Unidad</th>
+        <th style="width:12%;" class="right">Cantidad</th>
+        <th style="width:12%;" class="right">Precio</th>
+        <th style="width:12%;" class="right">Subtotal</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr><td>TRB-1</td><td>Instalación de cámaras de videovigilancia</td><td>UD</td><td class="right">25</td><td class="right">1800,00 €</td><td class="right">45.000,00 €</td></tr><tr><td>TRB-3</td><td>Instalación SAE (Sistema de Ayuda a la Explotación)</td><td>UD</td><td class="right">25</td><td class="right">2500,00 €</td><td class="right">62.500,00 €</td></tr><tr><td>TRB-2</td><td>Instalación WiFi pasajeros</td><td>UD</td><td class="right">25</td><td class="right">850,00 €</td><td class="right">21.250,00 €</td></tr>
+    </tbody>
+  </table>
+
+      <h3 class="subsection-title">Partida D · Mantenimiento</h3>
+      <p class="muted">No hay partidas en este bloque.</p>
+
+      <h3 class="subsection-title">Partida E · Opcionales</h3>
+      <p class="muted">No hay partidas en este bloque.</p>
     </section>
 
     <div class="totals-wrap">
       <div class="totals">
+        <div class="totals-row"><span>Base adjudicación (A+B+C+D)</span><span>176.707,50 €</span></div>
+        <div class="totals-row"><span>Opcional total (E)</span><span>0,00 €</span></div>
+        <div class="totals-row"><span>Total propuesta sin IVA</span><span>176.707,50 €</span></div>
         <div class="totals-row"><span>Base imponible</span><span>176.707,50 €</span></div>
         <div class="totals-row"><span>IVA (21%)</span><span>37.108,57 €</span></div>
         <div class="totals-row totals-main"><span>Total con IVA</span><span>213.816,07 €</span></div>
       </div>
     </div>
 
-    <section class="section"><h2 class="section-title">Supuestos, exclusiones y notas</h2><article class="module"><h4>1. Resumen ejecutivo</h4><p>La presente oferta técnico-económica recoge el alcance de suministro, implantación y soporte inicial de la solución EMT 360 para la flota y centros operativos definidos por el Cliente.<br/><br/>Los importes y condiciones incluidos en este documento constituyen una propuesta cerrada para los conceptos expresamente descritos en partidas y módulos documentales.</p></article><article class="module"><h4>2. Alcance técnico</h4><p>El alcance técnico incluye, en los términos indicados en la oferta: suministro de equipamiento, materiales de instalación, mano de obra de implantación, parametrización, pruebas funcionales y entrega de documentación técnica de cierre.<br/><br/>Cualquier prestación no indicada de forma expresa en el presente documento se considerará fuera de alcance y requerirá valoración adicional.</p></article><article class="module"><h4>3. Metodología y plan de ejecución</h4><p>La ejecución se organizará en fases: (i) preparación y coordinación, (ii) despliegue en campo, (iii) validación funcional y (iv) cierre documental.<br/><br/>La planificación definitiva, hitos y ventanas de intervención se acordarán con el Cliente antes del inicio operativo, en coherencia con la disponibilidad de vehículos, cocheras y personal autorizado.</p></article><article class="module"><h4>4. Supuestos</h4><p>La presente oferta se formula bajo los siguientes supuestos: acceso operativo a vehículos e instalaciones, disponibilidad de ventanas de trabajo acordadas, suministro eléctrico y condiciones de seguridad adecuadas, y designación de interlocutores técnicos por parte del Cliente.<br/><br/>La alteración sustancial de estos supuestos podrá implicar revisión de plazos y/o costes.</p></article><article class="module"><h4>5. Exclusiones</h4><p>Quedan excluidos del alcance: obras civiles, adecuaciones estructurales, legalizaciones administrativas no previstas, correcciones por patologías preexistentes y cualquier trabajo no identificado de forma explícita en las partidas económicas.<br/><br/>Las actuaciones adicionales derivadas de cambios de alcance se presupuestarán y aprobarán por separado.</p></article><article class="module"><h4>6. Condiciones comerciales</h4><p>La validez de la oferta, los hitos de facturación y las condiciones de ejecución serán las establecidas en la propuesta comercial y en su aceptación por el Cliente.<br/><br/>Los plazos indicados se consideran estimados y quedarán condicionados a la disponibilidad de materiales, accesos y planificación conjunta de los trabajos.</p></article><article class="module"><h4>7. Condiciones económicas</h4><p>Los importes económicos incluidos en este documento corresponden exclusivamente a los conceptos descritos en partidas.<br/><br/>Los elementos opcionales, cuando existan, no forman parte del total base de adjudicación y se activarán únicamente mediante aceptación expresa por parte del Cliente.</p></article><article class="module"><h4>8. Garantías</h4><p>Se aplicarán las garantías estándar de fabricante sobre suministros y la garantía de instalación conforme a normativa vigente y alcance contratado.<br/><br/>Quedan excluidas de garantía las incidencias derivadas de uso inadecuado, manipulación por terceros no autorizados o condiciones operativas fuera de especificación.</p></article><article class="module"><h4>9. Confidencialidad</h4><p>La presente oferta, así como su contenido técnico y económico, tiene carácter confidencial.<br/><br/>Ninguna de las partes podrá divulgarla total o parcialmente sin autorización previa y por escrito de la otra parte, salvo obligación legal o requerimiento administrativo aplicable.</p></article></section>
-    <section class="section signature-section"><h2 class="section-title">10. Aceptación de oferta</h2><p class="muted">La firma del presente documento implica la aceptación del alcance, importes y condiciones aquí recogidos, así como de los anexos que, en su caso, formen parte integrante de la propuesta.<br/><br/>Cualquier modificación posterior deberá formalizarse por escrito y con aceptación de ambas partes.</p><div class="signature-grid"><article class="signature-box"><h4>Cliente</h4><p>Nombre y cargo:</p><div class="signature-line"></div><p>Fecha:</p><div class="signature-line"></div><p>Firma:</p><div class="signature-line"></div></article><article class="signature-box"><h4>EMT 360</h4><p>Responsable comercial:</p><div class="signature-line"></div><p>Fecha:</p><div class="signature-line"></div><p>Firma y sello:</p><div class="signature-line"></div></article></div></section>
-    
-    
+    <section class="section">
+      <h2 class="section-title">Precio unitario por vehículo</h2>
+      <table>
+        <thead>
+          <tr><th>Concepto unitario</th><th class="right">Importe</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Base adjudicación / vehículo</td><td class="right">176.707,50 €</td></tr>
+          <tr><td>Opcional / vehículo</td><td class="right">0,00 €</td></tr>
+          <tr><td>Total sin IVA / vehículo</td><td class="right">176.707,50 €</td></tr>
+          <tr><td>IVA / vehículo</td><td class="right">37.108,57 €</td></tr>
+          <tr><td><strong>Total con IVA / vehículo</strong></td><td class="right"><strong>213.816,08 €</strong></td></tr>
+        </tbody>
+      </table>
+      <p class="muted" style="margin-top:4px;">Cálculo sobre 1 vehículo(s).</p>
+      <p class="muted">Los importes económicos incluidos en este documento corresponden exclusivamente a los conceptos descritos en partidas.<br/><br/>Los elementos opcionales, cuando existan, no forman parte del total base de adjudicación y se activarán únicamente mediante aceptación expresa por parte del Cliente.</p>
+    </section>
+
+    <section class="section">
+    <h2 class="section-title">Supuestos técnicos y operativos</h2>
+    <table>
+      <thead>
+        <tr><th style="width:16%;">Código</th><th style="width:54%;">Descripción</th><th style="width:30%;">Condición / tratamiento</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><strong>SUP-01</strong></td><td>Acceso operativo a instalaciones y activos según planificación acordada</td><td>Revisión conjunta de hitos ante restricciones de acceso</td></tr><tr><td><strong>SUP-02</strong></td><td>Disponibilidad de interlocutor técnico designado por el Cliente</td><td>Validación semanal de avances y dependencias</td></tr><tr><td><strong>SUP-03</strong></td><td>Condiciones de seguridad y energía conforme normativa vigente</td><td>Ajustes documentados mediante control de cambios</td></tr>
+      </tbody>
+    </table>
+  </section>
+    <section class="section">
+    <h2 class="section-title">Exclusiones de alcance</h2>
+    <table>
+      <thead>
+        <tr><th style="width:16%;">Código</th><th style="width:54%;">Descripción</th><th style="width:30%;">Condición / tratamiento</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><strong>EXC-01</strong></td><td>Obra civil, adecuaciones estructurales y legalizaciones no incluidas en partidas</td><td>Se tramitarán mediante anexo económico específico</td></tr><tr><td><strong>EXC-02</strong></td><td>Actuaciones por patologías preexistentes o elementos no inventariados</td><td>Requieren aprobación previa por variación de alcance</td></tr><tr><td><strong>EXC-03</strong></td><td>Intervenciones de terceros no autorizados durante periodo de garantía</td><td>Fuera de cobertura contractual</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+    <section class="section signature-section"><h2 class="section-title">12. Aceptación de oferta</h2><p class="muted">La firma del presente documento implica la aceptación del alcance, importes y condiciones aquí recogidos, así como de los anexos que, en su caso, formen parte integrante de la propuesta.<br/><br/>Cualquier modificación posterior deberá formalizarse por escrito y con aceptación de ambas partes.</p><div class="signature-grid"><article class="signature-box"><h4>Cliente</h4><p>Nombre y cargo:</p><div class="signature-line"></div><p>Fecha:</p><div class="signature-line"></div><p>Firma:</p><div class="signature-line"></div></article><article class="signature-box"><h4>EMT 360</h4><p>Responsable comercial:</p><div class="signature-line"></div><p>Fecha:</p><div class="signature-line"></div><p>Firma y sello:</p><div class="signature-line"></div></article></div></section>
     
 
-    <p class="footer-note">Documento generado automáticamente por ERP Presu · OFERTA_EMT_360_V2 · 2.0.0</p>
+    <p class="footer-note">EMT 360 · Propuesta técnica pública · OFERTA_EMT_360_V2 · 2.0.0</p>
   </div>
 </body>
 </html>

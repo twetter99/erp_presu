@@ -104,12 +104,6 @@ function construirValidacionEmision(presupuesto: any) {
       required: true,
     },
     {
-      key: 'textos',
-      label: 'Textos comerciales listos',
-      ok: !presupuesto.contexto || presupuesto.textos.length > 0,
-      required: true,
-    },
-    {
       key: 'estado',
       label: 'Estado permite emisión',
       ok: !['RECHAZADO', 'EXPIRADO'].includes(presupuesto.estado),

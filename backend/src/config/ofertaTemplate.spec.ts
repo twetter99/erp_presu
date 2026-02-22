@@ -1,9 +1,17 @@
 export type OfertaTemplateSectionKey =
-  | 'CABECERA'
-  | 'CLIENTE_ALCANCE'
-  | 'PARTIDAS_ECONOMICAS'
-  | 'TOTALES'
-  | 'CONDICIONES_NOTAS';
+  | 'PORTADA'
+  | 'CONFIDENCIALIDAD'
+  | 'RESUMEN_EJECUTIVO'
+  | 'ALCANCE_TECNICO'
+  | 'ARQUITECTURA_FUNCIONAL'
+  | 'METODOLOGIA'
+  | 'PLANIFICACION_METRICAS'
+  | 'EXPERIENCIA_RELEVANTE'
+  | 'ECONOMICA'
+  | 'SUPUESTOS'
+  | 'EXCLUSIONES'
+  | 'FIRMA'
+  | 'ANEXOS';
 
 export type OfertaTemplateSpec = {
   codigo: string;
@@ -27,7 +35,10 @@ export type OfertaTemplateSpec = {
 export type OfertaTemplateModuleKey =
   | 'RESUMEN_EJECUTIVO'
   | 'ALCANCE_TECNICO'
+  | 'ARQUITECTURA_FUNCIONAL'
   | 'METODOLOGIA_PLAN'
+  | 'METRICAS_PLANIFICACION'
+  | 'EXPERIENCIA_RELEVANTE'
   | 'SUPUESTOS'
   | 'EXCLUSIONES'
   | 'CONDICIONES_COMERCIALES'
@@ -49,11 +60,19 @@ export const OFERTA_TEMPLATE_SPEC_EMT_360_V2: OfertaTemplateSpec = {
   version: '2.0.0',
   idioma: 'es-ES',
   secciones: [
-    'CABECERA',
-    'CLIENTE_ALCANCE',
-    'PARTIDAS_ECONOMICAS',
-    'TOTALES',
-    'CONDICIONES_NOTAS',
+    'PORTADA',
+    'CONFIDENCIALIDAD',
+    'RESUMEN_EJECUTIVO',
+    'ALCANCE_TECNICO',
+    'ARQUITECTURA_FUNCIONAL',
+    'METODOLOGIA',
+    'PLANIFICACION_METRICAS',
+    'EXPERIENCIA_RELEVANTE',
+    'ECONOMICA',
+    'SUPUESTOS',
+    'EXCLUSIONES',
+    'FIRMA',
+    'ANEXOS',
   ],
   etiquetas: {
     tituloOferta: 'Oferta Técnica-Económica',
@@ -74,11 +93,19 @@ export const OFERTA_TEMPLATE_SPEC_V1: OfertaTemplateSpec = {
   version: '1.0.0',
   idioma: 'es-ES',
   secciones: [
-    'CABECERA',
-    'CLIENTE_ALCANCE',
-    'PARTIDAS_ECONOMICAS',
-    'TOTALES',
-    'CONDICIONES_NOTAS',
+    'PORTADA',
+    'CONFIDENCIALIDAD',
+    'RESUMEN_EJECUTIVO',
+    'ALCANCE_TECNICO',
+    'ARQUITECTURA_FUNCIONAL',
+    'METODOLOGIA',
+    'PLANIFICACION_METRICAS',
+    'EXPERIENCIA_RELEVANTE',
+    'ECONOMICA',
+    'SUPUESTOS',
+    'EXCLUSIONES',
+    'FIRMA',
+    'ANEXOS',
   ],
   etiquetas: {
     tituloOferta: 'Oferta',
@@ -117,77 +144,161 @@ const OFERTA_TEMPLATE_MODULES_EMT_360_V2: OfertaTemplateModule[] = [
     order: 30,
   },
   {
+    key: 'ARQUITECTURA_FUNCIONAL',
+    title: '4. Arquitectura funcional',
+    content: 'La arquitectura funcional propuesta contempla subsistemas de captura, comunicaciones, supervisión y explotación operativa. Se define una topología modular orientada a escalabilidad, mantenibilidad y continuidad de servicio, con trazabilidad integral de eventos y actuaciones.',
+    enabled: true,
+    order: 35,
+  },
+  {
+    key: 'METRICAS_PLANIFICACION',
+    title: '5. Métricas de instalación y planificación',
+    content: 'Se establecen métricas de ejecución vinculadas a volumen de activos, productividad por fase, hitos de aceptación y cumplimiento de ventanas operativas. El seguimiento se realizará mediante actas de avance y control de riesgos.',
+    enabled: true,
+    order: 45,
+  },
+  {
+    key: 'EXPERIENCIA_RELEVANTE',
+    title: '6. Experiencia relevante',
+    content: 'EMT 360 acredita experiencia en despliegues de soluciones técnicas embarcadas, integración operativa y ejecución en entornos de alta exigencia de disponibilidad. La metodología propuesta incorpora lecciones aprendidas y estándares de calidad en proyectos comparables.',
+    enabled: true,
+    order: 55,
+  },
+  {
     key: 'SUPUESTOS',
-    title: '4. Supuestos',
-    content: 'La presente oferta se formula bajo los siguientes supuestos: acceso operativo a vehículos e instalaciones, disponibilidad de ventanas de trabajo acordadas, suministro eléctrico y condiciones de seguridad adecuadas, y designación de interlocutores técnicos por parte del Cliente.\n\nLa alteración sustancial de estos supuestos podrá implicar revisión de plazos y/o costes.',
-    enabled: true,
-    order: 40,
-  },
-  {
-    key: 'EXCLUSIONES',
-    title: '5. Exclusiones',
-    content: 'Quedan excluidos del alcance: obras civiles, adecuaciones estructurales, legalizaciones administrativas no previstas, correcciones por patologías preexistentes y cualquier trabajo no identificado de forma explícita en las partidas económicas.\n\nLas actuaciones adicionales derivadas de cambios de alcance se presupuestarán y aprobarán por separado.',
-    enabled: true,
-    order: 50,
-  },
-  {
-    key: 'CONDICIONES_COMERCIALES',
-    title: '6. Condiciones comerciales',
-    content: 'La validez de la oferta, los hitos de facturación y las condiciones de ejecución serán las establecidas en la propuesta comercial y en su aceptación por el Cliente.\n\nLos plazos indicados se consideran estimados y quedarán condicionados a la disponibilidad de materiales, accesos y planificación conjunta de los trabajos.',
-    enabled: true,
-    order: 60,
-  },
-  {
-    key: 'CONDICIONES_ECONOMICAS',
-    title: '7. Condiciones económicas',
-    content: 'Los importes económicos incluidos en este documento corresponden exclusivamente a los conceptos descritos en partidas.\n\nLos elementos opcionales, cuando existan, no forman parte del total base de adjudicación y se activarán únicamente mediante aceptación expresa por parte del Cliente.',
+    title: '7. Supuestos',
+    content: 'Acceso operativo a instalaciones y activos según planificación acordada | Revisión conjunta de hitos ante restricciones de acceso\nDisponibilidad de interlocutor técnico designado por el Cliente | Validación semanal de avances y dependencias\nCondiciones de seguridad y energía conforme normativa vigente | Ajustes documentados mediante control de cambios',
     enabled: true,
     order: 70,
   },
   {
-    key: 'GARANTIAS',
-    title: '8. Garantías',
-    content: 'Se aplicarán las garantías estándar de fabricante sobre suministros y la garantía de instalación conforme a normativa vigente y alcance contratado.\n\nQuedan excluidas de garantía las incidencias derivadas de uso inadecuado, manipulación por terceros no autorizados o condiciones operativas fuera de especificación.',
+    key: 'EXCLUSIONES',
+    title: '8. Exclusiones',
+    content: 'Obra civil, adecuaciones estructurales y legalizaciones no incluidas en partidas | Se tramitarán mediante anexo económico específico\nActuaciones por patologías preexistentes o elementos no inventariados | Requieren aprobación previa por variación de alcance\nIntervenciones de terceros no autorizados durante periodo de garantía | Fuera de cobertura contractual',
     enabled: true,
     order: 80,
   },
   {
-    key: 'CONFIDENCIALIDAD',
-    title: '9. Confidencialidad',
-    content: 'La presente oferta, así como su contenido técnico y económico, tiene carácter confidencial.\n\nNinguna de las partes podrá divulgarla total o parcialmente sin autorización previa y por escrito de la otra parte, salvo obligación legal o requerimiento administrativo aplicable.',
+    key: 'CONDICIONES_COMERCIALES',
+    title: '9. Condiciones comerciales',
+    content: 'La validez de la oferta, los hitos de facturación y las condiciones de ejecución serán las establecidas en la propuesta comercial y en su aceptación por el Cliente.\n\nLos plazos indicados se consideran estimados y quedarán condicionados a la disponibilidad de materiales, accesos y planificación conjunta de los trabajos.',
     enabled: true,
     order: 90,
   },
   {
-    key: 'ACEPTACION_FIRMA',
-    title: '10. Aceptación de oferta',
-    content: 'La firma del presente documento implica la aceptación del alcance, importes y condiciones aquí recogidos, así como de los anexos que, en su caso, formen parte integrante de la propuesta.\n\nCualquier modificación posterior deberá formalizarse por escrito y con aceptación de ambas partes.',
+    key: 'CONDICIONES_ECONOMICAS',
+    title: '10. Condiciones económicas',
+    content: 'Los importes económicos incluidos en este documento corresponden exclusivamente a los conceptos descritos en partidas.\n\nLos elementos opcionales, cuando existan, no forman parte del total base de adjudicación y se activarán únicamente mediante aceptación expresa por parte del Cliente.',
     enabled: true,
     order: 100,
+  },
+  {
+    key: 'GARANTIAS',
+    title: '11. Garantías',
+    content: 'Se aplicarán las garantías estándar de fabricante sobre suministros y la garantía de instalación conforme a normativa vigente y alcance contratado.\n\nQuedan excluidas de garantía las incidencias derivadas de uso inadecuado, manipulación por terceros no autorizados o condiciones operativas fuera de especificación.',
+    enabled: true,
+    order: 110,
+  },
+  {
+    key: 'CONFIDENCIALIDAD',
+    title: '2. Confidencialidad',
+    content: 'La presente oferta, así como su contenido técnico y económico, tiene carácter confidencial.\n\nNinguna de las partes podrá divulgarla total o parcialmente sin autorización previa y por escrito de la otra parte, salvo obligación legal o requerimiento administrativo aplicable.',
+    enabled: true,
+    order: 20,
+  },
+  {
+    key: 'ACEPTACION_FIRMA',
+    title: '12. Aceptación de oferta',
+    content: 'La firma del presente documento implica la aceptación del alcance, importes y condiciones aquí recogidos, así como de los anexos que, en su caso, formen parte integrante de la propuesta.\n\nCualquier modificación posterior deberá formalizarse por escrito y con aceptación de ambas partes.',
+    enabled: true,
+    order: 120,
   },
 ];
 
 const OFERTA_TEMPLATE_MODULES_V1: OfertaTemplateModule[] = [
   {
-    key: 'SUPUESTOS',
-    title: 'Supuestos',
-    content: 'Supuestos de ejecución y alcance del servicio.',
+    key: 'RESUMEN_EJECUTIVO',
+    title: '1. Resumen ejecutivo',
+    content: 'Resumen ejecutivo de alcance, valor y plazo de la propuesta técnico-económica.',
     enabled: true,
     order: 10,
   },
   {
-    key: 'EXCLUSIONES',
-    title: 'Exclusiones',
-    content: 'Exclusiones y límites de la oferta.',
+    key: 'CONFIDENCIALIDAD',
+    title: '2. Confidencialidad',
+    content: 'Documento confidencial para uso exclusivo del proceso de evaluación y licitación.',
     enabled: true,
     order: 20,
   },
   {
-    key: 'CONDICIONES_COMERCIALES',
-    title: 'Condiciones comerciales',
-    content: 'Condiciones generales de validez y contratación.',
+    key: 'ALCANCE_TECNICO',
+    title: '3. Alcance técnico',
+    content: 'Definición del alcance técnico de suministro, implantación y validación.',
     enabled: true,
     order: 30,
+  },
+  {
+    key: 'ARQUITECTURA_FUNCIONAL',
+    title: '4. Arquitectura funcional',
+    content: 'Descripción funcional de la solución propuesta y su integración operativa.',
+    enabled: true,
+    order: 40,
+  },
+  {
+    key: 'METODOLOGIA_PLAN',
+    title: '5. Metodología',
+    content: 'Metodología de ejecución por fases con control de hitos y calidad.',
+    enabled: true,
+    order: 50,
+  },
+  {
+    key: 'METRICAS_PLANIFICACION',
+    title: '6. Planificación y métricas',
+    content: 'Métricas de instalación y planificación del despliegue.',
+    enabled: true,
+    order: 60,
+  },
+  {
+    key: 'EXPERIENCIA_RELEVANTE',
+    title: '7. Experiencia relevante',
+    content: 'Referencias y experiencia en proyectos comparables.',
+    enabled: true,
+    order: 70,
+  },
+  {
+    key: 'SUPUESTOS',
+    title: '8. Supuestos',
+    content: 'Supuesto operativo principal | Tratamiento asociado',
+    enabled: true,
+    order: 80,
+  },
+  {
+    key: 'EXCLUSIONES',
+    title: '9. Exclusiones',
+    content: 'Exclusión principal | Tratamiento asociado',
+    enabled: true,
+    order: 90,
+  },
+  {
+    key: 'CONDICIONES_COMERCIALES',
+    title: '10. Condiciones comerciales',
+    content: 'Condiciones generales de validez y contratación.',
+    enabled: true,
+    order: 100,
+  },
+  {
+    key: 'CONDICIONES_ECONOMICAS',
+    title: '11. Condiciones económicas',
+    content: 'Condiciones económicas de aplicación sobre base adjudicación y opcionales.',
+    enabled: true,
+    order: 110,
+  },
+  {
+    key: 'ACEPTACION_FIRMA',
+    title: '12. Aceptación de oferta',
+    content: 'La aceptación formal de la propuesta requiere firma de ambas partes.',
+    enabled: true,
+    order: 120,
   },
 ];
 

@@ -3,11 +3,19 @@
     "codigo": "OFERTA_EMT_360_V2",
     "version": "2.0.0",
     "secciones": [
-      "CABECERA",
-      "CLIENTE_ALCANCE",
-      "PARTIDAS_ECONOMICAS",
-      "TOTALES",
-      "CONDICIONES_NOTAS"
+      "PORTADA",
+      "CONFIDENCIALIDAD",
+      "RESUMEN_EJECUTIVO",
+      "ALCANCE_TECNICO",
+      "ARQUITECTURA_FUNCIONAL",
+      "METODOLOGIA",
+      "PLANIFICACION_METRICAS",
+      "EXPERIENCIA_RELEVANTE",
+      "ECONOMICA",
+      "SUPUESTOS",
+      "EXCLUSIONES",
+      "FIRMA",
+      "ANEXOS"
     ]
   },
   "cabecera": {
@@ -15,7 +23,7 @@
     "codigo": "PRE-2026-875793",
     "codigoOferta": "OF-VERIFY-2026-1",
     "versionOferta": 1,
-    "fechaEmision": "2026-02-20T22:54:00.492Z",
+    "fechaEmision": "2026-02-21T07:18:15.445Z",
     "templateCode": "OFERTA_EMT_360_V2",
     "cliente": "Transportes Metropolitanos de Madrid",
     "proyecto": "Videovigilancia + SAE flota Carabanchel",
@@ -27,7 +35,10 @@
     "ivaPorcentaje": 21,
     "ivaImporte": 37108.57,
     "totalConIva": 213816.07,
-    "precioUnitarioVehiculo": 0,
+    "precioUnitarioVehiculo": 176707.5,
+    "baseAdjudicacion": 176707.5,
+    "opcionalTotal": 0,
+    "totalPropuesta": 176707.5,
     "totalesBloque": {
       "A": 0,
       "B": 47957.5,
@@ -35,8 +46,42 @@
       "D": 0,
       "E": 0
     },
+    "porcentajesBloque": {
+      "A": 0,
+      "B": 27.14,
+      "C": 72.86,
+      "D": 0,
+      "E": 0
+    },
+    "precioUnitarioDetalle": {
+      "baseAdjudicacion": 176707.5,
+      "opcional": 0,
+      "totalSinIva": 176707.5,
+      "iva": 37108.57,
+      "totalConIva": 213816.08,
+      "numeroVehiculos": 0
+    },
     "totalDesplazamientos": 0,
     "totalOpcionales": 0
+  },
+  "documento": {
+    "tipo": "OFERTA_TEC_ECON_LICITACION",
+    "estructura": [
+      "PORTADA",
+      "CONFIDENCIALIDAD",
+      "RESUMEN_EJECUTIVO",
+      "ALCANCE_TECNICO",
+      "ARQUITECTURA_FUNCIONAL",
+      "METODOLOGIA",
+      "PLANIFICACION_METRICAS",
+      "EXPERIENCIA_RELEVANTE",
+      "ECONOMICA",
+      "SUPUESTOS",
+      "EXCLUSIONES",
+      "FIRMA",
+      "ANEXOS"
+    ],
+    "versionEstructura": "3.0.0"
   },
   "lineas": {
     "motor": [],
@@ -188,7 +233,115 @@
       }
     ],
     "desplazamiento": [],
-    "opcionales": []
+    "opcionales": [],
+    "bloques": {
+      "A": [],
+      "B": [
+        {
+          "bloque": "B_MATERIALES_INSTALACION",
+          "codigo": "MAT-408",
+          "descripcion": "Cámara domo IP 2MP antivandálica",
+          "unidad": "UD",
+          "cantidad": 150,
+          "precio": 145,
+          "subtotal": 21750
+        },
+        {
+          "bloque": "B_MATERIALES_INSTALACION",
+          "codigo": "MAT-405",
+          "descripcion": "NVR 8 canales embarcado con SSD 1TB",
+          "unidad": "UD",
+          "cantidad": 25,
+          "precio": 520,
+          "subtotal": 13000
+        },
+        {
+          "bloque": "B_MATERIALES_INSTALACION",
+          "codigo": "MAT-406",
+          "descripcion": "Cable CAT6 apantallado por metro",
+          "unidad": "UD",
+          "cantidad": 750,
+          "precio": 1.5,
+          "subtotal": 1125
+        },
+        {
+          "bloque": "B_MATERIALES_INSTALACION",
+          "codigo": "MAT-407",
+          "descripcion": "Antena combinada GPS/4G para techo",
+          "unidad": "UD",
+          "cantidad": 25,
+          "precio": 110,
+          "subtotal": 2750
+        },
+        {
+          "bloque": "B_MATERIALES_INSTALACION",
+          "codigo": "MAT-403",
+          "descripcion": "Modem 4G industrial router embarcado",
+          "unidad": "UD",
+          "cantidad": 25,
+          "precio": 295,
+          "subtotal": 7375
+        },
+        {
+          "bloque": "B_MATERIALES_INSTALACION",
+          "codigo": "MAT-411",
+          "descripcion": "Canaleta adhesiva 30x15mm por metro",
+          "unidad": "UD",
+          "cantidad": 375,
+          "precio": 2.5,
+          "subtotal": 937.5
+        },
+        {
+          "bloque": "B_MATERIALES_INSTALACION",
+          "codigo": "MAT-410",
+          "descripcion": "Conector RJ45 blindado Cat6",
+          "unidad": "UD",
+          "cantidad": 300,
+          "precio": 0.9,
+          "subtotal": 270
+        },
+        {
+          "bloque": "B_MATERIALES_INSTALACION",
+          "codigo": "MAT-409",
+          "descripcion": "Sellador poliuretano para techo bus",
+          "unidad": "UD",
+          "cantidad": 50,
+          "precio": 15,
+          "subtotal": 750
+        }
+      ],
+      "C": [
+        {
+          "bloque": "C_MANO_OBRA",
+          "codigo": "TRB-1",
+          "descripcion": "Instalación de cámaras de videovigilancia",
+          "unidad": "UD",
+          "cantidad": 25,
+          "precio": 1800,
+          "subtotal": 45000
+        },
+        {
+          "bloque": "C_MANO_OBRA",
+          "codigo": "TRB-3",
+          "descripcion": "Instalación SAE (Sistema de Ayuda a la Explotación)",
+          "unidad": "UD",
+          "cantidad": 25,
+          "precio": 2500,
+          "subtotal": 62500
+        },
+        {
+          "bloque": "C_MANO_OBRA",
+          "codigo": "TRB-2",
+          "descripcion": "Instalación WiFi pasajeros",
+          "unidad": "UD",
+          "cantidad": 25,
+          "precio": 850,
+          "subtotal": 21250
+        }
+      ],
+      "D": [],
+      "E": []
+    }
   },
   "opcionales": {
     "totalOpcionales": 0,
@@ -210,6 +363,13 @@
       "order": 20
     },
     {
+      "key": "CONFIDENCIALIDAD",
+      "title": "2. Confidencialidad",
+      "content": "La presente oferta, así como su contenido técnico y económico, tiene carácter confidencial.\n\nNinguna de las partes podrá divulgarla total o parcialmente sin autorización previa y por escrito de la otra parte, salvo obligación legal o requerimiento administrativo aplicable.",
+      "enabled": true,
+      "order": 20
+    },
+    {
       "key": "METODOLOGIA_PLAN",
       "title": "3. Metodología y plan de ejecución",
       "content": "La ejecución se organizará en fases: (i) preparación y coordinación, (ii) despliegue en campo, (iii) validación funcional y (iv) cierre documental.\n\nLa planificación definitiva, hitos y ventanas de intervención se acordarán con el Cliente antes del inicio operativo, en coherencia con la disponibilidad de vehículos, cocheras y personal autorizado.",
@@ -217,55 +377,68 @@
       "order": 30
     },
     {
+      "key": "ARQUITECTURA_FUNCIONAL",
+      "title": "4. Arquitectura funcional",
+      "content": "La arquitectura funcional propuesta contempla subsistemas de captura, comunicaciones, supervisión y explotación operativa. Se define una topología modular orientada a escalabilidad, mantenibilidad y continuidad de servicio, con trazabilidad integral de eventos y actuaciones.",
+      "enabled": true,
+      "order": 35
+    },
+    {
+      "key": "METRICAS_PLANIFICACION",
+      "title": "5. Métricas de instalación y planificación",
+      "content": "Se establecen métricas de ejecución vinculadas a volumen de activos, productividad por fase, hitos de aceptación y cumplimiento de ventanas operativas. El seguimiento se realizará mediante actas de avance y control de riesgos.",
+      "enabled": true,
+      "order": 45
+    },
+    {
+      "key": "EXPERIENCIA_RELEVANTE",
+      "title": "6. Experiencia relevante",
+      "content": "EMT 360 acredita experiencia en despliegues de soluciones técnicas embarcadas, integración operativa y ejecución en entornos de alta exigencia de disponibilidad. La metodología propuesta incorpora lecciones aprendidas y estándares de calidad en proyectos comparables.",
+      "enabled": true,
+      "order": 55
+    },
+    {
       "key": "SUPUESTOS",
-      "title": "4. Supuestos",
-      "content": "La presente oferta se formula bajo los siguientes supuestos: acceso operativo a vehículos e instalaciones, disponibilidad de ventanas de trabajo acordadas, suministro eléctrico y condiciones de seguridad adecuadas, y designación de interlocutores técnicos por parte del Cliente.\n\nLa alteración sustancial de estos supuestos podrá implicar revisión de plazos y/o costes.",
-      "enabled": true,
-      "order": 40
-    },
-    {
-      "key": "EXCLUSIONES",
-      "title": "5. Exclusiones",
-      "content": "Quedan excluidos del alcance: obras civiles, adecuaciones estructurales, legalizaciones administrativas no previstas, correcciones por patologías preexistentes y cualquier trabajo no identificado de forma explícita en las partidas económicas.\n\nLas actuaciones adicionales derivadas de cambios de alcance se presupuestarán y aprobarán por separado.",
-      "enabled": true,
-      "order": 50
-    },
-    {
-      "key": "CONDICIONES_COMERCIALES",
-      "title": "6. Condiciones comerciales",
-      "content": "La validez de la oferta, los hitos de facturación y las condiciones de ejecución serán las establecidas en la propuesta comercial y en su aceptación por el Cliente.\n\nLos plazos indicados se consideran estimados y quedarán condicionados a la disponibilidad de materiales, accesos y planificación conjunta de los trabajos.",
-      "enabled": true,
-      "order": 60
-    },
-    {
-      "key": "CONDICIONES_ECONOMICAS",
-      "title": "7. Condiciones económicas",
-      "content": "Los importes económicos incluidos en este documento corresponden exclusivamente a los conceptos descritos en partidas.\n\nLos elementos opcionales, cuando existan, no forman parte del total base de adjudicación y se activarán únicamente mediante aceptación expresa por parte del Cliente.",
+      "title": "7. Supuestos",
+      "content": "Acceso operativo a instalaciones y activos según planificación acordada | Revisión conjunta de hitos ante restricciones de acceso\nDisponibilidad de interlocutor técnico designado por el Cliente | Validación semanal de avances y dependencias\nCondiciones de seguridad y energía conforme normativa vigente | Ajustes documentados mediante control de cambios",
       "enabled": true,
       "order": 70
     },
     {
-      "key": "GARANTIAS",
-      "title": "8. Garantías",
-      "content": "Se aplicarán las garantías estándar de fabricante sobre suministros y la garantía de instalación conforme a normativa vigente y alcance contratado.\n\nQuedan excluidas de garantía las incidencias derivadas de uso inadecuado, manipulación por terceros no autorizados o condiciones operativas fuera de especificación.",
+      "key": "EXCLUSIONES",
+      "title": "8. Exclusiones",
+      "content": "Obra civil, adecuaciones estructurales y legalizaciones no incluidas en partidas | Se tramitarán mediante anexo económico específico\nActuaciones por patologías preexistentes o elementos no inventariados | Requieren aprobación previa por variación de alcance\nIntervenciones de terceros no autorizados durante periodo de garantía | Fuera de cobertura contractual",
       "enabled": true,
       "order": 80
     },
     {
-      "key": "CONFIDENCIALIDAD",
-      "title": "9. Confidencialidad",
-      "content": "La presente oferta, así como su contenido técnico y económico, tiene carácter confidencial.\n\nNinguna de las partes podrá divulgarla total o parcialmente sin autorización previa y por escrito de la otra parte, salvo obligación legal o requerimiento administrativo aplicable.",
+      "key": "CONDICIONES_COMERCIALES",
+      "title": "9. Condiciones comerciales",
+      "content": "La validez de la oferta, los hitos de facturación y las condiciones de ejecución serán las establecidas en la propuesta comercial y en su aceptación por el Cliente.\n\nLos plazos indicados se consideran estimados y quedarán condicionados a la disponibilidad de materiales, accesos y planificación conjunta de los trabajos.",
       "enabled": true,
       "order": 90
     },
     {
-      "key": "ACEPTACION_FIRMA",
-      "title": "10. Aceptación de oferta",
-      "content": "La firma del presente documento implica la aceptación del alcance, importes y condiciones aquí recogidos, así como de los anexos que, en su caso, formen parte integrante de la propuesta.\n\nCualquier modificación posterior deberá formalizarse por escrito y con aceptación de ambas partes.",
+      "key": "CONDICIONES_ECONOMICAS",
+      "title": "10. Condiciones económicas",
+      "content": "Los importes económicos incluidos en este documento corresponden exclusivamente a los conceptos descritos en partidas.\n\nLos elementos opcionales, cuando existan, no forman parte del total base de adjudicación y se activarán únicamente mediante aceptación expresa por parte del Cliente.",
       "enabled": true,
       "order": 100
+    },
+    {
+      "key": "GARANTIAS",
+      "title": "11. Garantías",
+      "content": "Se aplicarán las garantías estándar de fabricante sobre suministros y la garantía de instalación conforme a normativa vigente y alcance contratado.\n\nQuedan excluidas de garantía las incidencias derivadas de uso inadecuado, manipulación por terceros no autorizados o condiciones operativas fuera de especificación.",
+      "enabled": true,
+      "order": 110
+    },
+    {
+      "key": "ACEPTACION_FIRMA",
+      "title": "12. Aceptación de oferta",
+      "content": "La firma del presente documento implica la aceptación del alcance, importes y condiciones aquí recogidos, así como de los anexos que, en su caso, formen parte integrante de la propuesta.\n\nCualquier modificación posterior deberá formalizarse por escrito y con aceptación de ambas partes.",
+      "enabled": true,
+      "order": 120
     }
   ],
-  "anexosTecnicos": [],
-  "textos": []
+  "anexosTecnicos": []
 }
