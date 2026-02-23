@@ -3,17 +3,17 @@ import { cva, type VariantProps } from 'class-variance-authority';
 import { cn } from '../../lib/utils';
 
 const buttonVariants = cva(
-  'inline-flex items-center justify-center whitespace-nowrap gap-2 rounded-xl text-[13px] font-medium ring-offset-background transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/30 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 active:scale-[0.97]',
+  'inline-flex items-center justify-center whitespace-nowrap gap-2 rounded-lg text-[13px] font-medium ring-offset-background transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 active:scale-[0.98]',
   {
     variants: {
       variant: {
-        primary: 'bg-primary text-primary-foreground shadow-glow hover:brightness-110 hover:shadow-lg',
-        secondary: 'bg-secondary text-secondary-foreground border border-border hover:bg-white/[0.06]',
-        danger: 'bg-destructive text-white hover:brightness-110',
-        success: 'bg-success text-white shadow-glow-success hover:brightness-110',
-        warning: 'bg-warning text-warning-foreground hover:brightness-110',
-        outline: 'border border-border bg-transparent text-foreground hover:bg-white/[0.04]',
-        ghost: 'text-muted-foreground hover:bg-white/[0.04] hover:text-foreground',
+        primary: 'bg-primary text-primary-foreground shadow-sm hover:bg-primary/90 hover:shadow',
+        secondary: 'bg-slate-800 text-white shadow-sm hover:bg-slate-700 hover:shadow',
+        danger: 'bg-red-600 text-white shadow-sm hover:bg-red-700 hover:shadow',
+        success: 'bg-emerald-600 text-white shadow-sm hover:bg-emerald-700 hover:shadow',
+        warning: 'bg-amber-500 text-white shadow-sm hover:bg-amber-600 hover:shadow',
+        outline: 'border border-slate-200 bg-white text-slate-700 shadow-sm hover:bg-slate-50 hover:text-slate-900',
+        ghost: 'text-slate-600 hover:bg-slate-100 hover:text-slate-900',
       },
       size: {
         sm: 'h-8 px-3',

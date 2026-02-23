@@ -5,7 +5,7 @@ import DataTable from '../../components/ui/DataTable';
 import Button from '../../components/ui/Button';
 import Modal from '../../components/ui/Modal';
 import Card from '../../components/ui/Card';
-import { Plus, Search } from 'lucide-react';
+import { HiPlus, HiSearch } from 'react-icons/hi';
 
 export default function CocherasPage() {
   const { items, loading, create, update, remove } = useCrud<Cochera>('/cocheras');
@@ -86,13 +86,13 @@ export default function CocherasPage() {
     <div>
       <div className="flex items-center justify-between mb-6">
         <h1 className="page-title">Cocheras</h1>
-        <Button onClick={openCreate}><Plus className="w-4 h-4" /> Nueva Cochera</Button>
+        <Button onClick={openCreate}><HiPlus className="w-4 h-4" /> Nueva Cochera</Button>
       </div>
 
       <Card>
         <div className="mb-4">
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground w-5 h-5" />
+            <HiSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5" />
             <input
               type="text"
               placeholder="Buscar por nombre o dirección..."

@@ -1,34 +1,31 @@
+import { createContext, useContext } from 'react';
 import { Outlet } from 'react-router-dom';
-import Sidebar from './Sidebar';
-import Header from './Header';
-import { useSidebar } from './Sidebar';
-import { cn } from '../../lib/utils';
+import TopNav from './TopNav';
 
-function LayoutContent() {
-  const { collapsed } = useSidebar();
+interface LayoutContextValue {
+  // We can keep this empty or remove it if not needed, but let's keep it for now
+  // in case we need global layout state later.
+}
 
-  return (
-    <div className="min-h-screen bg-background font-sans text-foreground">
-      <Header />
-      <main
-        className={cn(
-          'p-6 lg:p-8 transition-all duration-300',
-          collapsed ? 'ml-[72px]' : 'ml-[260px]'
-        )}
-      >
-        <div className="max-w-[1440px] mx-auto">
-          <Outlet />
-        </div>
-      </main>
-    </div>
-  );
+const LayoutContext = createContext<LayoutContextValue | null>(null);
+
+export function useLayoutState() {
+  const context = useContext(LayoutContext);
+  if (!context) {
+    throw new Error('useLayoutState debe usarse dentro de Layout');
+  }
+  return context;
 }
 
 export default function Layout() {
   return (
-    <>
-      <Sidebar />
-      <LayoutContent />
-    </>
+    <LayoutContext.Provider value={{}}>
+      <div className="min-h-screen bg-slate-50 font-sans text-slate-900 selection:bg-primary/20 selection:text-primary flex flex-col">
+        <TopNav />
+        <main className="flex-1 p-4 md:p-6 lg:p-8 max-w-[1600px] mx-auto w-full">
+          <Outlet />
+        </main>
+      </div>
+    </LayoutContext.Provider>
   );
 }

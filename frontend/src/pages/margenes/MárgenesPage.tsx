@@ -3,7 +3,7 @@ import api from '../../api/client';
 import Card from '../../components/ui/Card';
 import Button from '../../components/ui/Button';
 import Badge from '../../components/ui/Badge';
-import { RefreshCw, Save, Trash2, ArrowRight } from 'lucide-react';
+import { HiRefresh, HiSave, HiTrash, HiArrowRight } from 'react-icons/hi';
 
 interface MargenCategoriaItem {
   id: number;
@@ -139,7 +139,7 @@ export default function MárgenesPage() {
       <div className="flex items-center justify-between mb-6">
         <h1 className="page-title">Márgenes de Materiales</h1>
         <Button onClick={handleRecalcular} disabled={recalculating} variant="secondary">
-          <RefreshCw className={`w-4 h-4 ${recalculating ? 'animate-spin' : ''}`} />
+          <HiRefresh className={`w-4 h-4 ${recalculating ? 'animate-spin' : ''}`} />
           {recalculating ? 'Recalculando...' : 'Recalcular todos los precios'}
         </Button>
       </div>
@@ -152,8 +152,8 @@ export default function MárgenesPage() {
 
       {/* ── Info de cascada ── */}
       <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg text-sm text-blue-800">
-        <strong>Prioridad de márgenes:</strong> Margen individual del material <ArrowRight className="inline w-4 h-4 mx-1" />
-        Margen de su categoría <ArrowRight className="inline w-4 h-4 mx-1" /> Margen general.
+        <strong>Prioridad de márgenes:</strong> Margen individual del material <HiArrowRight className="inline w-4 h-4 mx-1" />
+        Margen de su categoría <HiArrowRight className="inline w-4 h-4 mx-1" /> Margen general.
         El precio de venta se calcula como: <code className="bg-blue-100 px-1 rounded">costeMedio × (1 + margen / 100)</code>
       </div>
 
@@ -161,7 +161,7 @@ export default function MárgenesPage() {
         {/* ── MARGEN GENERAL ── */}
         <Card>
           <h2 className="text-lg font-semibold mb-4">Margen General</h2>
-          <p className="text-sm text-muted-foreground mb-4">
+          <p className="text-sm text-gray-500 mb-4">
             Se aplica a todos los materiales que no tengan un margen de categoría o individual.
           </p>
           <div className="flex items-end gap-3">
@@ -177,12 +177,12 @@ export default function MárgenesPage() {
               />
             </div>
             <Button onClick={handleSaveGeneral} disabled={saving}>
-              <Save className="w-4 h-4" /> Guardar
+              <HiSave className="w-4 h-4" /> Guardar
             </Button>
           </div>
           {/* Preview */}
-          <div className="mt-4 p-3 bg-surface rounded-lg text-sm">
-            <span className="text-muted-foreground">Ejemplo:</span> Coste 1,00 € → Precio venta{' '}
+          <div className="mt-4 p-3 bg-gray-50 rounded-lg text-sm">
+            <span className="text-gray-500">Ejemplo:</span> Coste 1,00 € → Precio venta{' '}
             <strong>{(1 * (1 + parseFloat(margenGeneral || '0') / 100)).toFixed(2)} €</strong>
           </div>
         </Card>
@@ -192,23 +192,23 @@ export default function MárgenesPage() {
           <h2 className="text-lg font-semibold mb-4">Estado</h2>
           <div className="space-y-3 text-sm">
             <div className="flex justify-between">
-              <span className="text-muted-foreground">Margen general</span>
+              <span className="text-gray-500">Margen general</span>
               <Badge>{data?.margenGeneral ?? 0}%</Badge>
             </div>
             <div className="flex justify-between">
-              <span className="text-muted-foreground">Categorías con margen propio</span>
+              <span className="text-gray-500">Categorías con margen propio</span>
               <Badge variant="blue">{data?.categorias.length ?? 0}</Badge>
             </div>
             <div className="flex justify-between">
-              <span className="text-muted-foreground">Categorías sin margen propio</span>
+              <span className="text-gray-500">Categorías sin margen propio</span>
               <Badge variant="yellow">{catsSinMargen.length}</Badge>
             </div>
             <div className="flex justify-between">
-              <span className="text-muted-foreground">Total categorías de materiales</span>
+              <span className="text-gray-500">Total categorías de materiales</span>
               <Badge variant="gray">{data?.categoriasDisponibles.length ?? 0}</Badge>
             </div>
           </div>
-          <p className="mt-4 text-xs text-muted-foreground">
+          <p className="mt-4 text-xs text-gray-400">
             Tras cambiar márgenes, pulsa "Recalcular todos los precios" para actualizar los precios de venta en la base de datos.
           </p>
         </Card>
@@ -217,14 +217,14 @@ export default function MárgenesPage() {
       {/* ── MÁRGENES POR CATEGORÍA ── */}
       <Card className="mt-6">
         <h2 className="text-lg font-semibold mb-4">Márgenes por Categoría</h2>
-        <p className="text-sm text-muted-foreground mb-4">
+        <p className="text-sm text-gray-500 mb-4">
           Sobreescriben el margen general para todos los materiales de esa categoría (salvo los que tengan margen individual).
         </p>
 
         {data && data.categorias.length > 0 ? (
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b text-left text-muted-foreground">
+              <tr className="border-b text-left text-gray-500">
                 <th className="pb-2">Categoría</th>
                 <th className="pb-2 w-32">Margen (%)</th>
                 <th className="pb-2 w-40 text-right">Acciones</th>
@@ -232,7 +232,7 @@ export default function MárgenesPage() {
             </thead>
             <tbody>
               {data.categorias.map((mc) => (
-                <tr key={mc.categoria} className="border-b last:border-b-0 hover:bg-surface">
+                <tr key={mc.categoria} className="border-b last:border-b-0 hover:bg-gray-50">
                   <td className="py-2">
                     <Badge>{mc.categoria}</Badge>
                   </td>
@@ -249,10 +249,10 @@ export default function MárgenesPage() {
                   <td className="py-2 text-right">
                     <div className="flex gap-2 justify-end">
                       <Button size="sm" onClick={() => handleSaveCategoria(mc.categoria)} disabled={saving}>
-                        <Save className="w-3 h-3" />
+                        <HiSave className="w-3 h-3" />
                       </Button>
                       <Button size="sm" variant="danger" onClick={() => handleDeleteCategoria(mc.categoria)}>
-                        <Trash2 className="w-3 h-3" />
+                        <HiTrash className="w-3 h-3" />
                       </Button>
                     </div>
                   </td>
@@ -261,7 +261,7 @@ export default function MárgenesPage() {
             </tbody>
           </table>
         ) : (
-          <p className="text-muted-foreground text-sm py-4">No hay márgenes por categoría. Todas usan el margen general.</p>
+          <p className="text-gray-400 text-sm py-4">No hay márgenes por categoría. Todas usan el margen general.</p>
         )}
 
         {/* ── Añadir nueva categoría ── */}

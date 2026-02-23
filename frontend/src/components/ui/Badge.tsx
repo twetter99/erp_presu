@@ -1,13 +1,13 @@
 type BadgeVariant = 'blue' | 'green' | 'yellow' | 'red' | 'gray' | 'purple' | 'indigo';
 
 const colors: Record<BadgeVariant, string> = {
-  blue: 'bg-primary/15 text-primary border-primary/20',
-  green: 'bg-success/15 text-success border-success/20',
-  yellow: 'bg-warning/15 text-warning border-warning/20',
-  red: 'bg-destructive/15 text-destructive border-destructive/20',
-  gray: 'bg-white/[0.06] text-muted-foreground border-white/[0.08]',
-  purple: 'bg-primary/15 text-primary border-primary/20',
-  indigo: 'bg-primary/15 text-primary border-primary/20',
+  blue: 'bg-blue-50 text-blue-700 border-blue-200/60',
+  green: 'bg-emerald-50 text-emerald-700 border-emerald-200/60',
+  yellow: 'bg-amber-50 text-amber-700 border-amber-200/60',
+  red: 'bg-red-50 text-red-700 border-red-200/60',
+  gray: 'bg-slate-100 text-slate-600 border-slate-200/60',
+  purple: 'bg-purple-50 text-purple-700 border-purple-200/60',
+  indigo: 'bg-indigo-50 text-indigo-700 border-indigo-200/60',
 };
 
 interface BadgeProps {

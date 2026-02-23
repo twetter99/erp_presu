@@ -9,8 +9,7 @@ export default defineConfig({
         manualChunks: {
           'vendor-react': ['react', 'react-dom', 'react-router-dom', 'zustand'],
           'vendor-firebase': ['firebase/app', 'firebase/auth'],
-          'vendor-ui': ['@radix-ui/react-dropdown-menu', '@radix-ui/react-tooltip', 'lucide-react'],
-          'vendor-charts': ['recharts'],
+          'vendor-ui': ['@radix-ui/react-dropdown-menu', '@radix-ui/react-tooltip', 'react-icons'],
         },
       },
     },
