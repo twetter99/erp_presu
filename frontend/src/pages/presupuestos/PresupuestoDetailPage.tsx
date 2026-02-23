@@ -314,44 +314,107 @@ export default function PresupuestoDetailPage() {
       if (templateCode) query.set('template', templateCode);
       const response = await api.get(`/presupuestos/${id}/oferta-pdf?${query.toString()}`, {
         responseType: 'arraybuffer',
-        validateStatus: (status) => (status >= 200 && status < 300) || status === 501,
       });
 
-      if (response.status === 501) {
-        const payloadText = new TextDecoder('utf-8').decode(response.data);
-        const fallbackPayload = JSON.parse(payloadText) as { fallbackHtml?: string };
-        if (fallbackPayload.fallbackHtml) {
-          toast('PDF no disponible en servidor. Descargando HTML de respaldo.', { icon: '⚠️' });
-          const htmlResp = await api.get(fallbackPayload.fallbackHtml.replace('/api', ''), { responseType: 'blob' });
-          const htmlBlob = new Blob([htmlResp.data], { type: 'text/html;charset=utf-8' });
-          const url = URL.createObjectURL(htmlBlob);
+      const rawData = response.data;
+      const bytes = rawData instanceof ArrayBuffer
+        ? new Uint8Array(rawData)
+        : (ArrayBuffer.isView(rawData)
+          ? new Uint8Array(rawData.buffer, rawData.byteOffset, rawData.byteLength)
+          : null);
+
+      if (!bytes || bytes.length === 0) {
+        throw new Error('No se recibió contenido PDF desde el servidor.');
+      }
+
+      const contentType = (response.headers?.['content-type'] || '').toLowerCase();
+      const headAscii = new TextDecoder('ascii').decode(bytes.slice(0, Math.min(bytes.length, 512))).trimStart();
+      const isLikelyPdf = headAscii.includes('%PDF-') || contentType.includes('application/pdf');
+      const isLikelyJson = contentType.includes('application/json') || headAscii.startsWith('{') || headAscii.startsWith('[');
+      const isLikelyHtml = contentType.includes('text/html') || headAscii.startsWith('<!doctype') || headAscii.startsWith('<html');
+
+      if (!isLikelyPdf && (isLikelyJson || isLikelyHtml)) {
+        let detalle = 'El servidor no devolvió un PDF válido.';
+        const payloadText = new TextDecoder('utf-8').decode(bytes);
+
+        if (isLikelyJson) {
+          try {
+            const payload = JSON.parse(payloadText) as { error?: string; detail?: string };
+            detalle = payload.detail || payload.error || detalle;
+          } catch {
+            detalle = payloadText.slice(0, 240) || detalle;
+          }
+        } else {
+          detalle = payloadText.slice(0, 240) || detalle;
+        }
+
+        throw new Error(detalle);
+      }
+
+      const normalizedBytes = new Uint8Array(bytes.byteLength);
+      normalizedBytes.set(bytes);
+      const blob = new Blob([normalizedBytes.buffer], { type: 'application/pdf' });
+      const url = URL.createObjectURL(blob);
+
+      const iframe = document.createElement('iframe');
+      iframe.style.position = 'fixed';
+      iframe.style.right = '0';
+      iframe.style.bottom = '0';
+      iframe.style.width = '0';
+      iframe.style.height = '0';
+      iframe.style.border = '0';
+      iframe.src = url;
+      document.body.appendChild(iframe);
+
+      iframe.onload = () => {
+        try {
+          iframe.contentWindow?.focus();
+          iframe.contentWindow?.print();
+          toast.success('Vista de impresión abierta.');
+        } catch {
+          toast('No se pudo abrir automáticamente la impresión.', { icon: '⚠️' });
+        }
+      };
+
+      setTimeout(() => {
+        const confirmarDescarga = window.confirm('¿Quieres descargar también el PDF?');
+        if (confirmarDescarga) {
           const link = document.createElement('a');
-          const fileName = `${presupuesto?.codigoOferta || presupuesto?.codigo || 'oferta'}.html`;
+          const fileName = `${presupuesto?.codigoOferta || presupuesto?.codigo || 'oferta'}.pdf`;
           link.href = url;
           link.download = fileName;
           document.body.appendChild(link);
           link.click();
           document.body.removeChild(link);
-          URL.revokeObjectURL(url);
-          return;
+          toast.success('PDF descargado');
         }
+      }, 1200);
 
-        throw new Error('No se recibió fallback HTML');
+      setTimeout(() => {
+        try {
+          document.body.removeChild(iframe);
+        } catch {
+          // noop
+        }
+        URL.revokeObjectURL(url);
+      }, 120000);
+    } catch (err: any) {
+      const responseData = err?.response?.data;
+      let detalleBackend = '';
+
+      if (responseData instanceof ArrayBuffer) {
+        try {
+          const payloadText = new TextDecoder('utf-8').decode(responseData);
+          const payload = JSON.parse(payloadText) as { error?: string; detail?: string };
+          detalleBackend = payload.detail || payload.error || '';
+        } catch {
+          detalleBackend = '';
+        }
+      } else if (responseData && typeof responseData === 'object') {
+        detalleBackend = responseData.detail || responseData.error || '';
       }
 
-      const blob = new Blob([response.data], { type: 'application/pdf' });
-      const url = URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      const fileName = `${presupuesto?.codigoOferta || presupuesto?.codigo || 'oferta'}.pdf`;
-      link.href = url;
-      link.download = fileName;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      URL.revokeObjectURL(url);
-      toast.success('PDF descargado');
-    } catch (err: any) {
-      toast.error(err.response?.data?.error || err.message || 'Error al descargar PDF');
+      toast.error(detalleBackend || err.message || 'Error al descargar PDF');
     } finally {
       setDescargandoPdf(false);
     }

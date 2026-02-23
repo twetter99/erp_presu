@@ -38,6 +38,7 @@ type OfertaAnexoTecnico = {
   familia?: string;
   contenido?: string;
   fuente?: 'PRODUCTO' | 'SOLUCION';
+  metadatos?: unknown;
 };
 
 type OfertaEconomico = {
@@ -98,6 +99,23 @@ function roundCurrency(value: number): number {
 
 function formatPercent(value: number): string {
   return `${new Intl.NumberFormat('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(value || 0)}%`;
+}
+
+function asRecord(value: unknown): Record<string, unknown> {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) return {};
+  return value as Record<string, unknown>;
+}
+
+function asStringArray(value: unknown): string[] {
+  if (!Array.isArray(value)) return [];
+  return value
+    .map((item) => String(item ?? '').trim())
+    .filter(Boolean);
+}
+
+function asNumber(value: unknown, fallback = 0): number {
+  const parsed = typeof value === 'number' ? value : Number(value);
+  return Number.isFinite(parsed) ? parsed : fallback;
 }
 
 let cachedWinfinLogoDataUri: string | null = null;
@@ -340,6 +358,16 @@ export function buildOfertaPayload({ presupuesto, codigoOferta, versionOferta, f
   const lineas = buildOfertaLineas(presupuesto);
   const economico = resolveOfertaEconomico(presupuesto, lineas);
   const lineasOpcionales = lineas.filter((linea) => linea.bloque === 'E_OPCIONALES_4_5');
+  const anexosPayload = anexosTecnicos.map((anexo) => ({
+    titulo: anexo.titulo,
+    url: anexo.url,
+    orden: anexo.orden,
+    sku: anexo.sku,
+    descripcion: anexo.descripcion,
+    familia: anexo.familia,
+    contenido: anexo.contenido,
+    fuente: anexo.fuente,
+  }));
 
   return {
     template: {
@@ -398,7 +426,7 @@ export function buildOfertaPayload({ presupuesto, codigoOferta, versionOferta, f
       incluidosEnTotal: false,
     },
     modulosDocumento: modulosDocumento.filter((module) => module.enabled),
-    anexosTecnicos,
+    anexosTecnicos: anexosPayload,
   };
 }
 
@@ -433,20 +461,95 @@ export function buildOfertaHtmlDocument({ presupuesto, templateCode, anexosTecni
           sku: anexo.sku || '-',
           descripcion: anexo.descripcion || anexo.titulo,
           familia: anexo.familia || '-',
+          metadatos: anexo.metadatos,
           anexos: [] as OfertaAnexoTecnico[],
         };
       }
+      if (!acc[key].metadatos && anexo.metadatos) {
+        acc[key].metadatos = anexo.metadatos;
+      }
       acc[key].anexos.push(anexo);
       return acc;
-    }, {} as Record<string, { sku: string; descripcion: string; familia: string; anexos: OfertaAnexoTecnico[] }>);
+    }, {} as Record<string, { sku: string; descripcion: string; familia: string; metadatos?: unknown; anexos: OfertaAnexoTecnico[] }>);
 
   const anexosLegacy = anexosTecnicos.filter((anexo) => anexo.fuente !== 'PRODUCTO' && !anexo.sku);
+
+  const contextExtras = asRecord(presupuesto.contexto?.extrasJson);
+
+  const productDossiers = Object.values(anexosAgrupadosPorProducto).map((ficha) => {
+    const meta = asRecord(ficha.metadatos);
+    const arquitectura = asRecord(meta.arquitectura);
+    const componentes = [
+      ...asStringArray(meta.componentes),
+      ...asStringArray(arquitectura.componentes),
+    ];
+    const prestaciones = asStringArray(meta.prestaciones);
+    const integraciones = asStringArray(meta.integraciones);
+    const mantenimiento = asStringArray(meta.mantenimiento);
+
+    const normativaRaw = Array.isArray(meta.normativa) ? meta.normativa : [];
+    const normativa = normativaRaw
+      .map((item) => asRecord(item))
+      .map((item) => ({
+        grupo: String(item.grupo || 'N/A'),
+        norma: String(item.norma || 'No especificada'),
+        estado: String(item.estado || 'NO_APLICA'),
+        detalle: String(item.detalle || 'Sin detalle adicional'),
+      }));
+
+    return {
+      ...ficha,
+      rolArquitectura: String(meta.rolArquitectura || arquitectura.rol || 'Componente técnico de solución embarcada'),
+      componentes,
+      prestaciones,
+      integraciones,
+      mantenimiento,
+      normativa,
+    };
+  });
+
+  const resumenNormativo = productDossiers
+    .flatMap((producto) => producto.normativa)
+    .reduce((acc, item) => {
+      acc.total += 1;
+      if (item.estado.toUpperCase() === 'CUMPLE') acc.cumple += 1;
+      else if (item.estado.toUpperCase() === 'NO_APLICA') acc.noAplica += 1;
+      else acc.pendiente += 1;
+      return acc;
+    }, { total: 0, cumple: 0, noAplica: 0, pendiente: 0 });
 
   const lineasA = lineas.filter((linea) => linea.bloque === 'A_SUMINISTRO_EQUIPOS');
   const lineasB = lineas.filter((linea) => linea.bloque === 'B_MATERIALES_INSTALACION');
   const lineasC = lineas.filter((linea) => linea.bloque === 'C_MANO_OBRA');
   const lineasD = lineas.filter((linea) => linea.bloque === 'D_MANTENIMIENTO_1_3');
   const lineasE = lineas.filter((linea) => linea.bloque === 'E_OPCIONALES_4_5');
+
+  const productividad = {
+    cuadrillas: Math.max(1, asNumber(contextExtras.cuadrillas, 2)),
+    tecnicosPorCuadrilla: Math.max(1, asNumber(contextExtras.tecnicosPorCuadrilla, 2)),
+    vehiculosDia: Math.max(1, asNumber(contextExtras.vehiculosDiaObjetivo, Math.ceil((lineasA.length + lineasB.length + lineasC.length) / 6))),
+    jornadasSemana: Math.max(1, asNumber(contextExtras.jornadasSemana, 5)),
+  };
+  const vehiculosObjetivo = Math.max(1, asNumber(presupuesto.contexto?.numVehiculos, 1));
+  const vehiculosSemana = productividad.vehiculosDia * productividad.jornadasSemana;
+  const plazoSemanas = Math.max(1, Math.ceil(vehiculosObjetivo / vehiculosSemana));
+
+  const experiencia = {
+    vehiculosEquipados: Math.max(vehiculosObjetivo, asNumber(contextExtras.experienciaVehiculos, vehiculosObjetivo)),
+    anios: Math.max(1, asNumber(contextExtras.experienciaAnios, 1)),
+    sectores: asStringArray(contextExtras.experienciaSectores).length > 0
+      ? asStringArray(contextExtras.experienciaSectores)
+      : ['Transporte público urbano'],
+    proyectosReferencia: Math.max(1, asNumber(contextExtras.proyectosReferencia, 1)),
+  };
+
+  const arquitecturaComponentes = productDossiers
+    .flatMap((producto) => producto.componentes.map((componente) => ({
+      sku: producto.sku,
+      producto: producto.descripcion,
+      componente,
+      rol: producto.rolArquitectura,
+    })));
 
   const resumenEjecutivo = buildResumenEjecutivo(presupuesto, economico, moduloResumen?.content);
 
@@ -557,6 +660,18 @@ export function buildOfertaHtmlDocument({ presupuesto, templateCode, anexosTecni
     .toc { border: 1px solid #cbd5e1; border-radius: 4px; padding: 8px 10px; margin-top: 8px; }
     .toc-row { display: flex; justify-content: space-between; border-bottom: 1px dashed #cbd5e1; padding: 4px 0; font-size: 10.5px; }
     .toc-row:last-child { border-bottom: 0; }
+    .page-block { page-break-before: always; }
+    .chapter-intro { border: 1px solid #cbd5e1; border-radius: 4px; padding: 10px; margin-bottom: 8px; background: #f8fafc; }
+    .kpi-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-top: 8px; }
+    .kpi-card { border: 1px solid #cbd5e1; border-radius: 4px; padding: 8px; }
+    .kpi-card .label { font-size: 9px; text-transform: uppercase; color: #64748b; }
+    .kpi-card .value { margin-top: 3px; font-size: 14px; font-weight: 800; color: #0f172a; }
+    .product-section { border: 1px solid #cbd5e1; border-radius: 4px; padding: 8px 10px; margin-bottom: 8px; }
+    .product-head { display: flex; justify-content: space-between; gap: 8px; margin-bottom: 6px; }
+    .product-title { font-size: 12px; font-weight: 800; text-transform: uppercase; }
+    .product-role { font-size: 10px; color: #334155; }
+    .bullet-list { margin: 0; padding-left: 18px; }
+    .bullet-list li { margin-bottom: 3px; }
   </style>
 </head>
 <body>
@@ -774,6 +889,98 @@ export function buildOfertaHtmlDocument({ presupuesto, templateCode, anexosTecni
 
     <p class="footer-note">WINFIN · Propuesta técnica pública · ${escapeHtml(templateSpec.codigo)} · ${escapeHtml(templateSpec.version)}</p>
   </div>
+
+  <section class="page page-block">
+    <div class="sheet">
+      <h2 class="section-title">Desarrollo técnico ampliado por producto</h2>
+      <div class="chapter-intro">
+        El presente bloque describe para cada producto la función de ingeniería, componentes, prestaciones operativas y requisitos de integración para despliegue en flotas.
+      </div>
+      ${productDossiers.length > 0
+    ? productDossiers.map((producto) => `<article class="product-section"><div class="product-head"><div><div class="product-title">${escapeHtml(producto.sku)} · ${escapeHtml(producto.descripcion)}</div><div class="product-role">Rol funcional: ${escapeHtml(producto.rolArquitectura)}</div></div><div class="ficha-meta">Familia: ${escapeHtml(producto.familia)}</div></div><h3 class="subsection-title">Componentes técnicos</h3>${producto.componentes.length > 0 ? `<ul class="bullet-list">${producto.componentes.map((item) => `<li>${escapeHtml(item)}</li>`).join('')}</ul>` : '<p class="muted">Sin componentes detallados.</p>'}<h3 class="subsection-title">Prestaciones operativas</h3>${producto.prestaciones.length > 0 ? `<ul class="bullet-list">${producto.prestaciones.map((item) => `<li>${escapeHtml(item)}</li>`).join('')}</ul>` : '<p class="muted">Sin prestaciones detalladas.</p>'}<h3 class="subsection-title">Integración y mantenimiento</h3><p>${escapeHtmlWithBreaks((producto.integraciones.length > 0 ? `Integraciones: ${producto.integraciones.join(' · ')}` : 'Integraciones: definidas en ingeniería de detalle') + (producto.mantenimiento.length > 0 ? `\nMantenimiento: ${producto.mantenimiento.join(' · ')}` : '\nMantenimiento: conforme plan preventivo y correctivo de explotación.'))}</p></article>`).join('')
+    : '<p class="muted">No hay productos con ficha técnica estructurada para esta oferta.</p>'}
+    </div>
+  </section>
+
+  <section class="page page-block">
+    <div class="sheet">
+      <h2 class="section-title">Arquitectura funcional detallada</h2>
+      <div class="chapter-intro">
+        Arquitectura modular por capas: captura embarcada, comunicaciones, procesamiento y operación. La tabla detalla los componentes principales y su rol técnico por producto.
+      </div>
+      ${arquitecturaComponentes.length > 0 ? `<table><thead><tr><th style="width:12%;">SKU</th><th style="width:28%;">Producto</th><th style="width:30%;">Componente</th><th style="width:30%;">Rol arquitectural</th></tr></thead><tbody>${arquitecturaComponentes.map((item) => `<tr><td>${escapeHtml(item.sku)}</td><td>${escapeHtml(item.producto)}</td><td>${escapeHtml(item.componente)}</td><td>${escapeHtml(item.rol)}</td></tr>`).join('')}</tbody></table>` : '<p class="muted">No hay componentes detallados para construir arquitectura funcional.</p>'}
+    </div>
+  </section>
+
+  <section class="page page-block">
+    <div class="sheet">
+      <h2 class="section-title">Cumplimiento normativo</h2>
+      <div class="chapter-intro">
+        Verificación de cumplimiento por producto en marcos UNECE, IP y EMC. En ausencia de requisito aplicable se declara expresamente "No aplica".
+      </div>
+      ${productDossiers.some((producto) => producto.normativa.length > 0)
+    ? productDossiers.map((producto) => `<article class="product-section"><div class="product-title">${escapeHtml(producto.sku)} · ${escapeHtml(producto.descripcion)}</div>${producto.normativa.length > 0 ? `<table style="margin-top:6px;"><thead><tr><th style="width:18%;">Grupo</th><th style="width:20%;">Norma</th><th style="width:18%;">Estado</th><th style="width:44%;">Detalle</th></tr></thead><tbody>${producto.normativa.map((norma) => `<tr><td>${escapeHtml(norma.grupo)}</td><td>${escapeHtml(norma.norma)}</td><td>${escapeHtml(norma.estado === 'NO_APLICA' ? 'No aplica' : norma.estado)}</td><td>${escapeHtml(norma.detalle)}</td></tr>`).join('')}</tbody></table>` : '<p class="muted">No aplica normativa específica en la configuración actual.</p>'}</article>`).join('')
+    : '<p class="muted">No hay normativa detallada; se declara No aplica para esta configuración.</p>'}
+      <div class="kpi-grid">
+        <article class="kpi-card"><div class="label">Controles evaluados</div><div class="value">${escapeHtml(resumenNormativo.total)}</div></article>
+        <article class="kpi-card"><div class="label">Cumple</div><div class="value">${escapeHtml(resumenNormativo.cumple)}</div></article>
+        <article class="kpi-card"><div class="label">No aplica</div><div class="value">${escapeHtml(resumenNormativo.noAplica)}</div></article>
+        <article class="kpi-card"><div class="label">Pendiente</div><div class="value">${escapeHtml(resumenNormativo.pendiente)}</div></article>
+      </div>
+    </div>
+  </section>
+
+  <section class="page page-block">
+    <div class="sheet">
+      <h2 class="section-title">Metodología y productividad de ejecución</h2>
+      <div class="chapter-intro">
+        La ejecución se planifica por cuadrillas con ritmo objetivo y control de hitos semanales para minimizar indisponibilidad de flota.
+      </div>
+      <div class="kpi-grid">
+        <article class="kpi-card"><div class="label">Cuadrillas</div><div class="value">${escapeHtml(productividad.cuadrillas)}</div></article>
+        <article class="kpi-card"><div class="label">Técnicos/Cuadrilla</div><div class="value">${escapeHtml(productividad.tecnicosPorCuadrilla)}</div></article>
+        <article class="kpi-card"><div class="label">Vehículos/Día</div><div class="value">${escapeHtml(productividad.vehiculosDia)}</div></article>
+        <article class="kpi-card"><div class="label">Plazo estimado (semanas)</div><div class="value">${escapeHtml(plazoSemanas)}</div></article>
+      </div>
+      <table style="margin-top:8px;">
+        <thead>
+          <tr><th style="width:30%;">Indicador</th><th style="width:70%;">Valor y criterio</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Ritmo semanal</td><td>${escapeHtml(vehiculosSemana)} vehículos/semana, basado en ${escapeHtml(productividad.vehiculosDia)} vehículos/día y ${escapeHtml(productividad.jornadasSemana)} jornadas operativas.</td></tr>
+          <tr><td>Dimensionamiento de equipos</td><td>${escapeHtml(productividad.cuadrillas)} cuadrilla(s) de ${escapeHtml(productividad.tecnicosPorCuadrilla)} técnico(s), con coordinación de ventana operativa y checklist de calidad por intervención.</td></tr>
+          <tr><td>Control de productividad</td><td>Seguimiento semanal mediante hitos de instalación, actas de avance y gestión de riesgos con trazabilidad documental.</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="page page-block">
+    <div class="sheet">
+      <h2 class="section-title">Capacidad técnica y experiencia cuantificada</h2>
+      <div class="chapter-intro">
+        Indicadores de capacidad extraídos del expediente actual y datos corporativos declarados en contexto de oferta.
+      </div>
+      <div class="kpi-grid">
+        <article class="kpi-card"><div class="label">Vehículos equipados</div><div class="value">${escapeHtml(experiencia.vehiculosEquipados)}</div></article>
+        <article class="kpi-card"><div class="label">Años de experiencia</div><div class="value">${escapeHtml(experiencia.anios)}</div></article>
+        <article class="kpi-card"><div class="label">Sectores cubiertos</div><div class="value">${escapeHtml(experiencia.sectores.length)}</div></article>
+        <article class="kpi-card"><div class="label">Proyectos referencia</div><div class="value">${escapeHtml(experiencia.proyectosReferencia)}</div></article>
+      </div>
+      <p style="margin-top:10px;"><strong>Sectores:</strong> ${escapeHtml(experiencia.sectores.join(' · '))}</p>
+      <p class="muted">Estos indicadores sustentan la solvencia técnica para despliegues en flota con exigencia de continuidad operativa y trazabilidad de ejecución.</p>
+    </div>
+  </section>
+
+  <section class="page page-block">
+    <div class="sheet">
+      <h2 class="section-title">Anexos técnicos incrustados</h2>
+      ${productDossiers.length > 0
+    ? productDossiers.map((producto) => `<article class="product-section"><div class="product-title">Ficha técnica completa · ${escapeHtml(producto.sku)}</div><p><strong>Producto:</strong> ${escapeHtml(producto.descripcion)} · <strong>Familia:</strong> ${escapeHtml(producto.familia)}</p>${producto.anexos.map((anexo) => `<div style="margin-top:6px;"><strong>${escapeHtml(anexo.titulo)}</strong><p class="muted">${escapeHtmlWithBreaks(anexo.contenido || 'Documento técnico incorporado en esta propuesta para evaluación de ingeniería, integración y operación.')}</p></div>`).join('')}</article>`).join('')
+    : '<p class="muted">No hay anexos técnicos disponibles para incrustar en esta propuesta.</p>'}
+      ${anexosLegacy.length > 0 ? `<h3 class="subsection-title">Anexos complementarios</h3><ul class="bullet-list">${anexosLegacy.map((anexo) => `<li>${escapeHtml(anexo.titulo)}${anexo.contenido ? ` · ${escapeHtml(anexo.contenido)}` : ''}</li>`).join('')}</ul>` : ''}
+    </div>
+  </section>
 </body>
 </html>`;
 }

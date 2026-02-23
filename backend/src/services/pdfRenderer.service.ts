@@ -10,7 +10,7 @@ type OfertaPdfRenderResult = {
 };
 
 export async function renderOfertaPdf({ html, fileNameBase }: OfertaPdfRenderArgs): Promise<OfertaPdfRenderResult> {
-  const provider = (process.env.OFERTA_PDF_PROVIDER || 'none').toLowerCase();
+  const provider = (process.env.OFERTA_PDF_PROVIDER || 'puppeteer').toLowerCase();
 
   if (provider === 'none') {
     throw new Error('OFERTA_PDF_PROVIDER no configurado. Usa /oferta-html para descarga HTML o configura proveedor PDF.');

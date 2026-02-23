@@ -77,6 +77,18 @@
     .toc { border: 1px solid #cbd5e1; border-radius: 4px; padding: 8px 10px; margin-top: 8px; }
     .toc-row { display: flex; justify-content: space-between; border-bottom: 1px dashed #cbd5e1; padding: 4px 0; font-size: 10.5px; }
     .toc-row:last-child { border-bottom: 0; }
+    .page-block { page-break-before: always; }
+    .chapter-intro { border: 1px solid #cbd5e1; border-radius: 4px; padding: 10px; margin-bottom: 8px; background: #f8fafc; }
+    .kpi-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-top: 8px; }
+    .kpi-card { border: 1px solid #cbd5e1; border-radius: 4px; padding: 8px; }
+    .kpi-card .label { font-size: 9px; text-transform: uppercase; color: #64748b; }
+    .kpi-card .value { margin-top: 3px; font-size: 14px; font-weight: 800; color: #0f172a; }
+    .product-section { border: 1px solid #cbd5e1; border-radius: 4px; padding: 8px 10px; margin-bottom: 8px; }
+    .product-head { display: flex; justify-content: space-between; gap: 8px; margin-bottom: 6px; }
+    .product-title { font-size: 12px; font-weight: 800; text-transform: uppercase; }
+    .product-role { font-size: 10px; color: #334155; }
+    .bullet-list { margin: 0; padding-left: 18px; }
+    .bullet-list li { margin-bottom: 3px; }
   </style>
 </head>
 <body>
@@ -337,5 +349,91 @@
 
     <p class="footer-note">WINFIN · Propuesta técnica pública · OFERTA_WINFIN_LIC_V1 · 1.0.0</p>
   </div>
+
+  <section class="page page-block">
+    <div class="sheet">
+      <h2 class="section-title">Desarrollo técnico ampliado por producto</h2>
+      <div class="chapter-intro">
+        El presente bloque describe para cada producto la función de ingeniería, componentes, prestaciones operativas y requisitos de integración para despliegue en flotas.
+      </div>
+      <p class="muted">No hay productos con ficha técnica estructurada para esta oferta.</p>
+    </div>
+  </section>
+
+  <section class="page page-block">
+    <div class="sheet">
+      <h2 class="section-title">Arquitectura funcional detallada</h2>
+      <div class="chapter-intro">
+        Arquitectura modular por capas: captura embarcada, comunicaciones, procesamiento y operación. La tabla detalla los componentes principales y su rol técnico por producto.
+      </div>
+      <p class="muted">No hay componentes detallados para construir arquitectura funcional.</p>
+    </div>
+  </section>
+
+  <section class="page page-block">
+    <div class="sheet">
+      <h2 class="section-title">Cumplimiento normativo</h2>
+      <div class="chapter-intro">
+        Verificación de cumplimiento por producto en marcos UNECE, IP y EMC. En ausencia de requisito aplicable se declara expresamente "No aplica".
+      </div>
+      <p class="muted">No hay normativa detallada; se declara No aplica para esta configuración.</p>
+      <div class="kpi-grid">
+        <article class="kpi-card"><div class="label">Controles evaluados</div><div class="value">0</div></article>
+        <article class="kpi-card"><div class="label">Cumple</div><div class="value">0</div></article>
+        <article class="kpi-card"><div class="label">No aplica</div><div class="value">0</div></article>
+        <article class="kpi-card"><div class="label">Pendiente</div><div class="value">0</div></article>
+      </div>
+    </div>
+  </section>
+
+  <section class="page page-block">
+    <div class="sheet">
+      <h2 class="section-title">Metodología y productividad de ejecución</h2>
+      <div class="chapter-intro">
+        La ejecución se planifica por cuadrillas con ritmo objetivo y control de hitos semanales para minimizar indisponibilidad de flota.
+      </div>
+      <div class="kpi-grid">
+        <article class="kpi-card"><div class="label">Cuadrillas</div><div class="value">2</div></article>
+        <article class="kpi-card"><div class="label">Técnicos/Cuadrilla</div><div class="value">2</div></article>
+        <article class="kpi-card"><div class="label">Vehículos/Día</div><div class="value">2</div></article>
+        <article class="kpi-card"><div class="label">Plazo estimado (semanas)</div><div class="value">1</div></article>
+      </div>
+      <table style="margin-top:8px;">
+        <thead>
+          <tr><th style="width:30%;">Indicador</th><th style="width:70%;">Valor y criterio</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Ritmo semanal</td><td>10 vehículos/semana, basado en 2 vehículos/día y 5 jornadas operativas.</td></tr>
+          <tr><td>Dimensionamiento de equipos</td><td>2 cuadrilla(s) de 2 técnico(s), con coordinación de ventana operativa y checklist de calidad por intervención.</td></tr>
+          <tr><td>Control de productividad</td><td>Seguimiento semanal mediante hitos de instalación, actas de avance y gestión de riesgos con trazabilidad documental.</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="page page-block">
+    <div class="sheet">
+      <h2 class="section-title">Capacidad técnica y experiencia cuantificada</h2>
+      <div class="chapter-intro">
+        Indicadores de capacidad extraídos del expediente actual y datos corporativos declarados en contexto de oferta.
+      </div>
+      <div class="kpi-grid">
+        <article class="kpi-card"><div class="label">Vehículos equipados</div><div class="value">1</div></article>
+        <article class="kpi-card"><div class="label">Años de experiencia</div><div class="value">1</div></article>
+        <article class="kpi-card"><div class="label">Sectores cubiertos</div><div class="value">1</div></article>
+        <article class="kpi-card"><div class="label">Proyectos referencia</div><div class="value">1</div></article>
+      </div>
+      <p style="margin-top:10px;"><strong>Sectores:</strong> Transporte público urbano</p>
+      <p class="muted">Estos indicadores sustentan la solvencia técnica para despliegues en flota con exigencia de continuidad operativa y trazabilidad de ejecución.</p>
+    </div>
+  </section>
+
+  <section class="page page-block">
+    <div class="sheet">
+      <h2 class="section-title">Anexos técnicos incrustados</h2>
+      <p class="muted">No hay anexos técnicos disponibles para incrustar en esta propuesta.</p>
+      
+    </div>
+  </section>
 </body>
 </html>

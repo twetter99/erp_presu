@@ -79,6 +79,7 @@ type OfertaAnexoTecnico = {
   familia?: string;
   fuente?: 'PRODUCTO' | 'SOLUCION';
   contenido?: string;
+  metadatos?: unknown;
 };
 
 function templateInvalida(code?: string): boolean {
@@ -102,7 +103,7 @@ async function resolverAnexosTecnicosOferta(presupuesto: any): Promise<OfertaAne
         },
         include: {
           itemCatalogo: {
-            select: { sku: true, descripcion: true, familia: true },
+            select: { sku: true, descripcion: true, familia: true, metadatos: true },
           },
         },
         orderBy: [{ itemCatalogoId: 'asc' }, { orden: 'asc' }],
@@ -117,6 +118,7 @@ async function resolverAnexosTecnicosOferta(presupuesto: any): Promise<OfertaAne
     descripcion: anexo.itemCatalogo.descripcion,
     familia: anexo.itemCatalogo.familia,
     contenido: anexo.contenido || undefined,
+    metadatos: anexo.itemCatalogo.metadatos ?? undefined,
     fuente: 'PRODUCTO',
   }));
 

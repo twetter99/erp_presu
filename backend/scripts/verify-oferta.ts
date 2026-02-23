@@ -28,7 +28,7 @@ async function resolverAnexosTecnicosOferta(presupuesto: any) {
         },
         include: {
           itemCatalogo: {
-            select: { sku: true, descripcion: true, familia: true },
+            select: { sku: true, descripcion: true, familia: true, metadatos: true },
           },
         },
         orderBy: [{ itemCatalogoId: 'asc' }, { orden: 'asc' }],
@@ -43,6 +43,7 @@ async function resolverAnexosTecnicosOferta(presupuesto: any) {
     descripcion: anexo.itemCatalogo.descripcion,
     familia: anexo.itemCatalogo.familia,
     contenido: anexo.contenido || undefined,
+    metadatos: anexo.itemCatalogo.metadatos ?? undefined,
     fuente: 'PRODUCTO' as const,
   }));
 
