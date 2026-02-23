@@ -7,7 +7,7 @@ import { z } from 'zod';
 const router = Router();
 router.use(authMiddleware);
 
-const empresaSchema = z.object({
+const clienteSchema = z.object({
   nombre: z.string().min(1, 'Nombre requerido'),
   cif: z.string().min(1, 'CIF requerido'),
   direccion: z.string().optional(),
@@ -22,10 +22,10 @@ const empresaSchema = z.object({
 
 /**
  * @swagger
- * /api/empresas:
+ * /api/clientes:
  *   get:
- *     tags: [Empresas]
- *     summary: Listar empresas
+ *     tags: [Clientes]
+ *     summary: Listar clientes
  *     security:
  *       - bearerAuth: []
  */
@@ -41,57 +41,57 @@ router.get('/', async (req: Request, res: Response) => {
       ];
     }
 
-    const empresas = await prisma.empresa.findMany({
+    const clientes = await prisma.empresa.findMany({
       where,
       include: { _count: { select: { cocheras: true, contactos: true } } },
       orderBy: { nombre: 'asc' },
     });
-    res.json(empresas);
+    res.json(clientes);
   } catch (error) {
-    res.status(500).json({ error: 'Error al obtener empresas' });
+    res.status(500).json({ error: 'Error al obtener clientes' });
   }
 });
 
 /**
  * @swagger
- * /api/empresas/{id}:
+ * /api/clientes/{id}:
  *   get:
- *     tags: [Empresas]
- *     summary: Obtener empresa por ID
+ *     tags: [Clientes]
+ *     summary: Obtener cliente por ID
  */
 router.get('/:id', async (req: Request, res: Response) => {
   try {
-    const empresa = await prisma.empresa.findUnique({
+    const cliente = await prisma.empresa.findUnique({
       where: { id: Number(req.params.id) },
       include: { contactos: true, cocheras: true },
     });
-    if (!empresa) { res.status(404).json({ error: 'Empresa no encontrada' }); return; }
-    res.json(empresa);
+    if (!cliente) { res.status(404).json({ error: 'Cliente no encontrado' }); return; }
+    res.json(cliente);
   } catch (error) {
-    res.status(500).json({ error: 'Error al obtener empresa' });
+    res.status(500).json({ error: 'Error al obtener cliente' });
   }
 });
 
-router.post('/', validate(empresaSchema), async (req: Request, res: Response) => {
+router.post('/', validate(clienteSchema), async (req: Request, res: Response) => {
   try {
-    const empresa = await prisma.empresa.create({ data: req.body });
-    res.status(201).json(empresa);
+    const cliente = await prisma.empresa.create({ data: req.body });
+    res.status(201).json(cliente);
   } catch (error: any) {
-    if (error.code === 'P2002') { res.status(409).json({ error: 'Ya existe una empresa con ese CIF' }); return; }
-    res.status(500).json({ error: 'Error al crear empresa' });
+    if (error.code === 'P2002') { res.status(409).json({ error: 'Ya existe un cliente con ese CIF' }); return; }
+    res.status(500).json({ error: 'Error al crear cliente' });
   }
 });
 
-router.put('/:id', validate(empresaSchema.partial()), async (req: Request, res: Response) => {
+router.put('/:id', validate(clienteSchema.partial()), async (req: Request, res: Response) => {
   try {
-    const empresa = await prisma.empresa.update({
+    const cliente = await prisma.empresa.update({
       where: { id: Number(req.params.id) },
       data: req.body,
     });
-    res.json(empresa);
+    res.json(cliente);
   } catch (error: any) {
-    if (error.code === 'P2025') { res.status(404).json({ error: 'Empresa no encontrada' }); return; }
-    res.status(500).json({ error: 'Error al actualizar empresa' });
+    if (error.code === 'P2025') { res.status(404).json({ error: 'Cliente no encontrado' }); return; }
+    res.status(500).json({ error: 'Error al actualizar cliente' });
   }
 });
 
@@ -101,13 +101,13 @@ router.delete('/:id', async (req: Request, res: Response) => {
       where: { id: Number(req.params.id) },
       data: { activa: false },
     });
-    res.json({ message: 'Empresa desactivada' });
+    res.json({ message: 'Cliente desactivado' });
   } catch (error) {
-    res.status(500).json({ error: 'Error al desactivar empresa' });
+    res.status(500).json({ error: 'Error al desactivar cliente' });
   }
 });
 
-// --- Contactos de empresa ---
+// --- Contactos de cliente ---
 router.post('/:id/contactos', async (req: Request, res: Response) => {
   try {
     const contacto = await prisma.contactoEmpresa.create({

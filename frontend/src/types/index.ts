@@ -45,6 +45,8 @@ export interface Empresa {
   _count?: { cocheras: number; contactos: number };
 }
 
+export type Cliente = Empresa;
+
 export interface ContactoEmpresa {
   id: number;
   empresaId: number;
@@ -54,6 +56,8 @@ export interface ContactoEmpresa {
   email?: string;
   principal: boolean;
 }
+
+export type ContactoCliente = ContactoEmpresa;
 
 export interface Cochera {
   id: number;

@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useCrud } from '../../hooks/useApi';
-import { Empresa } from '../../types';
+import { Cliente } from '../../types';
 import DataTable from '../../components/ui/DataTable';
 import Button from '../../components/ui/Button';
 import Modal from '../../components/ui/Modal';
@@ -8,15 +8,15 @@ import Card from '../../components/ui/Card';
 import Input from '../../components/ui/Input';
 import { HiPlus, HiSearch } from 'react-icons/hi';
 
-export default function EmpresasPage() {
-  const { items, loading, create, update, remove } = useCrud<Empresa>('/empresas');
+export default function ClientesPage() {
+  const { items, loading, create, update, remove } = useCrud<Cliente>('/clientes');
   const [showForm, setShowForm] = useState(false);
-  const [editing, setEditing] = useState<Empresa | null>(null);
+  const [editing, setEditing] = useState<Cliente | null>(null);
   const [search, setSearch] = useState('');
   const [form, setForm] = useState({ nombre: '', cif: '', direccion: '', ciudad: '', provincia: '', cp: '', telefono: '', email: '', web: '', notas: '' });
 
   const filteredItems = items.filter(
-    (e) => e.nombre.toLowerCase().includes(search.toLowerCase()) || e.cif.toLowerCase().includes(search.toLowerCase())
+    (item) => item.nombre.toLowerCase().includes(search.toLowerCase()) || item.cif.toLowerCase().includes(search.toLowerCase())
   );
 
   const openCreate = () => {
@@ -25,12 +25,19 @@ export default function EmpresasPage() {
     setShowForm(true);
   };
 
-  const openEdit = (empresa: Empresa) => {
-    setEditing(empresa);
+  const openEdit = (item: Cliente) => {
+    setEditing(item);
     setForm({
-      nombre: empresa.nombre, cif: empresa.cif, direccion: empresa.direccion || '',
-      ciudad: empresa.ciudad || '', provincia: empresa.provincia || '', cp: empresa.cp || '',
-      telefono: empresa.telefono || '', email: empresa.email || '', web: empresa.web || '', notas: empresa.notas || '',
+      nombre: item.nombre,
+      cif: item.cif,
+      direccion: item.direccion || '',
+      ciudad: item.ciudad || '',
+      provincia: item.provincia || '',
+      cp: item.cp || '',
+      telefono: item.telefono || '',
+      email: item.email || '',
+      web: item.web || '',
+      notas: item.notas || '',
     });
     setShowForm(true);
   };
@@ -46,17 +53,29 @@ export default function EmpresasPage() {
   };
 
   const columns = [
-    { key: 'nombre', header: 'Nombre', render: (e: Empresa) => <span className="font-medium">{e.nombre}</span> },
+    { key: 'nombre', header: 'Nombre', render: (item: Cliente) => <span className="font-medium">{item.nombre}</span> },
     { key: 'cif', header: 'CIF' },
-    { key: 'ciudad', header: 'Ciudad', render: (e: Empresa) => e.ciudad || '-' },
-    { key: 'telefono', header: 'Teléfono', render: (e: Empresa) => e.telefono || '-' },
-    { key: 'email', header: 'Email', render: (e: Empresa) => e.email || '-' },
-    { key: '_count', header: 'Cocheras', render: (e: Empresa) => e._count?.cocheras || 0 },
+    { key: 'ciudad', header: 'Ciudad', render: (item: Cliente) => item.ciudad || '-' },
+    { key: 'telefono', header: 'Teléfono', render: (item: Cliente) => item.telefono || '-' },
+    { key: 'email', header: 'Email', render: (item: Cliente) => item.email || '-' },
+    { key: '_count', header: 'Cocheras', render: (item: Cliente) => item._count?.cocheras || 0 },
     {
-      key: 'actions', header: 'Acciones', render: (e: Empresa) => (
+      key: 'actions',
+      header: 'Acciones',
+      render: (item: Cliente) => (
         <div className="flex gap-2">
-          <Button size="sm" variant="secondary" onClick={() => openEdit(e)}>Editar</Button>
-          <Button size="sm" variant="danger" onClick={() => { if (confirm('¿Desactivar empresa?')) remove(e.id); }}>Desactivar</Button>
+          <Button size="sm" variant="secondary" onClick={() => openEdit(item)}>
+            Editar
+          </Button>
+          <Button
+            size="sm"
+            variant="danger"
+            onClick={() => {
+              if (confirm('¿Desactivar cliente?')) remove(item.id);
+            }}
+          >
+            Desactivar
+          </Button>
         </div>
       ),
     },
@@ -67,9 +86,11 @@ export default function EmpresasPage() {
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <h1 className="page-title">Clientes</h1>
-          <p className="text-sm text-muted-foreground mt-1">Directorio de empresas para presupuestación.</p>
+          <p className="text-sm text-muted-foreground mt-1">Alta y gestión de clientes para presupuestación.</p>
         </div>
-        <Button variant="outline" onClick={openCreate}><HiPlus className="w-4 h-4" /> Nueva Empresa</Button>
+        <Button variant="outline" onClick={openCreate}>
+          <HiPlus className="w-4 h-4" /> Nuevo Cliente
+        </Button>
       </div>
 
       <Card>
@@ -85,10 +106,10 @@ export default function EmpresasPage() {
             />
           </div>
         </div>
-        <DataTable columns={columns} data={filteredItems} loading={loading} emptyMessage="No hay empresas registradas" />
+        <DataTable columns={columns} data={filteredItems} loading={loading} emptyMessage="No hay clientes registrados" />
       </Card>
 
-      <Modal isOpen={showForm} onClose={() => setShowForm(false)} title={editing ? 'Editar Empresa' : 'Nueva Empresa'} size="lg">
+      <Modal isOpen={showForm} onClose={() => setShowForm(false)} title={editing ? 'Editar Cliente' : 'Nuevo Cliente'} size="lg">
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="grid grid-cols-2 gap-4">
             <div>
@@ -137,7 +158,9 @@ export default function EmpresasPage() {
             <textarea className="input-field" rows={3} value={form.notas} onChange={(e) => setForm({ ...form, notas: e.target.value })} />
           </div>
           <div className="flex justify-end gap-3 pt-4">
-            <Button variant="secondary" onClick={() => setShowForm(false)}>Cancelar</Button>
+            <Button variant="secondary" onClick={() => setShowForm(false)}>
+              Cancelar
+            </Button>
             <Button type="submit">{editing ? 'Guardar' : 'Crear'}</Button>
           </div>
         </form>

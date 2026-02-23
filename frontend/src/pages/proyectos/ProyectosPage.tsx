@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useCrud, useApi } from '../../hooks/useApi';
-import { Proyecto, Empresa } from '../../types';
+import { Proyecto, Cliente } from '../../types';
 import DataTable from '../../components/ui/DataTable';
 import Button from '../../components/ui/Button';
 import Modal from '../../components/ui/Modal';
@@ -12,7 +12,7 @@ import { HiPlus, HiSearch, HiEye } from 'react-icons/hi';
 export default function ProyectosPage() {
   const navigate = useNavigate();
   const { items, loading, create, update, remove } = useCrud<Proyecto>('/proyectos');
-  const { data: empresas } = useApi<Empresa[]>('/empresas');
+  const { data: clientes } = useApi<Cliente[]>('/clientes');
   const [showForm, setShowForm] = useState(false);
   const [editing, setEditing] = useState<Proyecto | null>(null);
   const [search, setSearch] = useState('');
@@ -114,8 +114,8 @@ export default function ProyectosPage() {
               <label className="label-field">Cliente *</label>
               <select className="input-field" value={form.clienteId} onChange={(e) => setForm({ ...form, clienteId: e.target.value })} required>
                 <option value="">Seleccionar cliente</option>
-                {(empresas || []).map((emp) => (
-                  <option key={emp.id} value={emp.id}>{emp.nombre}</option>
+                {(clientes || []).map((cliente) => (
+                  <option key={cliente.id} value={cliente.id}>{cliente.nombre}</option>
                 ))}
               </select>
             </div>

@@ -10,7 +10,7 @@ export default function ProyectoDetailPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { data: proyecto, loading } = useApi<any>(`/proyectos/${id}`);
-  const [activeTab, setActiveTab] = useState<'empresas' | 'replanteos' | 'presupuestos' | 'ordenes'>('replanteos');
+  const [activeTab, setActiveTab] = useState<'clientes' | 'replanteos' | 'presupuestos' | 'ordenes'>('replanteos');
 
   if (loading) {
     return (
@@ -29,8 +29,10 @@ export default function ProyectoDetailPage() {
     );
   }
 
+  const clientesAsociados = proyecto.clientes || proyecto.empresas || [];
+
   const tabs = [
-    { key: 'empresas', label: 'Empresas', icon: HiOfficeBuilding },
+    { key: 'clientes', label: 'Clientes', icon: HiOfficeBuilding },
     { key: 'replanteos', label: 'Replanteos', icon: HiClipboardList },
     { key: 'presupuestos', label: 'Presupuestos', icon: HiDocumentText },
     { key: 'ordenes', label: 'Órdenes de Trabajo', icon: HiTruck },
@@ -98,22 +100,22 @@ export default function ProyectoDetailPage() {
         </nav>
       </div>
 
-      {/* Tab: Empresas */}
-      {activeTab === 'empresas' && (
-        <Card title="Empresas Asociadas">
-          {proyecto.empresas && proyecto.empresas.length > 0 ? (
+      {/* Tab: Clientes */}
+      {activeTab === 'clientes' && (
+        <Card title="Clientes Asociados">
+          {clientesAsociados.length > 0 ? (
             <div className="overflow-x-auto">
               <table className="w-full">
                 <thead>
                   <tr className="border-b border-gray-200">
-                    <th className="table-header">Empresa</th>
+                    <th className="table-header">Cliente</th>
                     <th className="table-header">Rol</th>
                     <th className="table-header">Contacto</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-100">
-                  {proyecto.empresas.map((pe: any) => (
-                    <tr key={pe.id} className="hover:bg-gray-50 cursor-pointer" onClick={() => navigate(`/empresas`)}>
+                  {clientesAsociados.map((pe: any) => (
+                    <tr key={pe.id} className="hover:bg-gray-50 cursor-pointer" onClick={() => navigate(`/clientes`)}>
                       <td className="table-cell font-medium">{pe.empresa?.nombre || '-'}</td>
                       <td className="table-cell"><StatusBadge status={pe.rol} /></td>
                       <td className="table-cell">{pe.contacto ? `${pe.contacto.nombre} - ${pe.contacto.telefono || pe.contacto.email || ''}` : '-'}</td>
@@ -123,7 +125,7 @@ export default function ProyectoDetailPage() {
               </table>
             </div>
           ) : (
-            <p className="text-gray-500 text-center py-6">No hay empresas asociadas</p>
+            <p className="text-gray-500 text-center py-6">No hay clientes asociados</p>
           )}
         </Card>
       )}

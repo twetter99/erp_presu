@@ -45,7 +45,7 @@ const navigation = [
   {
     name: 'Bases de Datos',
     items: [
-      { name: 'Empresas', href: '/empresas' },
+      { name: 'Clientes', href: '/clientes' },
       { name: 'Cocheras', href: '/cocheras' },
       { name: 'Autobuses', href: '/autobuses' },
       { name: 'Trabajos', href: '/trabajos' },

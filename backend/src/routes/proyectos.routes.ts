@@ -65,7 +65,8 @@ router.get('/:id', async (req: Request, res: Response) => {
       },
     });
     if (!proyecto) { res.status(404).json({ error: 'Proyecto no encontrado' }); return; }
-    res.json(proyecto);
+    const clientes = proyecto.empresasRoles;
+    res.json({ ...proyecto, clientes, empresas: clientes });
   } catch (error) {
     res.status(500).json({ error: 'Error al obtener proyecto' });
   }
@@ -97,22 +98,23 @@ router.put('/:id', validate(proyectoSchema.partial()), async (req: Request, res:
   }
 });
 
-// Asignar roles empresa al proyecto
-router.post('/:id/empresas', async (req: Request, res: Response) => {
+// Asignar roles cliente al proyecto
+router.post('/:id/clientes', async (req: Request, res: Response) => {
   try {
-    const { empresaId, rol } = req.body;
+    const clienteId = req.body.clienteId ?? req.body.empresaId;
+    const { rol } = req.body;
     const ep = await prisma.empresaProyecto.create({
-      data: { proyectoId: Number(req.params.id), empresaId, rol },
+      data: { proyectoId: Number(req.params.id), empresaId: clienteId, rol },
       include: { empresa: { select: { id: true, nombre: true } } },
     });
     res.status(201).json(ep);
   } catch (error: any) {
     if (error.code === 'P2002') { res.status(409).json({ error: 'Rol ya asignado' }); return; }
-    res.status(500).json({ error: 'Error al asignar empresa' });
+    res.status(500).json({ error: 'Error al asignar cliente' });
   }
 });
 
-router.delete('/:id/empresas/:epId', async (req: Request, res: Response) => {
+router.delete('/:id/clientes/:epId', async (req: Request, res: Response) => {
   try {
     await prisma.empresaProyecto.delete({ where: { id: Number(req.params.epId) } });
     res.json({ message: 'Rol eliminado' });

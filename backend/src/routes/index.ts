@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import authRoutes from './auth.routes';
-import empresasRoutes from './empresas.routes';
+import clientesRoutes from './clientes.routes';
 import cocherasRoutes from './cocheras.routes';
 import autobusesRoutes from './autobuses.routes';
 import trabajosRoutes from './trabajos.routes';
@@ -16,7 +16,7 @@ import margenesRoutes from './margenes.routes';
 const router = Router();
 
 router.use('/auth', authRoutes);
-router.use('/empresas', empresasRoutes);
+router.use('/clientes', clientesRoutes);
 router.use('/cocheras', cocherasRoutes);
 router.use('/autobuses', autobusesRoutes);
 router.use('/trabajos', trabajosRoutes);

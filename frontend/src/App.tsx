@@ -5,7 +5,7 @@ import { useAuthStore } from './store/authStore';
 const Layout = lazy(() => import('./components/layout/Layout'));
 const LoginPage = lazy(() => import('./pages/auth/LoginPage'));
 const Dashboard = lazy(() => import('./pages/Dashboard'));
-const EmpresasPage = lazy(() => import('./pages/empresas/EmpresasPage'));
+const ClientesPage = lazy(() => import('./pages/clientes/ClientesPage'));
 const CocherasPage = lazy(() => import('./pages/cocheras/CocherasPage'));
 const AutobusesPage = lazy(() => import('./pages/autobuses/AutobusesPage'));
 const TrabajosPage = lazy(() => import('./pages/trabajos/TrabajosPage'));
@@ -81,7 +81,7 @@ export default function App() {
           }
         >
           <Route index element={<Dashboard />} />
-          <Route path="empresas" element={<EmpresasPage />} />
+          <Route path="clientes" element={<ClientesPage />} />
           <Route path="cocheras" element={<CocherasPage />} />
           <Route path="autobuses" element={<AutobusesPage />} />
           <Route path="trabajos" element={<TrabajosPage />} />

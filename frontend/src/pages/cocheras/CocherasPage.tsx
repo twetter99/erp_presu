@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useCrud, useApi } from '../../hooks/useApi';
-import { Cochera, Empresa } from '../../types';
+import { Cochera, Cliente } from '../../types';
 import DataTable from '../../components/ui/DataTable';
 import Button from '../../components/ui/Button';
 import Modal from '../../components/ui/Modal';
@@ -9,7 +9,7 @@ import { HiPlus, HiSearch } from 'react-icons/hi';
 
 export default function CocherasPage() {
   const { items, loading, create, update, remove } = useCrud<Cochera>('/cocheras');
-  const { data: empresas } = useApi<Empresa[]>('/empresas');
+  const { data: clientes } = useApi<Cliente[]>('/clientes');
   const [showForm, setShowForm] = useState(false);
   const [editing, setEditing] = useState<Cochera | null>(null);
   const [search, setSearch] = useState('');
@@ -22,7 +22,7 @@ export default function CocherasPage() {
     telefonoResponsable: '',
     horarioAcceso: '',
     observacionesTecnicas: '',
-    empresaId: '',
+    clienteId: '',
   });
 
   const filteredItems = items.filter(
@@ -33,7 +33,7 @@ export default function CocherasPage() {
 
   const openCreate = () => {
     setEditing(null);
-    setForm({ nombre: '', direccion: '', ciudad: '', provincia: '', responsable: '', telefonoResponsable: '', horarioAcceso: '', observacionesTecnicas: '', empresaId: '' });
+    setForm({ nombre: '', direccion: '', ciudad: '', provincia: '', responsable: '', telefonoResponsable: '', horarioAcceso: '', observacionesTecnicas: '', clienteId: '' });
     setShowForm(true);
   };
 
@@ -48,14 +48,15 @@ export default function CocherasPage() {
       telefonoResponsable: cochera.telefonoResponsable || '',
       horarioAcceso: cochera.horarioAcceso || '',
       observacionesTecnicas: cochera.observacionesTecnicas || '',
-      empresaId: String(cochera.empresaId),
+      clienteId: String(cochera.empresaId),
     });
     setShowForm(true);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const payload = { ...form, empresaId: Number(form.empresaId) };
+    const { clienteId, ...rest } = form;
+    const payload = { ...rest, empresaId: Number(clienteId) };
     if (editing) {
       await update(editing.id, payload);
     } else {
@@ -68,7 +69,7 @@ export default function CocherasPage() {
     { key: 'nombre', header: 'Nombre', render: (c: Cochera) => <span className="font-medium">{c.nombre}</span> },
     { key: 'direccion', header: 'Dirección', render: (c: Cochera) => c.direccion || '-' },
     { key: 'ciudad', header: 'Ciudad', render: (c: Cochera) => c.ciudad || '-' },
-    { key: 'empresa', header: 'Empresa', render: (c: Cochera) => c.empresa?.nombre || '-' },
+    { key: 'empresa', header: 'Cliente', render: (c: Cochera) => c.empresa?.nombre || '-' },
     { key: 'responsable', header: 'Responsable', render: (c: Cochera) => c.responsable || '-' },
     { key: 'horarioAcceso', header: 'Horario Acceso', render: (c: Cochera) => c.horarioAcceso || '-' },
     {
@@ -112,11 +113,11 @@ export default function CocherasPage() {
               <input className="input-field" value={form.nombre} onChange={(e) => setForm({ ...form, nombre: e.target.value })} required />
             </div>
             <div>
-              <label className="label-field">Empresa *</label>
-              <select className="input-field" value={form.empresaId} onChange={(e) => setForm({ ...form, empresaId: e.target.value })} required>
-                <option value="">Seleccionar empresa</option>
-                {(empresas || []).map((emp) => (
-                  <option key={emp.id} value={emp.id}>{emp.nombre}</option>
+              <label className="label-field">Cliente *</label>
+              <select className="input-field" value={form.clienteId} onChange={(e) => setForm({ ...form, clienteId: e.target.value })} required>
+                <option value="">Seleccionar cliente</option>
+                {(clientes || []).map((cliente) => (
+                  <option key={cliente.id} value={cliente.id}>{cliente.nombre}</option>
                 ))}
               </select>
             </div>
