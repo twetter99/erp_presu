@@ -17,3 +17,8 @@ Claves/
 .DS_Store
 Thumbs.db
 *.log
+
+# Artefactos de build y temporales
+*.tsbuildinfo
+backend/tmp/
+backups/
