@@ -7,7 +7,7 @@ import Button from '../../components/ui/Button';
 import Modal from '../../components/ui/Modal';
 import Card from '../../components/ui/Card';
 import { StatusBadge } from '../../components/ui/Badge';
-import { HiPlus, HiSearch, HiEye } from 'react-icons/hi';
+import { Plus, Search, Eye } from 'lucide-react';
 
 export default function ProyectosPage() {
   const navigate = useNavigate();
@@ -66,7 +66,7 @@ export default function ProyectosPage() {
     {
       key: 'actions', header: 'Acciones', render: (p: Proyecto) => (
         <div className="flex gap-2">
-          <Button size="sm" variant="primary" onClick={() => navigate(`/proyectos/${p.id}`)}><HiEye className="w-4 h-4" /> Ver</Button>
+          <Button size="sm" variant="primary" onClick={() => navigate(`/proyectos/${p.id}`)}><Eye className="w-4 h-4" /> Ver</Button>
           <Button size="sm" variant="secondary" onClick={() => openEdit(p)}>Editar</Button>
           <Button size="sm" variant="danger" onClick={() => { if (confirm('¿Cancelar proyecto?')) remove(p.id); }}>Cancelar</Button>
         </div>
@@ -78,13 +78,13 @@ export default function ProyectosPage() {
     <div>
       <div className="flex items-center justify-between mb-6">
         <h1 className="page-title">Proyectos</h1>
-        <Button onClick={openCreate}><HiPlus className="w-4 h-4" /> Nuevo Proyecto</Button>
+        <Button onClick={openCreate}><Plus className="w-4 h-4" /> Nuevo Proyecto</Button>
       </div>
 
       <Card>
         <div className="mb-4">
           <div className="relative">
-            <HiSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground w-5 h-5" />
             <input
               type="text"
               placeholder="Buscar por código, nombre o cliente..."

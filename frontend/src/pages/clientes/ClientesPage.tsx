@@ -6,7 +6,7 @@ import Button from '../../components/ui/Button';
 import Modal from '../../components/ui/Modal';
 import Card from '../../components/ui/Card';
 import Input from '../../components/ui/Input';
-import { HiPlus, HiSearch } from 'react-icons/hi';
+import { Plus, Search } from 'lucide-react';
 
 export default function ClientesPage() {
   const { items, loading, create, update, remove } = useCrud<Cliente>('/clientes');
@@ -89,14 +89,14 @@ export default function ClientesPage() {
           <p className="text-sm text-muted-foreground mt-1">Alta y gestión de clientes para presupuestación.</p>
         </div>
         <Button variant="outline" onClick={openCreate}>
-          <HiPlus className="w-4 h-4" /> Nuevo Cliente
+          <Plus className="w-4 h-4" /> Nuevo Cliente
         </Button>
       </div>
 
       <Card>
         <div className="mb-4">
           <div className="relative">
-            <HiSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground w-4 h-4" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground w-4 h-4" />
             <Input
               type="text"
               placeholder="Buscar por nombre o CIF..."

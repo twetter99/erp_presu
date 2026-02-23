@@ -6,7 +6,7 @@ import DataTable from '../../components/ui/DataTable';
 import Button from '../../components/ui/Button';
 import Card from '../../components/ui/Card';
 import { StatusBadge } from '../../components/ui/Badge';
-import { HiSearch, HiEye } from 'react-icons/hi';
+import { Search, Eye } from 'lucide-react';
 
 export default function ComprasPage() {
   const navigate = useNavigate();
@@ -30,7 +30,7 @@ export default function ComprasPage() {
     {
       key: 'actions', header: 'Acciones', render: (c: SolicitudCompra) => (
         <Button size="sm" variant="primary" onClick={() => navigate(`/compras/${c.id}`)}>
-          <HiEye className="w-4 h-4" /> Ver
+          <Eye className="w-4 h-4" /> Ver
         </Button>
       ),
     },
@@ -45,7 +45,7 @@ export default function ComprasPage() {
       <Card>
         <div className="mb-4">
           <div className="relative">
-            <HiSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground w-5 h-5" />
             <input
               type="text"
               placeholder="Buscar por código, proveedor o proyecto..."

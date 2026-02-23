@@ -6,7 +6,7 @@ import Button from '../../components/ui/Button';
 import Modal from '../../components/ui/Modal';
 import Card from '../../components/ui/Card';
 import Badge from '../../components/ui/Badge';
-import { HiPlus, HiSearch, HiRefresh } from 'react-icons/hi';
+import { Plus, Search, RefreshCw } from 'lucide-react';
 import api from '../../api/client';
 import toast from 'react-hot-toast';
 
@@ -175,8 +175,8 @@ export default function MaterialesPage() {
 
   const marginColor = (margin: number) => {
     if (margin >= 20) return 'text-green-600';
-    if (margin >= 10) return 'text-amber-600';
-    return 'text-red-600';
+    if (margin >= 10) return 'text-warning';
+    return 'text-destructive';
   };
 
   const handleSync = async () => {
@@ -243,10 +243,10 @@ export default function MaterialesPage() {
     { key: 'unidad', header: 'Unidad', render: (m: Material) => UNIDAD_OPTIONS.find((o) => o.value === m.unidad)?.label || m.unidad },
     { key: 'proveedorHabitual', header: 'Proveedor', render: (m: Material) => m.proveedorHabitual || '-' },
     { key: 'costeMedio', header: 'Coste', render: (m: Material) => formatCurrency(m.costeMedio) },
-    { key: 'precioVenta', header: 'P. Venta', render: (m: Material) => m.precioVenta > 0 ? formatCurrency(m.precioVenta) : <span className="text-gray-400">—</span> },
+    { key: 'precioVenta', header: 'P. Venta', render: (m: Material) => m.precioVenta > 0 ? formatCurrency(m.precioVenta) : <span className="text-muted-foreground">—</span> },
     {
       key: 'margen', header: 'Margen', render: (m: Material) => {
-        if (m.precioVenta === 0 || m.costeMedio === 0) return <span className="text-gray-400">—</span>;
+        if (m.precioVenta === 0 || m.costeMedio === 0) return <span className="text-muted-foreground">—</span>;
         const margin = ((m.precioVenta - m.costeMedio) / m.costeMedio) * 100;
         const isCustom = m.margenPersonalizado !== null && m.margenPersonalizado !== undefined;
         return (
@@ -283,10 +283,10 @@ export default function MaterialesPage() {
         <h1 className="page-title">Catálogo de Materiales</h1>
         <div className="flex gap-3">
           <Button variant="secondary" onClick={handleSync} disabled={syncing}>
-            <HiRefresh className={`w-4 h-4 ${syncing ? 'animate-spin' : ''}`} />
+            <RefreshCw className={`w-4 h-4 ${syncing ? 'animate-spin' : ''}`} />
             {syncing ? 'Sincronizando...' : 'Sync OrderFlow'}
           </Button>
-          <Button onClick={openCreate}><HiPlus className="w-4 h-4" /> Nuevo Material</Button>
+          <Button onClick={openCreate}><Plus className="w-4 h-4" /> Nuevo Material</Button>
         </div>
       </div>
 
@@ -298,23 +298,23 @@ export default function MaterialesPage() {
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 mb-4">
         <Card>
-          <p className="text-xs text-slate-500">Total materiales</p>
-          <p className="text-xl font-semibold text-slate-900">{resumen.totalMateriales}</p>
+          <p className="text-xs text-muted-foreground">Total materiales</p>
+          <p className="text-xl font-semibold text-foreground">{resumen.totalMateriales}</p>
         </Card>
         <Card>
-          <p className="text-xs text-slate-500">Activos</p>
+          <p className="text-xs text-muted-foreground">Activos</p>
           <p className="text-xl font-semibold text-green-700">{resumen.totalActivos}</p>
         </Card>
         <Card>
-          <p className="text-xs text-slate-500">Inactivos</p>
-          <p className="text-xl font-semibold text-slate-700">{resumen.totalInactivos}</p>
+          <p className="text-xs text-muted-foreground">Inactivos</p>
+          <p className="text-xl font-semibold text-foreground/80">{resumen.totalInactivos}</p>
         </Card>
         <Card>
-          <p className="text-xs text-slate-500">Categorías</p>
+          <p className="text-xs text-muted-foreground">Categorías</p>
           <p className="text-xl font-semibold text-indigo-700">{resumen.totalCategorias}</p>
         </Card>
         <Card>
-          <p className="text-xs text-slate-500">Proveedores</p>
+          <p className="text-xs text-muted-foreground">Proveedores</p>
           <p className="text-xl font-semibold text-amber-700">{resumen.totalProveedores}</p>
         </Card>
       </div>
@@ -334,7 +334,7 @@ export default function MaterialesPage() {
           </div>
           <div className="grid grid-cols-1 md:grid-cols-4 gap-2">
             <div className="relative md:col-span-2">
-              <HiSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5" />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground w-5 h-5" />
               <input
                 type="text"
                 placeholder="Buscar por SKU, descripción, categoría o proveedor..."
@@ -372,7 +372,7 @@ export default function MaterialesPage() {
             </div>
           )}
           {sortedFilteredItems.length === 0 && hayFiltrosActivos && (
-            <p className="text-xs text-slate-500 mt-2">No hay materiales para los filtros aplicados.</p>
+            <p className="text-xs text-muted-foreground mt-2">No hay materiales para los filtros aplicados.</p>
           )}
         </div>
         <DataTable columns={columns} data={sortedFilteredItems} loading={loading || loadingInactivos} emptyMessage="No hay materiales registrados" />

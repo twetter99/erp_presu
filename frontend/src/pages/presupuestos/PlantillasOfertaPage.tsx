@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { HiArrowLeft, HiSave } from 'react-icons/hi';
+import { ArrowLeft, Save } from 'lucide-react';
 import toast from 'react-hot-toast';
 import api from '../../api/client';
 import { useApi } from '../../hooks/useApi';
@@ -96,16 +96,16 @@ export default function PlantillasOfertaPage() {
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-2">
           <Button size="sm" variant="outline" onClick={() => navigate('/presupuestos')}>
-            <HiArrowLeft className="w-4 h-4" /> Volver
+            <ArrowLeft className="w-4 h-4" /> Volver
           </Button>
           <div>
             <h1 className="page-title">Plantillas de oferta</h1>
-            <p className="text-[14px] text-slate-500 mt-1">Configura módulos globales por plantilla documental.</p>
+            <p className="text-[14px] text-muted-foreground mt-1">Configura módulos globales por plantilla documental.</p>
           </div>
         </div>
 
         <div className="flex items-center gap-2">
-          <label className="text-xs text-slate-600">Plantilla</label>
+          <label className="text-xs text-foreground/70">Plantilla</label>
           <select
             value={templateCode}
             onChange={(e) => setTemplateCode(e.target.value)}
@@ -121,16 +121,16 @@ export default function PlantillasOfertaPage() {
             ))}
           </select>
           <Button size="sm" variant="outline" onClick={guardar} disabled={guardando || loading || modulosEditables.length === 0}>
-            <HiSave className="w-4 h-4" /> {guardando ? 'Guardando...' : 'Guardar plantilla'}
+            <Save className="w-4 h-4" /> {guardando ? 'Guardando...' : 'Guardar plantilla'}
           </Button>
         </div>
       </div>
 
       <Card>
         {loading ? (
-          <p className="text-sm text-slate-500">Cargando módulos...</p>
+          <p className="text-sm text-muted-foreground">Cargando módulos...</p>
         ) : modulosEditables.length === 0 ? (
-          <p className="text-sm text-slate-500">No hay módulos configurados para esta plantilla.</p>
+          <p className="text-sm text-muted-foreground">No hay módulos configurados para esta plantilla.</p>
         ) : (
           <div className="space-y-3">
             {modulosEditables
@@ -162,7 +162,7 @@ export default function PlantillasOfertaPage() {
                     rows={4}
                     className="w-full rounded-md border border-border px-2 py-1.5 text-sm"
                   />
-                  <p className="text-[11px] text-slate-400 mt-1">Clave: {module.key}</p>
+                  <p className="text-[11px] text-muted-foreground mt-1">Clave: {module.key}</p>
                 </div>
               ))}
           </div>

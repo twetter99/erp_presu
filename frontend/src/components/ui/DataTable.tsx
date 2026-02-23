@@ -29,7 +29,7 @@ export default function DataTable<T extends { id: number }>({ columns, data, onR
   }
 
   return (
-    <div className="overflow-x-auto rounded-lg border border-slate-200 shadow-sm bg-white">
+    <div className="overflow-x-auto rounded-2xl border border-white/[0.06] bg-card/80 backdrop-blur-sm">
       <table className="w-full text-sm text-left">
         <thead>
           <tr>
@@ -38,12 +38,12 @@ export default function DataTable<T extends { id: number }>({ columns, data, onR
             ))}
           </tr>
         </thead>
-        <tbody className="divide-y divide-slate-100">
+        <tbody className="divide-y divide-white/[0.04]">
           {data.map((item) => (
             <tr
               key={item.id}
               onClick={() => onRowClick?.(item)}
-              className={onRowClick ? 'hover:bg-slate-50/80 cursor-pointer transition-colors' : ''}
+              className={onRowClick ? 'hover:bg-white/[0.03] cursor-pointer transition-colors' : ''}
             >
               {columns.map((col) => (
                 <td key={col.key} className={`table-cell ${col.className || ''}`}>

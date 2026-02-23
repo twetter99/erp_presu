@@ -7,7 +7,7 @@ import Card from '../../components/ui/Card';
 import Input from '../../components/ui/Input';
 import Modal from '../../components/ui/Modal';
 import Badge, { StatusBadge } from '../../components/ui/Badge';
-import { HiSearch, HiOutlinePlus } from 'react-icons/hi';
+import { Search, Plus } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import api from '../../api/client';
 import toast from 'react-hot-toast';
@@ -271,7 +271,7 @@ export default function PresupuestosPage() {
   const getCaducidad = (presupuesto: Presupuesto) => {
     const esComercialActivo = ['BORRADOR', 'ENVIADO', 'NEGOCIACION'].includes(presupuesto.estado);
     if (!esComercialActivo) {
-      return { label: 'Cerrado', className: 'text-slate-400' };
+      return { label: 'Cerrado', className: 'text-muted-foreground' };
     }
 
     const fechaBase = new Date(presupuesto.fecha);
@@ -279,9 +279,9 @@ export default function PresupuestosPage() {
     fechaCaducidad.setDate(fechaCaducidad.getDate() + presupuesto.validezDias);
     const dias = Math.ceil((fechaCaducidad.getTime() - Date.now()) / (1000 * 60 * 60 * 24));
 
-    if (dias < 0) return { label: `Caducado ${Math.abs(dias)}d`, className: 'text-red-600 font-medium' };
-    if (dias <= 5) return { label: `Vence en ${dias}d`, className: 'text-amber-600 font-medium' };
-    return { label: `${dias}d`, className: 'text-slate-600' };
+    if (dias < 0) return { label: `Caducado ${Math.abs(dias)}d`, className: 'text-destructive font-medium' };
+    if (dias <= 5) return { label: `Vence en ${dias}d`, className: 'text-warning font-medium' };
+    return { label: `${dias}d`, className: 'text-foreground/70' };
   };
 
   const getPrioridad = (presupuesto: Presupuesto): { label: string; variant: 'red' | 'yellow' | 'blue' | 'gray'; rank: number } => {
@@ -351,20 +351,20 @@ export default function PresupuestosPage() {
         : 'No hay presupuestos para los filtros actuales';
 
   const columns = [
-    { key: 'codigo', header: 'Código', render: (p: Presupuesto) => <span className="font-medium text-slate-600">{p.codigo}</span> },
+    { key: 'codigo', header: 'Código', render: (p: Presupuesto) => <span className="font-medium text-foreground/70">{p.codigo}</span> },
     {
       key: 'oferta',
       header: 'Oferta',
       render: (p: Presupuesto) => (
-        <span className="text-slate-700">{p.codigoOferta ? `${p.codigoOferta}${p.versionOferta ? ` · v${p.versionOferta}` : ''}` : '-'}</span>
+        <span className="text-foreground/80">{p.codigoOferta ? `${p.codigoOferta}${p.versionOferta ? ` · v${p.versionOferta}` : ''}` : '-'}</span>
       ),
     },
-    { key: 'cliente', header: 'Cliente', render: (p: Presupuesto) => <span className="font-medium text-slate-800">{p.proyecto?.cliente?.nombre || p.proyecto?.nombre || '-'}</span> },
-    { key: 'totalCliente', header: 'Total Cliente', className: 'text-right', render: (p: Presupuesto) => <span className="font-semibold text-slate-900">{formatCurrency(p.totalCliente)}</span> },
-    { key: 'costeTotal', header: 'Coste Total', className: 'text-right', render: (p: Presupuesto) => <span className="font-medium text-slate-600">{formatCurrency(p.costeTotal)}</span> },
+    { key: 'cliente', header: 'Cliente', render: (p: Presupuesto) => <span className="font-medium text-foreground">{p.proyecto?.cliente?.nombre || p.proyecto?.nombre || '-'}</span> },
+    { key: 'totalCliente', header: 'Total Cliente', className: 'text-right', render: (p: Presupuesto) => <span className="font-semibold text-foreground">{formatCurrency(p.totalCliente)}</span> },
+    { key: 'costeTotal', header: 'Coste Total', className: 'text-right', render: (p: Presupuesto) => <span className="font-medium text-foreground/70">{formatCurrency(p.costeTotal)}</span> },
     {
       key: 'margenPorcentaje', header: 'Margen %', className: 'text-right', render: (p: Presupuesto) => (
-        <span className={p.margenPorcentaje >= 20 ? 'text-emerald-600 font-medium' : p.margenPorcentaje >= 10 ? 'text-amber-600 font-medium' : 'text-red-600 font-medium'}>
+        <span className={p.margenPorcentaje >= 20 ? 'text-success font-medium' : p.margenPorcentaje >= 10 ? 'text-warning font-medium' : 'text-destructive font-medium'}>
           {p.margenPorcentaje.toFixed(1)}%
         </span>
       ),
@@ -376,8 +376,8 @@ export default function PresupuestosPage() {
         const actividad = getUltimaActividad(p);
         return (
           <div className="leading-tight" title={getResumenTrazabilidad(p)}>
-            <p className="text-sm font-medium text-slate-800">{actividad.label}</p>
-            <p className="text-xs text-slate-500">{formatDate(actividad.fecha)}</p>
+            <p className="text-sm font-medium text-foreground">{actividad.label}</p>
+            <p className="text-xs text-muted-foreground">{formatDate(actividad.fecha)}</p>
           </div>
         );
       },
@@ -588,7 +588,7 @@ export default function PresupuestosPage() {
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
           <h1 className="page-title">Presupuestos</h1>
-          <p className="text-[14px] text-slate-500 mt-1">Gestiona propuestas comerciales y su rentabilidad interna.</p>
+          <p className="text-[14px] text-muted-foreground mt-1">Gestiona propuestas comerciales y su rentabilidad interna.</p>
         </div>
         <div className="flex items-center gap-2">
           {canManageTemplateModules && (
@@ -600,7 +600,7 @@ export default function PresupuestosPage() {
             {mostrarMetricasComerciales ? 'Ocultar panel comercial' : 'Ver panel comercial'}
           </Button>
           <Button size="sm" variant="primary" onClick={abrirModalMotor}>
-            <HiOutlinePlus className="w-4 h-4" />
+            <Plus className="w-4 h-4" />
             Nuevo Presupuesto
           </Button>
         </div>
@@ -608,49 +608,49 @@ export default function PresupuestosPage() {
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
         <Card>
-          <p className="text-xs text-slate-500 uppercase tracking-wide">Total presupuestos</p>
-          <p className="text-2xl font-semibold mt-1 text-slate-900">{totalPresupuestos}</p>
+          <p className="text-xs text-muted-foreground uppercase tracking-wide">Total presupuestos</p>
+          <p className="text-2xl font-semibold mt-1 text-foreground">{totalPresupuestos}</p>
         </Card>
         <Card>
-          <p className="text-xs text-slate-500 uppercase tracking-wide">Borradores</p>
-          <p className="text-2xl font-semibold mt-1 text-slate-900">{totalBorradores}</p>
+          <p className="text-xs text-muted-foreground uppercase tracking-wide">Borradores</p>
+          <p className="text-2xl font-semibold mt-1 text-foreground">{totalBorradores}</p>
         </Card>
         <Card>
-          <p className="text-xs text-slate-500 uppercase tracking-wide">En curso</p>
-          <p className="text-2xl font-semibold mt-1 text-slate-900">{totalEnviados}</p>
+          <p className="text-xs text-muted-foreground uppercase tracking-wide">En curso</p>
+          <p className="text-2xl font-semibold mt-1 text-foreground">{totalEnviados}</p>
         </Card>
         <Card>
-          <p className="text-xs text-slate-500 uppercase tracking-wide">Tasa éxito</p>
-          <p className="text-2xl font-semibold mt-1 text-slate-900">{tasaExito.toFixed(1)}%</p>
+          <p className="text-xs text-muted-foreground uppercase tracking-wide">Tasa éxito</p>
+          <p className="text-2xl font-semibold mt-1 text-foreground">{tasaExito.toFixed(1)}%</p>
         </Card>
         <Card>
-          <p className="text-xs text-slate-500 uppercase tracking-wide">Críticos</p>
-          <p className="text-2xl font-semibold mt-1 text-red-600">{totalCriticos}</p>
+          <p className="text-xs text-muted-foreground uppercase tracking-wide">Críticos</p>
+          <p className="text-2xl font-semibold mt-1 text-destructive">{totalCriticos}</p>
         </Card>
       </div>
 
       {mostrarMetricasComerciales && (
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
         <Card>
-          <p className="text-xs text-slate-500 uppercase tracking-wide">Conversión 30d</p>
-          <p className="text-2xl font-semibold mt-1 text-slate-900">{conversion30.toFixed(1)}%</p>
+          <p className="text-xs text-muted-foreground uppercase tracking-wide">Conversión 30d</p>
+          <p className="text-2xl font-semibold mt-1 text-foreground">{conversion30.toFixed(1)}%</p>
         </Card>
         <Card>
-          <p className="text-xs text-slate-500 uppercase tracking-wide">Conversión 90d</p>
-          <p className="text-2xl font-semibold mt-1 text-slate-900">{conversion90.toFixed(1)}%</p>
+          <p className="text-xs text-muted-foreground uppercase tracking-wide">Conversión 90d</p>
+          <p className="text-2xl font-semibold mt-1 text-foreground">{conversion90.toFixed(1)}%</p>
         </Card>
         <Card>
-          <p className="text-xs text-slate-500 uppercase tracking-wide">Enviado → Negociación</p>
-          <p className="text-2xl font-semibold mt-1 text-slate-900">{conversionEnviadoANegociacion.toFixed(1)}%</p>
+          <p className="text-xs text-muted-foreground uppercase tracking-wide">Enviado → Negociación</p>
+          <p className="text-2xl font-semibold mt-1 text-foreground">{conversionEnviadoANegociacion.toFixed(1)}%</p>
         </Card>
         <Card>
-          <p className="text-xs text-slate-500 uppercase tracking-wide">Cierre ganado</p>
-          <p className="text-2xl font-semibold mt-1 text-slate-900">{conversionNegociacionAAceptado.toFixed(1)}%</p>
+          <p className="text-xs text-muted-foreground uppercase tracking-wide">Cierre ganado</p>
+          <p className="text-2xl font-semibold mt-1 text-foreground">{conversionNegociacionAAceptado.toFixed(1)}%</p>
         </Card>
         <Card>
-          <p className="text-xs text-slate-500 uppercase tracking-wide">Resp. media</p>
-          <p className="text-2xl font-semibold mt-1 text-slate-900">{tiempoMedioRespuestaDias.toFixed(1)}d</p>
-          <p className="text-xs text-slate-500 mt-1">Mediana: {respuestaMedianaDias.toFixed(1)}d</p>
+          <p className="text-xs text-muted-foreground uppercase tracking-wide">Resp. media</p>
+          <p className="text-2xl font-semibold mt-1 text-foreground">{tiempoMedioRespuestaDias.toFixed(1)}d</p>
+          <p className="text-xs text-muted-foreground mt-1">Mediana: {respuestaMedianaDias.toFixed(1)}d</p>
         </Card>
       </div>
       )}
@@ -658,13 +658,13 @@ export default function PresupuestosPage() {
       <Card>
         <div className="mb-5 flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
           <div className="relative max-w-md w-full">
-            <HiSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 w-4 h-4" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground w-4 h-4" />
             <Input
               type="text"
               placeholder="Buscar por código, oferta, proyecto o cliente..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="pl-9 bg-slate-50/50 border-slate-200 focus:bg-white"
+              className="pl-9 bg-surface/50 border-border focus:bg-surface"
             />
           </div>
           <div className="flex flex-wrap gap-2">
@@ -711,10 +711,10 @@ export default function PresupuestosPage() {
           </div>
         </div>
 
-        <p className="mb-4 text-xs text-slate-500">Atajo recomendado: Trabajo de hoy → Vence pronto → Vencidos.</p>
+        <p className="mb-4 text-xs text-muted-foreground">Atajo recomendado: Trabajo de hoy → Vence pronto → Vencidos.</p>
 
         {mostrarFiltrosAvanzados && (
-          <div className="mb-4 flex flex-wrap gap-2 border-t border-slate-100 pt-4">
+          <div className="mb-4 flex flex-wrap gap-2 border-t border-white/[0.06] pt-4">
             <Button
               size="sm"
               variant={prioridadFiltro === 'CRITICA' ? 'danger' : 'outline'}
@@ -756,17 +756,17 @@ export default function PresupuestosPage() {
           </div>
         )}
 
-        <p className="mb-3 text-xs text-slate-500">
+        <p className="mb-3 text-xs text-muted-foreground">
           Mostrando {sortedFilteredItems.length} de {items.length} presupuestos · Críticos: {totalCriticosFiltrados}
         </p>
         {hayFiltrosActivos && filtrosActivosTexto && (
-          <p className="mb-3 text-xs text-slate-500">Filtros activos: {filtrosActivosTexto}</p>
+          <p className="mb-3 text-xs text-muted-foreground">Filtros activos: {filtrosActivosTexto}</p>
         )}
 
         {!loading && filteredItems.length === 0 ? (
-          <div className="rounded-lg border border-dashed border-slate-300 p-10 text-center">
-            <p className="text-sm font-medium text-slate-700">{mensajeVacio}</p>
-            <p className="text-sm text-slate-500 mt-1">Ajusta búsqueda/estado o crea un nuevo presupuesto motor.</p>
+          <div className="rounded-lg border border-dashed border-border p-10 text-center">
+            <p className="text-sm font-medium text-foreground/80">{mensajeVacio}</p>
+            <p className="text-sm text-muted-foreground mt-1">Ajusta búsqueda/estado o crea un nuevo presupuesto motor.</p>
             <div className="mt-4">
               <div className="flex items-center justify-center gap-2">
                 {hayFiltrosActivos && <Button size="sm" variant="outline" onClick={limpiarFiltros}>Restablecer filtros</Button>}
@@ -786,12 +786,12 @@ export default function PresupuestosPage() {
       </Card>
 
       <Modal isOpen={modalMotorOpen} onClose={() => setModalMotorOpen(false)} title="Nuevo presupuesto motor" size="lg">
-        <p className="text-sm text-slate-500 mb-4">Completa los datos mínimos para generar una oferta inicial automáticamente.</p>
+        <p className="text-sm text-muted-foreground mb-4">Completa los datos mínimos para generar una oferta inicial automáticamente.</p>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <label className="text-xs font-semibold text-slate-500 uppercase tracking-wide">Proyecto</label>
+            <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Proyecto</label>
             <select
-              className="mt-1 w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm"
+              className="mt-1 w-full rounded-lg border border-border bg-white px-3 py-2 text-sm"
               value={motorForm.proyectoId}
               onChange={(e) => setMotorForm((prev) => ({ ...prev, proyectoId: Number(e.target.value) }))}
             >
@@ -803,9 +803,9 @@ export default function PresupuestosPage() {
           </div>
 
           <div>
-            <label className="text-xs font-semibold text-slate-500 uppercase tracking-wide">Solución</label>
+            <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Solución</label>
             <select
-              className="mt-1 w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm"
+              className="mt-1 w-full rounded-lg border border-border bg-white px-3 py-2 text-sm"
               value={motorForm.solucionId}
               onChange={(e) => setMotorForm((prev) => ({ ...prev, solucionId: Number(e.target.value) }))}
             >
@@ -817,7 +817,7 @@ export default function PresupuestosPage() {
           </div>
 
           <div>
-            <label className="text-xs font-semibold text-slate-500 uppercase tracking-wide">Nº vehículos</label>
+            <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Nº vehículos</label>
             <Input
               type="number"
               min={1}
@@ -828,7 +828,7 @@ export default function PresupuestosPage() {
           </div>
 
           <div>
-            <label className="text-xs font-semibold text-slate-500 uppercase tracking-wide">Tipología</label>
+            <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Tipología</label>
             <Input
               value={motorForm.tipologiaVehiculo}
               onChange={(e) => setMotorForm((prev) => ({ ...prev, tipologiaVehiculo: e.target.value }))}
@@ -838,9 +838,9 @@ export default function PresupuestosPage() {
           </div>
 
           <div>
-            <label className="text-xs font-semibold text-slate-500 uppercase tracking-wide">Horario intervención</label>
+            <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Horario intervención</label>
             <select
-              className="mt-1 w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm"
+              className="mt-1 w-full rounded-lg border border-border bg-white px-3 py-2 text-sm"
               value={motorForm.horarioIntervencion}
               onChange={(e) => setMotorForm((prev) => ({ ...prev, horarioIntervencion: e.target.value }))}
             >
@@ -851,7 +851,7 @@ export default function PresupuestosPage() {
           </div>
 
           <div>
-            <label className="text-xs font-semibold text-slate-500 uppercase tracking-wide">IVA %</label>
+            <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">IVA %</label>
             <Input
               type="number"
               min={0}
@@ -863,7 +863,7 @@ export default function PresupuestosPage() {
           </div>
 
           <div>
-            <label className="text-xs font-semibold text-slate-500 uppercase tracking-wide">Validez (días)</label>
+            <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Validez (días)</label>
             <Input
               type="number"
               min={1}
@@ -874,7 +874,7 @@ export default function PresupuestosPage() {
           </div>
 
           <div className="flex flex-col gap-2 pt-5">
-            <label className="inline-flex items-center gap-2 text-sm text-slate-700">
+            <label className="inline-flex items-center gap-2 text-sm text-foreground/80">
               <input
                 type="checkbox"
                 checked={motorForm.piloto}
@@ -882,7 +882,7 @@ export default function PresupuestosPage() {
               />
               Incluye piloto
             </label>
-            <label className="inline-flex items-center gap-2 text-sm text-slate-700">
+            <label className="inline-flex items-center gap-2 text-sm text-foreground/80">
               <input
                 type="checkbox"
                 checked={motorForm.nocturnidad}
@@ -890,7 +890,7 @@ export default function PresupuestosPage() {
               />
               Nocturnidad
             </label>
-            <label className="inline-flex items-center gap-2 text-sm text-slate-700">
+            <label className="inline-flex items-center gap-2 text-sm text-foreground/80">
               <input
                 type="checkbox"
                 checked={motorForm.integraciones}

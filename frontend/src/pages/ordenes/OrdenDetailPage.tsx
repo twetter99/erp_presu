@@ -4,7 +4,7 @@ import { useApi, formatDate, formatCurrency } from '../../hooks/useApi';
 import Card from '../../components/ui/Card';
 import Button from '../../components/ui/Button';
 import { StatusBadge } from '../../components/ui/Badge';
-import { HiArrowLeft, HiCheckCircle, HiPhotograph, HiClipboardCheck } from 'react-icons/hi';
+import { ArrowLeft, CheckCircle2, Image, ClipboardCheck } from 'lucide-react';
 import api from '../../api/client';
 import toast from 'react-hot-toast';
 
@@ -54,7 +54,7 @@ export default function OrdenDetailPage() {
   if (!orden) {
     return (
       <div className="text-center py-12">
-        <p className="text-gray-500">Orden de trabajo no encontrada</p>
+        <p className="text-muted-foreground">Orden de trabajo no encontrada</p>
         <Button className="mt-4" onClick={() => navigate('/ordenes-trabajo')}>Volver a órdenes</Button>
       </div>
     );
@@ -81,11 +81,11 @@ export default function OrdenDetailPage() {
     <div>
       <div className="flex items-center gap-4 mb-6">
         <Button variant="secondary" onClick={() => navigate('/ordenes-trabajo')}>
-          <HiArrowLeft className="w-4 h-4" /> Volver
+          <ArrowLeft className="w-4 h-4" /> Volver
         </Button>
         <div className="flex-1">
           <h1 className="page-title">{orden.codigo}</h1>
-          <p className="text-gray-500">{orden.proyecto?.nombre || ''} | {orden.cochera?.nombre || ''}</p>
+          <p className="text-muted-foreground">{orden.proyecto?.nombre || ''} | {orden.cochera?.nombre || ''}</p>
         </div>
         <StatusBadge status={orden.estado} />
       </div>
@@ -99,7 +99,7 @@ export default function OrdenDetailPage() {
         ))}
         {(orden.estado === 'PLANIFICADA' || orden.estado === 'EN_CURSO') && (
           <Button variant="secondary" onClick={handleCargarChecklist}>
-            <HiClipboardCheck className="w-4 h-4" /> Cargar Checklist
+            <ClipboardCheck className="w-4 h-4" /> Cargar Checklist
           </Button>
         )}
         {orden.estado !== 'CANCELADA' && orden.estado !== 'COMPLETADA' && (
@@ -117,7 +117,7 @@ export default function OrdenDetailPage() {
               className={`px-4 py-3 border-b-2 text-sm font-medium transition-colors ${
                 activeTab === tab.key
                   ? 'border-primary-600 text-primary-600'
-                  : 'border-transparent text-gray-500 hover:text-gray-700'
+                  : 'border-transparent text-muted-foreground hover:text-foreground/80'
               }`}
             >
               {tab.label}
@@ -131,18 +131,18 @@ export default function OrdenDetailPage() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <Card title="Información General">
             <div className="space-y-2 text-sm">
-              <div><span className="text-gray-500">Código:</span> <span className="font-mono font-medium">{orden.codigo}</span></div>
-              <div><span className="text-gray-500">Proyecto:</span> {orden.proyecto?.codigo} - {orden.proyecto?.nombre}</div>
-              <div><span className="text-gray-500">Cochera:</span> {orden.cochera?.nombre || '-'}</div>
-              <div><span className="text-gray-500">Acta Firmada:</span> {orden.actaFirmada ? 'Sí' : 'No'}</div>
-              {orden.observaciones && <div><span className="text-gray-500">Observaciones:</span> {orden.observaciones}</div>}
+              <div><span className="text-muted-foreground">Código:</span> <span className="font-mono font-medium">{orden.codigo}</span></div>
+              <div><span className="text-muted-foreground">Proyecto:</span> {orden.proyecto?.codigo} - {orden.proyecto?.nombre}</div>
+              <div><span className="text-muted-foreground">Cochera:</span> {orden.cochera?.nombre || '-'}</div>
+              <div><span className="text-muted-foreground">Acta Firmada:</span> {orden.actaFirmada ? 'Sí' : 'No'}</div>
+              {orden.observaciones && <div><span className="text-muted-foreground">Observaciones:</span> {orden.observaciones}</div>}
             </div>
           </Card>
           <Card title="Fechas">
             <div className="space-y-2 text-sm">
-              <div><span className="text-gray-500">Planificada:</span> {orden.fechaPlanificada ? formatDate(orden.fechaPlanificada) : '-'}</div>
-              <div><span className="text-gray-500">Inicio:</span> {orden.fechaInicio ? formatDate(orden.fechaInicio) : '-'}</div>
-              <div><span className="text-gray-500">Fin:</span> {orden.fechaFin ? formatDate(orden.fechaFin) : '-'}</div>
+              <div><span className="text-muted-foreground">Planificada:</span> {orden.fechaPlanificada ? formatDate(orden.fechaPlanificada) : '-'}</div>
+              <div><span className="text-muted-foreground">Inicio:</span> {orden.fechaInicio ? formatDate(orden.fechaInicio) : '-'}</div>
+              <div><span className="text-muted-foreground">Fin:</span> {orden.fechaFin ? formatDate(orden.fechaFin) : '-'}</div>
             </div>
           </Card>
 
@@ -167,7 +167,7 @@ export default function OrdenDetailPage() {
                           <td className="table-cell font-medium">{t.tecnico ? `${t.tecnico.nombre} ${t.tecnico.apellidos}` : t.nombre || '-'}</td>
                           <td className="table-cell">{t.horasEstimadas || 0}h</td>
                           <td className="table-cell">{t.horasReales || 0}h</td>
-                          <td className={`table-cell font-medium ${desviacion > 0 ? 'text-red-600' : desviacion < 0 ? 'text-green-600' : ''}`}>
+                          <td className={`table-cell font-medium ${desviacion > 0 ? 'text-destructive' : desviacion < 0 ? 'text-green-600' : ''}`}>
                             {desviacion > 0 ? '+' : ''}{desviacion}h
                           </td>
                         </tr>
@@ -177,7 +177,7 @@ export default function OrdenDetailPage() {
                 </table>
               </div>
             ) : (
-              <p className="text-gray-500 text-center py-6">No hay técnicos asignados</p>
+              <p className="text-muted-foreground text-center py-6">No hay técnicos asignados</p>
             )}
           </Card>
         </div>
@@ -207,9 +207,9 @@ export default function OrdenDetailPage() {
                       <td className="table-cell">{l.horasReales || 0}h</td>
                       <td className="table-cell">
                         {l.completado ? (
-                          <HiCheckCircle className="w-5 h-5 text-green-500" />
+                          <CheckCircle2 className="w-5 h-5 text-green-500" />
                         ) : (
-                          <span className="text-gray-400">Pendiente</span>
+                          <span className="text-muted-foreground">Pendiente</span>
                         )}
                       </td>
                     </tr>
@@ -218,7 +218,7 @@ export default function OrdenDetailPage() {
               </table>
             </div>
           ) : (
-            <p className="text-gray-500 text-center py-6">No hay líneas de trabajo</p>
+            <p className="text-muted-foreground text-center py-6">No hay líneas de trabajo</p>
           )}
         </Card>
       )}
@@ -251,7 +251,7 @@ export default function OrdenDetailPage() {
                         <td className="table-cell">{m.cantidadReal || 0}</td>
                         <td className="table-cell">{formatCurrency(costEst)}</td>
                         <td className="table-cell">{formatCurrency(costReal)}</td>
-                        <td className={`table-cell font-medium ${desviacion > 0 ? 'text-red-600' : desviacion < 0 ? 'text-green-600' : ''}`}>
+                        <td className={`table-cell font-medium ${desviacion > 0 ? 'text-destructive' : desviacion < 0 ? 'text-green-600' : ''}`}>
                           {formatCurrency(desviacion)}
                         </td>
                       </tr>
@@ -261,7 +261,7 @@ export default function OrdenDetailPage() {
               </table>
             </div>
           ) : (
-            <p className="text-gray-500 text-center py-6">No hay materiales registrados</p>
+            <p className="text-muted-foreground text-center py-6">No hay materiales registrados</p>
           )}
         </Card>
       )}
@@ -272,7 +272,7 @@ export default function OrdenDetailPage() {
           {orden.checklist && orden.checklist.length > 0 ? (
             <div className="space-y-2">
               {orden.checklist.map((item: any) => (
-                <div key={item.id} className="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-50">
+                <div key={item.id} className="flex items-center gap-3 p-3 rounded-lg hover:bg-surface">
                   <input
                     type="checkbox"
                     checked={item.completado || false}
@@ -281,13 +281,13 @@ export default function OrdenDetailPage() {
                     disabled={orden.estado === 'COMPLETADA' || orden.estado === 'CANCELADA'}
                   />
                   <div className="flex-1">
-                    <span className={`text-sm ${item.completado ? 'line-through text-gray-400' : 'text-gray-700'}`}>
+                    <span className={`text-sm ${item.completado ? 'line-through text-muted-foreground' : 'text-foreground/80'}`}>
                       {item.descripcion}
                     </span>
                     {item.obligatorio && <span className="ml-2 text-xs text-red-500 font-medium">*Obligatorio</span>}
                   </div>
                   {item.completadoPor && (
-                    <span className="text-xs text-gray-400">
+                    <span className="text-xs text-muted-foreground">
                       {item.completadoPor.nombre} - {item.fechaCompletado ? formatDate(item.fechaCompletado) : ''}
                     </span>
                   )}
@@ -296,9 +296,9 @@ export default function OrdenDetailPage() {
             </div>
           ) : (
             <div className="text-center py-6">
-              <p className="text-gray-500 mb-3">No hay checklist cargado</p>
+              <p className="text-muted-foreground mb-3">No hay checklist cargado</p>
               <Button variant="secondary" onClick={handleCargarChecklist}>
-                <HiClipboardCheck className="w-4 h-4" /> Cargar Checklist
+                <ClipboardCheck className="w-4 h-4" /> Cargar Checklist
               </Button>
             </div>
           )}
@@ -329,8 +329,8 @@ export default function OrdenDetailPage() {
             </div>
           ) : (
             <div className="text-center py-6">
-              <HiPhotograph className="w-12 h-12 text-gray-300 mx-auto mb-2" />
-              <p className="text-gray-500">No hay fotos registradas</p>
+              <Image className="w-12 h-12 text-muted-foreground/50 mx-auto mb-2" />
+              <p className="text-muted-foreground">No hay fotos registradas</p>
             </div>
           )}
         </Card>

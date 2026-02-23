@@ -4,7 +4,7 @@ import { useApi, formatDate } from '../../hooks/useApi';
 import Card from '../../components/ui/Card';
 import Button from '../../components/ui/Button';
 import { StatusBadge } from '../../components/ui/Badge';
-import { HiArrowLeft, HiClipboardList, HiDocumentText, HiTruck, HiOfficeBuilding } from 'react-icons/hi';
+import { ArrowLeft, ClipboardList, FileText, Truck, Building2 } from 'lucide-react';
 
 export default function ProyectoDetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -23,7 +23,7 @@ export default function ProyectoDetailPage() {
   if (!proyecto) {
     return (
       <div className="text-center py-12">
-        <p className="text-gray-500">Proyecto no encontrado</p>
+        <p className="text-muted-foreground">Proyecto no encontrado</p>
         <Button className="mt-4" onClick={() => navigate('/proyectos')}>Volver a proyectos</Button>
       </div>
     );
@@ -32,21 +32,21 @@ export default function ProyectoDetailPage() {
   const clientesAsociados = proyecto.clientes || proyecto.empresas || [];
 
   const tabs = [
-    { key: 'clientes', label: 'Clientes', icon: HiOfficeBuilding },
-    { key: 'replanteos', label: 'Replanteos', icon: HiClipboardList },
-    { key: 'presupuestos', label: 'Presupuestos', icon: HiDocumentText },
-    { key: 'ordenes', label: 'Órdenes de Trabajo', icon: HiTruck },
+    { key: 'clientes', label: 'Clientes', icon: Building2 },
+    { key: 'replanteos', label: 'Replanteos', icon: ClipboardList },
+    { key: 'presupuestos', label: 'Presupuestos', icon: FileText },
+    { key: 'ordenes', label: 'Órdenes de Trabajo', icon: Truck },
   ] as const;
 
   return (
     <div>
       <div className="flex items-center gap-4 mb-6">
         <Button variant="secondary" onClick={() => navigate('/proyectos')}>
-          <HiArrowLeft className="w-4 h-4" /> Volver
+          <ArrowLeft className="w-4 h-4" /> Volver
         </Button>
         <div>
           <h1 className="page-title">{proyecto.codigo} - {proyecto.nombre}</h1>
-          <p className="text-gray-500">{proyecto.cliente?.nombre}</p>
+          <p className="text-muted-foreground">{proyecto.cliente?.nombre}</p>
         </div>
         <div className="ml-auto">
           <StatusBadge status={proyecto.estado} />
@@ -57,25 +57,25 @@ export default function ProyectoDetailPage() {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
         <Card title="Información General">
           <div className="space-y-2 text-sm">
-            <div><span className="text-gray-500">Código:</span> <span className="font-mono font-medium">{proyecto.codigo}</span></div>
-            <div><span className="text-gray-500">Nombre:</span> {proyecto.nombre}</div>
-            <div><span className="text-gray-500">Cliente:</span> {proyecto.cliente?.nombre || '-'}</div>
-            <div><span className="text-gray-500">Comercial:</span> {proyecto.comercial ? `${proyecto.comercial.nombre} ${proyecto.comercial.apellidos}` : '-'}</div>
-            {proyecto.descripcion && <div><span className="text-gray-500">Descripción:</span> {proyecto.descripcion}</div>}
+            <div><span className="text-muted-foreground">Código:</span> <span className="font-mono font-medium">{proyecto.codigo}</span></div>
+            <div><span className="text-muted-foreground">Nombre:</span> {proyecto.nombre}</div>
+            <div><span className="text-muted-foreground">Cliente:</span> {proyecto.cliente?.nombre || '-'}</div>
+            <div><span className="text-muted-foreground">Comercial:</span> {proyecto.comercial ? `${proyecto.comercial.nombre} ${proyecto.comercial.apellidos}` : '-'}</div>
+            {proyecto.descripcion && <div><span className="text-muted-foreground">Descripción:</span> {proyecto.descripcion}</div>}
           </div>
         </Card>
         <Card title="Fechas">
           <div className="space-y-2 text-sm">
-            <div><span className="text-gray-500">Inicio:</span> {proyecto.fechaInicio ? formatDate(proyecto.fechaInicio) : 'Sin definir'}</div>
-            <div><span className="text-gray-500">Fin Estimada:</span> {proyecto.fechaFinEstimada ? formatDate(proyecto.fechaFinEstimada) : 'Sin definir'}</div>
-            <div><span className="text-gray-500">Fin Real:</span> {proyecto.fechaFinReal ? formatDate(proyecto.fechaFinReal) : '-'}</div>
+            <div><span className="text-muted-foreground">Inicio:</span> {proyecto.fechaInicio ? formatDate(proyecto.fechaInicio) : 'Sin definir'}</div>
+            <div><span className="text-muted-foreground">Fin Estimada:</span> {proyecto.fechaFinEstimada ? formatDate(proyecto.fechaFinEstimada) : 'Sin definir'}</div>
+            <div><span className="text-muted-foreground">Fin Real:</span> {proyecto.fechaFinReal ? formatDate(proyecto.fechaFinReal) : '-'}</div>
           </div>
         </Card>
         <Card title="Resumen">
           <div className="space-y-2 text-sm">
-            <div><span className="text-gray-500">Replanteos:</span> <span className="font-medium">{proyecto._count?.replanteos || 0}</span></div>
-            <div><span className="text-gray-500">Presupuestos:</span> <span className="font-medium">{proyecto._count?.presupuestos || 0}</span></div>
-            <div><span className="text-gray-500">Órdenes de Trabajo:</span> <span className="font-medium">{proyecto._count?.ordenesTrabajo || 0}</span></div>
+            <div><span className="text-muted-foreground">Replanteos:</span> <span className="font-medium">{proyecto._count?.replanteos || 0}</span></div>
+            <div><span className="text-muted-foreground">Presupuestos:</span> <span className="font-medium">{proyecto._count?.presupuestos || 0}</span></div>
+            <div><span className="text-muted-foreground">Órdenes de Trabajo:</span> <span className="font-medium">{proyecto._count?.ordenesTrabajo || 0}</span></div>
           </div>
         </Card>
       </div>
@@ -90,7 +90,7 @@ export default function ProyectoDetailPage() {
               className={`flex items-center gap-2 px-4 py-3 border-b-2 text-sm font-medium transition-colors ${
                 activeTab === tab.key
                   ? 'border-primary-600 text-primary-600'
-                  : 'border-transparent text-gray-500 hover:text-gray-700'
+                  : 'border-transparent text-muted-foreground hover:text-foreground/80'
               }`}
             >
               <tab.icon className="w-4 h-4" />
@@ -115,7 +115,7 @@ export default function ProyectoDetailPage() {
                 </thead>
                 <tbody className="divide-y divide-gray-100">
                   {clientesAsociados.map((pe: any) => (
-                    <tr key={pe.id} className="hover:bg-gray-50 cursor-pointer" onClick={() => navigate(`/clientes`)}>
+                    <tr key={pe.id} className="hover:bg-surface cursor-pointer" onClick={() => navigate(`/clientes`)}>
                       <td className="table-cell font-medium">{pe.empresa?.nombre || '-'}</td>
                       <td className="table-cell"><StatusBadge status={pe.rol} /></td>
                       <td className="table-cell">{pe.contacto ? `${pe.contacto.nombre} - ${pe.contacto.telefono || pe.contacto.email || ''}` : '-'}</td>
@@ -125,7 +125,7 @@ export default function ProyectoDetailPage() {
               </table>
             </div>
           ) : (
-            <p className="text-gray-500 text-center py-6">No hay clientes asociados</p>
+            <p className="text-muted-foreground text-center py-6">No hay clientes asociados</p>
           )}
         </Card>
       )}
@@ -148,7 +148,7 @@ export default function ProyectoDetailPage() {
                 </thead>
                 <tbody className="divide-y divide-gray-100">
                   {proyecto.replanteos.map((r: any) => (
-                    <tr key={r.id} className="hover:bg-gray-50">
+                    <tr key={r.id} className="hover:bg-surface">
                       <td className="table-cell">{r.cochera?.nombre || '-'}</td>
                       <td className="table-cell">{r.tipoAutobus ? `${r.tipoAutobus.marca} ${r.tipoAutobus.modelo}` : '-'}</td>
                       <td className="table-cell">{r.numBuses}</td>
@@ -163,7 +163,7 @@ export default function ProyectoDetailPage() {
               </table>
             </div>
           ) : (
-            <p className="text-gray-500 text-center py-6">No hay replanteos</p>
+            <p className="text-muted-foreground text-center py-6">No hay replanteos</p>
           )}
         </Card>
       )}
@@ -184,7 +184,7 @@ export default function ProyectoDetailPage() {
                 </thead>
                 <tbody className="divide-y divide-gray-100">
                   {proyecto.presupuestos.map((p: any) => (
-                    <tr key={p.id} className="hover:bg-gray-50">
+                    <tr key={p.id} className="hover:bg-surface">
                       <td className="table-cell font-mono font-medium">{p.codigo}</td>
                       <td className="table-cell"><StatusBadge status={p.estado} /></td>
                       <td className="table-cell">{formatDate(p.fecha)}</td>
@@ -197,7 +197,7 @@ export default function ProyectoDetailPage() {
               </table>
             </div>
           ) : (
-            <p className="text-gray-500 text-center py-6">No hay presupuestos</p>
+            <p className="text-muted-foreground text-center py-6">No hay presupuestos</p>
           )}
         </Card>
       )}
@@ -219,7 +219,7 @@ export default function ProyectoDetailPage() {
                 </thead>
                 <tbody className="divide-y divide-gray-100">
                   {proyecto.ordenesTrabajo.map((ot: any) => (
-                    <tr key={ot.id} className="hover:bg-gray-50">
+                    <tr key={ot.id} className="hover:bg-surface">
                       <td className="table-cell font-mono font-medium">{ot.codigo}</td>
                       <td className="table-cell">{ot.cochera?.nombre || '-'}</td>
                       <td className="table-cell"><StatusBadge status={ot.estado} /></td>
@@ -233,7 +233,7 @@ export default function ProyectoDetailPage() {
               </table>
             </div>
           ) : (
-            <p className="text-gray-500 text-center py-6">No hay órdenes de trabajo</p>
+            <p className="text-muted-foreground text-center py-6">No hay órdenes de trabajo</p>
           )}
         </Card>
       )}

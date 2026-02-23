@@ -7,7 +7,7 @@ import Button from '../../components/ui/Button';
 import Modal from '../../components/ui/Modal';
 import Card from '../../components/ui/Card';
 import { StatusBadge } from '../../components/ui/Badge';
-import { HiPlus, HiSearch, HiEye, HiClipboardList } from 'react-icons/hi';
+import { Plus, Search, Eye, ClipboardList } from 'lucide-react';
 import api from '../../api/client';
 import toast from 'react-hot-toast';
 
@@ -95,12 +95,12 @@ export default function ReplanteosPage() {
     {
       key: 'actions', header: 'Acciones', render: (r: Replanteo) => (
         <div className="flex gap-2 flex-wrap">
-          <Button size="sm" variant="primary" onClick={() => navigate(`/replanteos/${r.id}`)}><HiEye className="w-3 h-3" /></Button>
+          <Button size="sm" variant="primary" onClick={() => navigate(`/replanteos/${r.id}`)}><Eye className="w-3 h-3" /></Button>
           {r.estado === 'PENDIENTE' && (
             <>
               <Button size="sm" variant="warning" onClick={() => handleCambiarEstado(r.id, 'REVISADO')}>Revisar</Button>
               <Button size="sm" variant="secondary" onClick={() => handleCargarPlantilla(r.id)}>
-                <HiClipboardList className="w-3 h-3" /> Plantilla
+                <ClipboardList className="w-3 h-3" /> Plantilla
               </Button>
             </>
           )}
@@ -116,13 +116,13 @@ export default function ReplanteosPage() {
     <div>
       <div className="flex items-center justify-between mb-6">
         <h1 className="page-title">Replanteos</h1>
-        <Button onClick={openCreate}><HiPlus className="w-4 h-4" /> Nuevo Replanteo</Button>
+        <Button onClick={openCreate}><Plus className="w-4 h-4" /> Nuevo Replanteo</Button>
       </div>
 
       <Card>
         <div className="mb-4">
           <div className="relative">
-            <HiSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground w-5 h-5" />
             <input
               type="text"
               placeholder="Buscar por proyecto o cochera..."

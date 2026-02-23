@@ -6,7 +6,7 @@ import Button from '../../components/ui/Button';
 import Modal from '../../components/ui/Modal';
 import Card from '../../components/ui/Card';
 import Badge from '../../components/ui/Badge';
-import { HiPlus, HiSearch } from 'react-icons/hi';
+import { Plus, Search } from 'lucide-react';
 
 const COMBUSTIBLE_OPTIONS: { value: TipoCombustible; label: string }[] = [
   { value: 'DIESEL', label: 'Diésel' },
@@ -107,13 +107,13 @@ export default function AutobusesPage() {
     <div>
       <div className="flex items-center justify-between mb-6">
         <h1 className="page-title">Tipos de Autobús</h1>
-        <Button onClick={openCreate}><HiPlus className="w-4 h-4" /> Nuevo Tipo</Button>
+        <Button onClick={openCreate}><Plus className="w-4 h-4" /> Nuevo Tipo</Button>
       </div>
 
       <Card>
         <div className="mb-4">
           <div className="relative">
-            <HiSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground w-5 h-5" />
             <input
               type="text"
               placeholder="Buscar por marca o modelo..."

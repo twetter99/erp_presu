@@ -42,11 +42,11 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary-900 to-primary-700">
-      <div className="bg-white rounded-2xl shadow-2xl p-8 w-full max-w-md">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#0B0F1A] to-[#161D2F]">
+      <div className="bg-card/90 border border-white/[0.08] backdrop-blur-md rounded-2xl shadow-2xl p-8 w-full max-w-md">
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-primary-900">ERP Presu</h1>
-          <p className="text-gray-500 mt-2">Sistema de Gestión de Instalaciones Embarcadas</p>
+          <h1 className="text-3xl font-bold text-primary">ERP Presu</h1>
+          <p className="text-muted-foreground mt-2">Sistema de Gestión de Instalaciones Embarcadas</p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">

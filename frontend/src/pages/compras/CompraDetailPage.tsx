@@ -4,7 +4,7 @@ import { useApi, formatCurrency, formatDate } from '../../hooks/useApi';
 import Card, { StatCard } from '../../components/ui/Card';
 import Button from '../../components/ui/Button';
 import { StatusBadge } from '../../components/ui/Badge';
-import { HiArrowLeft, HiCurrencyDollar, HiScale } from 'react-icons/hi';
+import { ArrowLeft, DollarSign, Scale } from 'lucide-react';
 import api from '../../api/client';
 import toast from 'react-hot-toast';
 
@@ -47,7 +47,7 @@ export default function CompraDetailPage() {
   if (!compra) {
     return (
       <div className="text-center py-12">
-        <p className="text-gray-500">Solicitud de compra no encontrada</p>
+        <p className="text-muted-foreground">Solicitud de compra no encontrada</p>
         <Button className="mt-4" onClick={() => navigate('/compras')}>Volver a compras</Button>
       </div>
     );
@@ -70,11 +70,11 @@ export default function CompraDetailPage() {
     <div>
       <div className="flex items-center gap-4 mb-6">
         <Button variant="secondary" onClick={() => navigate('/compras')}>
-          <HiArrowLeft className="w-4 h-4" /> Volver
+          <ArrowLeft className="w-4 h-4" /> Volver
         </Button>
         <div className="flex-1">
           <h1 className="page-title">{compra.codigo}</h1>
-          <p className="text-gray-500">
+          <p className="text-muted-foreground">
             {compra.proveedor} | {compra.proyecto?.nombre || ''} | {formatDate(compra.fechaSolicitud)}
           </p>
         </div>
@@ -97,13 +97,13 @@ export default function CompraDetailPage() {
 
       {/* KPI Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-        <StatCard title="Coste Estimado" value={formatCurrency(totalEstimado)} icon={<HiCurrencyDollar className="w-6 h-6" />} color="blue" />
-        <StatCard title="Coste Real" value={formatCurrency(totalReal)} icon={<HiCurrencyDollar className="w-6 h-6" />} color={totalReal > totalEstimado ? 'red' : 'green'} />
+        <StatCard title="Coste Estimado" value={formatCurrency(totalEstimado)} icon={<DollarSign className="w-6 h-6" />} color="blue" />
+        <StatCard title="Coste Real" value={formatCurrency(totalReal)} icon={<DollarSign className="w-6 h-6" />} color={totalReal > totalEstimado ? 'red' : 'green'} />
         <StatCard
           title="Desviación"
           value={formatCurrency(totalReal - totalEstimado)}
           subtitle={totalEstimado > 0 ? `${(((totalReal - totalEstimado) / totalEstimado) * 100).toFixed(1)}%` : '-'}
-          icon={<HiScale className="w-6 h-6" />}
+          icon={<Scale className="w-6 h-6" />}
           color={totalReal > totalEstimado ? 'red' : 'green'}
         />
       </div>
@@ -112,18 +112,18 @@ export default function CompraDetailPage() {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
         <Card title="Información General">
           <div className="space-y-2 text-sm">
-            <div><span className="text-gray-500">Código:</span> <span className="font-mono font-medium">{compra.codigo}</span></div>
-            <div><span className="text-gray-500">Proveedor:</span> {compra.proveedor}</div>
-            <div><span className="text-gray-500">Proyecto:</span> {compra.proyecto?.codigo} - {compra.proyecto?.nombre}</div>
-            <div><span className="text-gray-500">Nº Pedido:</span> {compra.numPedido || '-'}</div>
-            <div><span className="text-gray-500">Nº Factura:</span> {compra.numFactura || '-'}</div>
+            <div><span className="text-muted-foreground">Código:</span> <span className="font-mono font-medium">{compra.codigo}</span></div>
+            <div><span className="text-muted-foreground">Proveedor:</span> {compra.proveedor}</div>
+            <div><span className="text-muted-foreground">Proyecto:</span> {compra.proyecto?.codigo} - {compra.proyecto?.nombre}</div>
+            <div><span className="text-muted-foreground">Nº Pedido:</span> {compra.numPedido || '-'}</div>
+            <div><span className="text-muted-foreground">Nº Factura:</span> {compra.numFactura || '-'}</div>
           </div>
         </Card>
         <Card title="Fechas">
           <div className="space-y-2 text-sm">
-            <div><span className="text-gray-500">Fecha Solicitud:</span> {formatDate(compra.fechaSolicitud)}</div>
-            <div><span className="text-gray-500">Fecha Pedido:</span> {compra.fechaPedido ? formatDate(compra.fechaPedido) : '-'}</div>
-            <div><span className="text-gray-500">Fecha Recepción:</span> {compra.fechaRecepcion ? formatDate(compra.fechaRecepcion) : '-'}</div>
+            <div><span className="text-muted-foreground">Fecha Solicitud:</span> {formatDate(compra.fechaSolicitud)}</div>
+            <div><span className="text-muted-foreground">Fecha Pedido:</span> {compra.fechaPedido ? formatDate(compra.fechaPedido) : '-'}</div>
+            <div><span className="text-muted-foreground">Fecha Recepción:</span> {compra.fechaRecepcion ? formatDate(compra.fechaRecepcion) : '-'}</div>
           </div>
         </Card>
       </div>
@@ -157,7 +157,7 @@ export default function CompraDetailPage() {
                       <td className="table-cell">{formatCurrency(l.costeReal || 0)}</td>
                       <td className="table-cell">{formatCurrency(tEstimado)}</td>
                       <td className="table-cell">{formatCurrency(tReal)}</td>
-                      <td className={`table-cell font-medium ${desviacion > 0 ? 'text-red-600' : desviacion < 0 ? 'text-green-600' : ''}`}>
+                      <td className={`table-cell font-medium ${desviacion > 0 ? 'text-destructive' : desviacion < 0 ? 'text-green-600' : ''}`}>
                         {formatCurrency(desviacion)}
                       </td>
                     </tr>
@@ -169,7 +169,7 @@ export default function CompraDetailPage() {
                   <td colSpan={4} className="table-cell font-semibold text-right">Totales:</td>
                   <td className="table-cell font-semibold">{formatCurrency(totalEstimado)}</td>
                   <td className="table-cell font-semibold">{formatCurrency(totalReal)}</td>
-                  <td className={`table-cell font-semibold ${totalReal - totalEstimado > 0 ? 'text-red-600' : 'text-green-600'}`}>
+                  <td className={`table-cell font-semibold ${totalReal - totalEstimado > 0 ? 'text-destructive' : 'text-green-600'}`}>
                     {formatCurrency(totalReal - totalEstimado)}
                   </td>
                 </tr>
@@ -177,7 +177,7 @@ export default function CompraDetailPage() {
             </table>
           </div>
         ) : (
-          <p className="text-gray-500 text-center py-6">No hay líneas de compra</p>
+          <p className="text-muted-foreground text-center py-6">No hay líneas de compra</p>
         )}
       </Card>
 
@@ -200,7 +200,7 @@ export default function CompraDetailPage() {
                     <td className="table-cell font-medium">{l.concepto || l.descripcion || '-'}</td>
                     <td className="table-cell">{formatCurrency(l.presupuestado || 0)}</td>
                     <td className="table-cell">{formatCurrency(l.real || 0)}</td>
-                    <td className={`table-cell font-medium ${(l.real || 0) - (l.presupuestado || 0) > 0 ? 'text-red-600' : 'text-green-600'}`}>
+                    <td className={`table-cell font-medium ${(l.real || 0) - (l.presupuestado || 0) > 0 ? 'text-destructive' : 'text-green-600'}`}>
                       {formatCurrency((l.real || 0) - (l.presupuestado || 0))}
                     </td>
                   </tr>
@@ -213,7 +213,7 @@ export default function CompraDetailPage() {
 
       {compra.observaciones && (
         <Card title="Observaciones">
-          <p className="text-sm text-gray-700">{compra.observaciones}</p>
+          <p className="text-sm text-foreground/80">{compra.observaciones}</p>
         </Card>
       )}
     </div>

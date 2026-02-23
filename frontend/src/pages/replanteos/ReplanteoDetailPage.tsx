@@ -3,7 +3,7 @@ import { useApi, formatDate, formatCurrency } from '../../hooks/useApi';
 import Card from '../../components/ui/Card';
 import Button from '../../components/ui/Button';
 import { StatusBadge } from '../../components/ui/Badge';
-import { HiArrowLeft, HiClipboardList, HiDocumentText } from 'react-icons/hi';
+import { ArrowLeft, ClipboardList, FileText } from 'lucide-react';
 import api from '../../api/client';
 import toast from 'react-hot-toast';
 
@@ -53,7 +53,7 @@ export default function ReplanteoDetailPage() {
   if (!replanteo) {
     return (
       <div className="text-center py-12">
-        <p className="text-gray-500">Replanteo no encontrado</p>
+        <p className="text-muted-foreground">Replanteo no encontrado</p>
         <Button className="mt-4" onClick={() => navigate('/replanteos')}>Volver a replanteos</Button>
       </div>
     );
@@ -63,11 +63,11 @@ export default function ReplanteoDetailPage() {
     <div>
       <div className="flex items-center gap-4 mb-6">
         <Button variant="secondary" onClick={() => navigate('/replanteos')}>
-          <HiArrowLeft className="w-4 h-4" /> Volver
+          <ArrowLeft className="w-4 h-4" /> Volver
         </Button>
         <div className="flex-1">
           <h1 className="page-title">Replanteo - {replanteo.proyecto?.nombre || ''}</h1>
-          <p className="text-gray-500">{replanteo.cochera?.nombre} | {replanteo.tipoAutobus ? `${replanteo.tipoAutobus.marca} ${replanteo.tipoAutobus.modelo}` : ''}</p>
+          <p className="text-muted-foreground">{replanteo.cochera?.nombre} | {replanteo.tipoAutobus ? `${replanteo.tipoAutobus.marca} ${replanteo.tipoAutobus.modelo}` : ''}</p>
         </div>
         <StatusBadge status={replanteo.estado} />
       </div>
@@ -77,7 +77,7 @@ export default function ReplanteoDetailPage() {
         {replanteo.estado === 'PENDIENTE' && (
           <>
             <Button onClick={handleCargarPlantilla}>
-              <HiClipboardList className="w-4 h-4" /> Cargar Plantilla
+              <ClipboardList className="w-4 h-4" /> Cargar Plantilla
             </Button>
             <Button variant="warning" onClick={() => handleCambiarEstado('REVISADO')}>Marcar como Revisado</Button>
           </>
@@ -87,7 +87,7 @@ export default function ReplanteoDetailPage() {
         )}
         {replanteo.estado === 'VALIDADO' && (
           <Button variant="success" onClick={handleGenerarPresupuesto}>
-            <HiDocumentText className="w-4 h-4" /> Generar Presupuesto
+            <FileText className="w-4 h-4" /> Generar Presupuesto
           </Button>
         )}
         {(replanteo.estado === 'PENDIENTE' || replanteo.estado === 'REVISADO') && (
@@ -99,26 +99,26 @@ export default function ReplanteoDetailPage() {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
         <Card title="Información General">
           <div className="space-y-2 text-sm">
-            <div><span className="text-gray-500">Proyecto:</span> {replanteo.proyecto?.codigo} - {replanteo.proyecto?.nombre}</div>
-            <div><span className="text-gray-500">Cochera:</span> {replanteo.cochera?.nombre}</div>
-            <div><span className="text-gray-500">Tipo Autobús:</span> {replanteo.tipoAutobus ? `${replanteo.tipoAutobus.marca} ${replanteo.tipoAutobus.modelo}` : '-'}</div>
-            <div><span className="text-gray-500">Nº Buses:</span> {replanteo.numBuses}</div>
-            <div><span className="text-gray-500">Fecha:</span> {formatDate(replanteo.fecha)}</div>
-            <div><span className="text-gray-500">Técnico:</span> {replanteo.tecnicoResponsable ? `${replanteo.tecnicoResponsable.nombre} ${replanteo.tecnicoResponsable.apellidos}` : '-'}</div>
+            <div><span className="text-muted-foreground">Proyecto:</span> {replanteo.proyecto?.codigo} - {replanteo.proyecto?.nombre}</div>
+            <div><span className="text-muted-foreground">Cochera:</span> {replanteo.cochera?.nombre}</div>
+            <div><span className="text-muted-foreground">Tipo Autobús:</span> {replanteo.tipoAutobus ? `${replanteo.tipoAutobus.marca} ${replanteo.tipoAutobus.modelo}` : '-'}</div>
+            <div><span className="text-muted-foreground">Nº Buses:</span> {replanteo.numBuses}</div>
+            <div><span className="text-muted-foreground">Fecha:</span> {formatDate(replanteo.fecha)}</div>
+            <div><span className="text-muted-foreground">Técnico:</span> {replanteo.tecnicoResponsable ? `${replanteo.tecnicoResponsable.nombre} ${replanteo.tecnicoResponsable.apellidos}` : '-'}</div>
           </div>
         </Card>
         <Card title="Datos Técnicos">
           <div className="space-y-2 text-sm">
-            <div><span className="text-gray-500">Canalizaciones:</span> {replanteo.canalizacionesExistentes || '-'}</div>
-            <div><span className="text-gray-500">Espacios:</span> {replanteo.espaciosDisponibles || '-'}</div>
-            <div><span className="text-gray-500">Instalación previa:</span> {replanteo.tipoInstalacionPrevia || '-'}</div>
-            <div><span className="text-gray-500">Señales:</span> {replanteo.senalesDisponibles || '-'}</div>
-            <div><span className="text-gray-500">Sellado techo:</span> {replanteo.necesidadSelladoTecho ? 'Sí' : 'No'}</div>
-            <div><span className="text-gray-500">Complejidad:</span> {replanteo.complejidadEspecial || '-'}</div>
+            <div><span className="text-muted-foreground">Canalizaciones:</span> {replanteo.canalizacionesExistentes || '-'}</div>
+            <div><span className="text-muted-foreground">Espacios:</span> {replanteo.espaciosDisponibles || '-'}</div>
+            <div><span className="text-muted-foreground">Instalación previa:</span> {replanteo.tipoInstalacionPrevia || '-'}</div>
+            <div><span className="text-muted-foreground">Señales:</span> {replanteo.senalesDisponibles || '-'}</div>
+            <div><span className="text-muted-foreground">Sellado techo:</span> {replanteo.necesidadSelladoTecho ? 'Sí' : 'No'}</div>
+            <div><span className="text-muted-foreground">Complejidad:</span> {replanteo.complejidadEspecial || '-'}</div>
           </div>
         </Card>
         <Card title="Observaciones">
-          <p className="text-sm text-gray-700">{replanteo.observaciones || 'Sin observaciones'}</p>
+          <p className="text-sm text-foreground/80">{replanteo.observaciones || 'Sin observaciones'}</p>
         </Card>
       </div>
 
@@ -152,7 +152,7 @@ export default function ReplanteoDetailPage() {
             </table>
           </div>
         ) : (
-          <p className="text-gray-500 text-center py-6">No hay trabajos asignados. Use &quot;Cargar Plantilla&quot; para agregar.</p>
+          <p className="text-muted-foreground text-center py-6">No hay trabajos asignados. Use &quot;Cargar Plantilla&quot; para agregar.</p>
         )}
       </Card>
 
@@ -186,7 +186,7 @@ export default function ReplanteoDetailPage() {
             </table>
           </div>
         ) : (
-          <p className="text-gray-500 text-center py-6">No hay materiales asignados.</p>
+          <p className="text-muted-foreground text-center py-6">No hay materiales asignados.</p>
         )}
       </Card>
     </div>

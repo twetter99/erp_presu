@@ -4,7 +4,7 @@ import { useApi, formatCurrency, formatDate } from '../../hooks/useApi';
 import Card, { StatCard } from '../../components/ui/Card';
 import Button from '../../components/ui/Button';
 import { StatusBadge } from '../../components/ui/Badge';
-import { HiArrowLeft, HiCurrencyDollar, HiTrendingUp, HiCash, HiCalculator, HiDownload, HiEye, HiSave } from 'react-icons/hi';
+import { ArrowLeft, DollarSign, TrendingUp, Banknote, Calculator, Download, Eye, Save } from 'lucide-react';
 import api from '../../api/client';
 import toast from 'react-hot-toast';
 import type { Presupuesto, PresupuestoLineaMotor, BloqueEconomico, EmisionValidacion, PresupuestoVersionesResponse, PresupuestoImpactoAceptacion } from '../../types';
@@ -516,7 +516,7 @@ export default function PresupuestoDetailPage() {
     <div className="flex flex-col gap-6">
       <div className="flex flex-wrap items-center gap-4">
         <Button size="sm" variant="outline" onClick={() => navigate('/presupuestos')}>
-          <HiArrowLeft className="w-4 h-4" /> Volver
+          <ArrowLeft className="w-4 h-4" /> Volver
         </Button>
         {!!presupuesto.proyecto?.id && (
           <Button size="sm" variant="outline" onClick={() => navigate(`/proyectos/${presupuesto.proyecto.id}`)}>
@@ -525,20 +525,20 @@ export default function PresupuestoDetailPage() {
         )}
         <div className="flex-1 min-w-[220px]">
           <h1 className="page-title">{presupuesto.codigo}</h1>
-          <p className="text-[14px] text-slate-500 mt-1">
+          <p className="text-[14px] text-muted-foreground mt-1">
             {presupuesto.proyecto?.nombre} · {presupuesto.proyecto?.cliente?.nombre || 'Sin cliente'} · {formatDate(presupuesto.fecha)}
           </p>
           {(presupuesto.codigoOferta || presupuesto.versionOferta) && (
-            <p className="text-[13px] text-slate-500 mt-1">
+            <p className="text-[13px] text-muted-foreground mt-1">
               Oferta: {presupuesto.codigoOferta || '-'} {presupuesto.versionOferta ? `· v${presupuesto.versionOferta}` : ''}
             </p>
           )}
-          <p className={`text-[13px] mt-1 ${diasParaCaducar < 0 ? 'text-red-600' : diasParaCaducar <= 5 ? 'text-amber-600' : 'text-slate-500'}`}>
+          <p className={`text-[13px] mt-1 ${diasParaCaducar < 0 ? 'text-destructive' : diasParaCaducar <= 5 ? 'text-warning' : 'text-muted-foreground'}`}>
             {diasParaCaducar < 0 ? `Caducado hace ${Math.abs(diasParaCaducar)} día(s)` : `Caduca en ${diasParaCaducar} día(s)`}
           </p>
         </div>
         <div className="flex items-center gap-2">
-          <label className="text-xs text-slate-600">Plantilla</label>
+          <label className="text-xs text-foreground/70">Plantilla</label>
           <select
             value={templateCode}
             onChange={(e) => setTemplateCode(e.target.value)}
@@ -560,10 +560,10 @@ export default function PresupuestoDetailPage() {
             {abriendoOferta ? 'Abriendo...' : 'Ver oferta'}
           </Button>
           <Button size="sm" variant="outline" onClick={descargarOfertaHtml} disabled={descargandoOferta}>
-            <HiDownload className="w-4 h-4" /> {descargandoOferta ? 'Descargando...' : 'Descargar HTML'}
+            <Download className="w-4 h-4" /> {descargandoOferta ? 'Descargando...' : 'Descargar HTML'}
           </Button>
           <Button size="sm" variant="outline" onClick={descargarOfertaPdf} disabled={descargandoPdf}>
-            <HiDownload className="w-4 h-4" /> {descargandoPdf ? 'Descargando...' : 'Descargar PDF'}
+            <Download className="w-4 h-4" /> {descargandoPdf ? 'Descargando...' : 'Descargar PDF'}
           </Button>
           <Button
             size="sm"
@@ -580,7 +580,7 @@ export default function PresupuestoDetailPage() {
       {validacionEmision && (
         <Card>
           <div className="flex items-center justify-between mb-3">
-            <h3 className="text-sm font-semibold text-slate-800">Checklist de emisión</h3>
+            <h3 className="text-sm font-semibold text-foreground">Checklist de emisión</h3>
             <span className={`text-xs font-medium px-2 py-1 rounded-full ${validacionEmision.ready ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'}`}>
               {validacionEmision.ready ? 'Lista para emitir' : `${validacionEmision.pendientes.length} pendiente(s)`}
             </span>
@@ -589,7 +589,7 @@ export default function PresupuestoDetailPage() {
             {validacionEmision.checks.map((check) => (
               <div key={check.key} className="flex items-center gap-2 text-sm">
                 <span className={`inline-block h-2.5 w-2.5 rounded-full ${check.ok ? 'bg-emerald-500' : 'bg-amber-500'}`} />
-                <span className={check.ok ? 'text-slate-700' : 'text-slate-800 font-medium'}>{check.label}</span>
+                <span className={check.ok ? 'text-foreground/80' : 'text-foreground font-medium'}>{check.label}</span>
               </div>
             ))}
           </div>
@@ -599,18 +599,18 @@ export default function PresupuestoDetailPage() {
       <Card>
         <div className="flex flex-wrap items-center justify-between gap-3 mb-3">
           <div>
-            <h3 className="text-sm font-semibold text-slate-800">Módulos del documento cliente</h3>
-            <p className="text-xs text-slate-500 mt-1">Estos módulos alimentan el PDF/HTML de la oferta para esta plantilla.</p>
+            <h3 className="text-sm font-semibold text-foreground">Módulos del documento cliente</h3>
+            <p className="text-xs text-muted-foreground mt-1">Estos módulos alimentan el PDF/HTML de la oferta para esta plantilla.</p>
           </div>
           <Button size="sm" variant="outline" onClick={guardarModulosDocumento} disabled={guardandoModulos || cargandoModulos || modulosEditables.length === 0}>
-            <HiSave className="w-4 h-4" /> {guardandoModulos ? 'Guardando...' : 'Guardar módulos'}
+            <Save className="w-4 h-4" /> {guardandoModulos ? 'Guardando...' : 'Guardar módulos'}
           </Button>
         </div>
 
         {cargandoModulos ? (
-          <p className="text-sm text-slate-500">Cargando módulos...</p>
+          <p className="text-sm text-muted-foreground">Cargando módulos...</p>
         ) : modulosEditables.length === 0 ? (
-          <p className="text-sm text-slate-500">No hay módulos configurados para esta plantilla.</p>
+          <p className="text-sm text-muted-foreground">No hay módulos configurados para esta plantilla.</p>
         ) : (
           <div className="space-y-3">
             {modulosEditables
@@ -642,7 +642,7 @@ export default function PresupuestoDetailPage() {
                     rows={3}
                     className="w-full rounded-md border border-border px-2 py-1.5 text-sm"
                   />
-                  <p className="text-[11px] text-slate-400 mt-1">Clave: {module.key}</p>
+                  <p className="text-[11px] text-muted-foreground mt-1">Clave: {module.key}</p>
                 </div>
               ))}
           </div>
@@ -677,17 +677,17 @@ export default function PresupuestoDetailPage() {
 
       <Card>
         <div className="flex items-center justify-between mb-3">
-          <h3 className="text-sm font-semibold text-slate-800">Trazabilidad comercial</h3>
-          <span className="text-xs text-slate-500">{presupuesto.codigoOferta || 'Sin código de oferta'}</span>
+          <h3 className="text-sm font-semibold text-foreground">Trazabilidad comercial</h3>
+          <span className="text-xs text-muted-foreground">{presupuesto.codigoOferta || 'Sin código de oferta'}</span>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-2">
           {hitosComerciales.map((hito) => (
             <div key={hito.key} className="rounded-md border border-border px-3 py-2">
-              <div className="flex items-center gap-2 text-sm font-medium text-slate-800">
-                <span className={`inline-block h-2.5 w-2.5 rounded-full ${hito.done ? 'bg-emerald-500' : 'bg-slate-300'}`} />
+              <div className="flex items-center gap-2 text-sm font-medium text-foreground">
+                <span className={`inline-block h-2.5 w-2.5 rounded-full ${hito.done ? 'bg-emerald-500' : 'bg-muted'}`} />
                 {hito.label}
               </div>
-              <p className="text-xs text-slate-500 mt-1">{hito.fecha ? formatDate(hito.fecha) : 'Pendiente'}</p>
+              <p className="text-xs text-muted-foreground mt-1">{hito.fecha ? formatDate(hito.fecha) : 'Pendiente'}</p>
             </div>
           ))}
         </div>
@@ -696,8 +696,8 @@ export default function PresupuestoDetailPage() {
       {impactoAceptacion && (impactoAceptacion.resumen.totalCompras > 0 || impactoAceptacion.resumen.totalOrdenesTrabajo > 0) && (
         <Card>
           <div className="flex items-center justify-between mb-3">
-            <h3 className="text-sm font-semibold text-slate-800">Impacto de aceptación</h3>
-            <span className="text-xs text-slate-500">
+            <h3 className="text-sm font-semibold text-foreground">Impacto de aceptación</h3>
+            <span className="text-xs text-muted-foreground">
               {impactoAceptacion.resumen.totalCompras} compras · {impactoAceptacion.resumen.totalOrdenesTrabajo} OT
             </span>
           </div>
@@ -705,19 +705,19 @@ export default function PresupuestoDetailPage() {
             <div className="rounded-md border border-border p-3">
               <p className="text-xs font-semibold text-muted-foreground mb-2 uppercase tracking-wide">Compras generadas</p>
               {impactoAceptacion.compras.length === 0 ? (
-                <p className="text-sm text-slate-500">Sin compras autogeneradas.</p>
+                <p className="text-sm text-muted-foreground">Sin compras autogeneradas.</p>
               ) : (
                 <div className="space-y-1.5">
                   {impactoAceptacion.compras.map((compra) => (
                     <div key={compra.id} className="rounded border border-border px-2.5 py-2">
                       <div className="flex items-center justify-between gap-2 text-sm">
-                        <span className="font-medium text-slate-800">{compra.codigo}</span>
+                        <span className="font-medium text-foreground">{compra.codigo}</span>
                         <StatusBadge status={compra.estado} />
                       </div>
-                      <div className="mt-1 flex items-center justify-between gap-2 text-xs text-slate-500">
+                      <div className="mt-1 flex items-center justify-between gap-2 text-xs text-muted-foreground">
                         <span>{compra.proveedor} · {formatDate(compra.fechaSolicitud)}</span>
                         <Button size="sm" variant="outline" onClick={() => navigate(`/compras/${compra.id}`)}>
-                          <HiEye className="w-4 h-4" /> Ver
+                          <Eye className="w-4 h-4" /> Ver
                         </Button>
                       </div>
                     </div>
@@ -728,19 +728,19 @@ export default function PresupuestoDetailPage() {
             <div className="rounded-md border border-border p-3">
               <p className="text-xs font-semibold text-muted-foreground mb-2 uppercase tracking-wide">Órdenes de trabajo generadas</p>
               {impactoAceptacion.ordenesTrabajo.length === 0 ? (
-                <p className="text-sm text-slate-500">Sin OT autogeneradas.</p>
+                <p className="text-sm text-muted-foreground">Sin OT autogeneradas.</p>
               ) : (
                 <div className="space-y-1.5">
                   {impactoAceptacion.ordenesTrabajo.map((orden) => (
                     <div key={orden.id} className="rounded border border-border px-2.5 py-2">
                       <div className="flex items-center justify-between gap-2 text-sm">
-                        <span className="font-medium text-slate-800">{orden.codigo}</span>
+                        <span className="font-medium text-foreground">{orden.codigo}</span>
                         <StatusBadge status={orden.estado} />
                       </div>
-                      <div className="mt-1 flex items-center justify-between gap-2 text-xs text-slate-500">
+                      <div className="mt-1 flex items-center justify-between gap-2 text-xs text-muted-foreground">
                         <span>{orden.fechaPlanificada ? formatDate(orden.fechaPlanificada) : `Creada ${formatDate(orden.createdAt)}`}</span>
                         <Button size="sm" variant="outline" onClick={() => navigate(`/ordenes-trabajo/${orden.id}`)}>
-                          <HiEye className="w-4 h-4" /> Ver
+                          <Eye className="w-4 h-4" /> Ver
                         </Button>
                       </div>
                     </div>
@@ -755,8 +755,8 @@ export default function PresupuestoDetailPage() {
       {versionesData && versionesData.versiones.length > 1 && (
         <Card>
           <div className="flex items-center justify-between mb-3">
-            <h3 className="text-sm font-semibold text-slate-800">Histórico de versiones</h3>
-            <span className="text-xs text-slate-500">{versionesData.totalVersiones} versiones</span>
+            <h3 className="text-sm font-semibold text-foreground">Histórico de versiones</h3>
+            <span className="text-xs text-muted-foreground">{versionesData.totalVersiones} versiones</span>
           </div>
           <div className="overflow-x-auto rounded-md border border-border">
             <table className="w-full">
@@ -775,7 +775,7 @@ export default function PresupuestoDetailPage() {
                 {versionesData.versiones.map((version) => {
                   const isCurrent = version.id === presupuesto.id;
                   return (
-                    <tr key={version.id} className={isCurrent ? 'bg-slate-50' : ''}>
+                    <tr key={version.id} className={isCurrent ? 'bg-surface' : ''}>
                       <td className="table-cell font-medium">v{version.versionOferta || 1}</td>
                       <td className="table-cell">{version.codigo}</td>
                       <td className="table-cell"><StatusBadge status={version.estado} /></td>
@@ -784,7 +784,7 @@ export default function PresupuestoDetailPage() {
                       <td className="table-cell font-medium">{formatCurrency(version.totalConIva ?? version.totalCliente)}</td>
                       <td className="table-cell text-right">
                         {isCurrent ? (
-                          <span className="text-xs text-slate-500">Actual</span>
+                          <span className="text-xs text-muted-foreground">Actual</span>
                         ) : (
                           <Button size="sm" variant="outline" onClick={() => navigate(`/presupuestos/${version.id}`)}>
                             Abrir
@@ -801,10 +801,10 @@ export default function PresupuestoDetailPage() {
       )}
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <StatCard title="Total Cliente" value={formatCurrency(presupuesto.totalCliente)} icon={<HiCurrencyDollar className="w-5 h-5" />} color="blue" />
-        <StatCard title="Coste Total" value={formatCurrency(presupuesto.costeTotal)} icon={<HiCash className="w-5 h-5" />} color="red" />
-        <StatCard title="Margen Bruto" value={formatCurrency(presupuesto.margenBruto)} icon={<HiTrendingUp className="w-5 h-5" />} color={marginTone(presupuesto.margenPorcentaje)} />
-        <StatCard title="Margen %" value={`${presupuesto.margenPorcentaje.toFixed(1)}%`} icon={<HiCalculator className="w-5 h-5" />} color={marginTone(presupuesto.margenPorcentaje)} />
+        <StatCard title="Total Cliente" value={formatCurrency(presupuesto.totalCliente)} icon={<DollarSign className="w-5 h-5" />} color="blue" />
+        <StatCard title="Coste Total" value={formatCurrency(presupuesto.costeTotal)} icon={<Banknote className="w-5 h-5" />} color="red" />
+        <StatCard title="Margen Bruto" value={formatCurrency(presupuesto.margenBruto)} icon={<TrendingUp className="w-5 h-5" />} color={marginTone(presupuesto.margenPorcentaje)} />
+        <StatCard title="Margen %" value={`${presupuesto.margenPorcentaje.toFixed(1)}%`} icon={<Calculator className="w-5 h-5" />} color={marginTone(presupuesto.margenPorcentaje)} />
       </div>
 
       <Card>
