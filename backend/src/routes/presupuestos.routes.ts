@@ -14,6 +14,13 @@ import {
   savePresupuestoModuleOverrides,
 } from '../services/ofertaModules.service';
 import { renderOfertaPdf } from '../services/pdfRenderer.service';
+import {
+  buildOfertaQualityMetrics,
+  elapsedMs,
+  nowMs,
+  serializeMetricsHeader,
+  type OfertaGenerationMetrics,
+} from '../services/ofertaMetrics.service';
 
 const router = Router();
 router.use(authMiddleware);
@@ -37,6 +44,412 @@ type BloqueMotor =
   | 'D_MANTENIMIENTO_1_3'
   | 'E_OPCIONALES_4_5';
 
+type TipoPresupuestoWizard =
+  | 'SOLO_MATERIAL'
+  | 'SOLO_INSTALACION'
+  | 'MIXTO'
+  | 'MANTENIMIENTO_SOPORTE'
+  | 'PILOTO_PRUEBA'
+  | 'REPOSICION_REPARACION'
+  | 'PROYECTO_ESPECIAL';
+
+type UbicacionIntervencion = 'TALLER_CLIENTE' | 'INSTALACIONES_PROPIAS' | 'REMOTO';
+type UrgenciaIntervencion = 'ESTANDAR' | 'URGENTE';
+type IntegracionSistema = 'NINGUNA' | 'SAE' | 'TICKETING' | 'CAN' | 'EXPENDEDORA' | 'OTRA';
+
+type LineaMotorDraft = {
+  presupuestoId?: number;
+  bloque: BloqueMotor;
+  itemCatalogoId: number;
+  codigo: string;
+  descripcion: string;
+  unidad: string;
+  cantidad: number;
+  precioUnitario: number;
+  subtotal: number;
+  costeUnitario: number;
+  costeSubtotal: number;
+  origen: 'AUTO' | 'MANUAL';
+  orden: number;
+};
+
+function consolidarLineasMotorAuto(lineas: LineaMotorDraft[]): LineaMotorDraft[] {
+  const grouped = new Map<string, LineaMotorDraft>();
+
+  for (const linea of lineas) {
+    const key = `${linea.bloque}::${linea.codigo}`;
+    const existente = grouped.get(key);
+
+    if (!existente) {
+      grouped.set(key, { ...linea });
+      continue;
+    }
+
+    existente.cantidad = Math.round((existente.cantidad + linea.cantidad) * 1000) / 1000;
+    existente.subtotal = Math.round((existente.subtotal + linea.subtotal) * 100) / 100;
+    existente.costeSubtotal = Math.round((existente.costeSubtotal + linea.costeSubtotal) * 100) / 100;
+  }
+
+  return Array.from(grouped.values()).map((linea, index) => ({
+    ...linea,
+    orden: index + 1,
+  }));
+}
+
+function normalizarBloqueCanonicoPorSku(lineas: LineaMotorDraft[]): LineaMotorDraft[] {
+  const bloquePorSku = new Map<string, BloqueMotor>();
+
+  for (const linea of lineas) {
+    if (!bloquePorSku.has(linea.codigo)) {
+      bloquePorSku.set(linea.codigo, linea.bloque);
+    }
+  }
+
+  return lineas.map((linea) => ({
+    ...linea,
+    bloque: bloquePorSku.get(linea.codigo) ?? linea.bloque,
+  }));
+}
+
+const MODULO_OPERATIVO_SKUS = {
+  subcontrata: 'E-SRV-006',
+  documentacionLegal: 'E-SRV-002',
+  bolsaHorasSoporte: 'C-GR-003',
+} as const;
+
+const CONTEXTO_OPERATIVO_SKUS = {
+  desplazamiento: 'C-GR-001',
+  nocturnidad: 'C-MO-027',
+  retiradaEquipo: 'C-MO-023',
+  formacion: 'C-MO-022',
+  integracion: 'C-MO-004',
+  urgencia: 'E-SRV-006',
+} as const;
+
+type ContextoOperativoSkus = {
+  desplazamiento: string;
+  nocturnidad: string;
+  retiradaEquipo: string;
+  formacion: string;
+  integracion: string;
+  urgencia: string;
+};
+
+type ContextoOperativoCantidades = {
+  desplazamientoBase: number;
+  desplazamientoUrgente: number;
+  nocturnidadPorVehiculo: boolean;
+  nocturnidadCantidad: number;
+  retiradaPorVehiculo: boolean;
+  retiradaCantidad: number;
+  formacionCantidad: number;
+  integracionCantidad: number;
+  urgenciaCantidad: number;
+};
+
+const BLOQUES_ACTIVOS_POR_TIPO: Record<TipoPresupuestoWizard, BloqueMotor[]> = {
+  SOLO_MATERIAL: ['A_SUMINISTRO_EQUIPOS', 'B_MATERIALES_INSTALACION'],
+  SOLO_INSTALACION: ['C_MANO_OBRA'],
+  MIXTO: ['A_SUMINISTRO_EQUIPOS', 'B_MATERIALES_INSTALACION', 'C_MANO_OBRA'],
+  MANTENIMIENTO_SOPORTE: ['D_MANTENIMIENTO_1_3', 'E_OPCIONALES_4_5'],
+  PILOTO_PRUEBA: ['A_SUMINISTRO_EQUIPOS', 'B_MATERIALES_INSTALACION', 'C_MANO_OBRA', 'E_OPCIONALES_4_5'],
+  REPOSICION_REPARACION: ['A_SUMINISTRO_EQUIPOS', 'B_MATERIALES_INSTALACION', 'C_MANO_OBRA', 'D_MANTENIMIENTO_1_3'],
+  PROYECTO_ESPECIAL: ['A_SUMINISTRO_EQUIPOS', 'B_MATERIALES_INSTALACION', 'C_MANO_OBRA', 'D_MANTENIMIENTO_1_3', 'E_OPCIONALES_4_5'],
+};
+
+function esTipoPresupuestoWizard(value: unknown): value is TipoPresupuestoWizard {
+  if (typeof value !== 'string') return false;
+  return Object.prototype.hasOwnProperty.call(BLOQUES_ACTIVOS_POR_TIPO, value);
+}
+
+function construirSugerenciasContexto(params: {
+  ubicacionIntervencion: UbicacionIntervencion;
+  horarioIntervencion?: string;
+  requiereFormacion: boolean;
+  retiradaEquipoAntiguo: boolean;
+  integracionSistemas: IntegracionSistema;
+  urgencia: UrgenciaIntervencion;
+  requiereSubcontrata: boolean;
+  requiereDocumentacionLegal: boolean;
+  bolsaHorasSoporte: number;
+}) {
+  const sugerencias: string[] = [];
+
+  if (params.ubicacionIntervencion !== 'INSTALACIONES_PROPIAS') {
+    sugerencias.push('Añadir desplazamientos, dietas y gastos asociados a intervención en cliente.');
+  }
+
+  if (params.horarioIntervencion === 'nocturno' || params.horarioIntervencion === 'mixto') {
+    sugerencias.push('Revisar recargo de nocturnidad en mano de obra.');
+  }
+
+  if (params.integracionSistemas !== 'NINGUNA') {
+    sugerencias.push('Incluir partidas de configuración y pruebas por integración de sistemas.');
+  }
+
+  if (params.retiradaEquipoAntiguo) {
+    sugerencias.push('Incluir desmontaje y retirada de equipamiento antiguo.');
+  }
+
+  if (params.requiereFormacion) {
+    sugerencias.push('Incluir formación y puesta en marcha para operación del cliente.');
+  }
+
+  if (params.urgencia === 'URGENTE') {
+    sugerencias.push('Validar disponibilidad y posible recargo por ejecución urgente.');
+  }
+
+  if (params.requiereSubcontrata) {
+    sugerencias.push('Planificar subcontrata y coordinación de terceros para la ejecución.');
+  }
+
+  if (params.requiereDocumentacionLegal) {
+    sugerencias.push('Incluir entregables de documentación legal, PRL y dossier de cierre.');
+  }
+
+  if (params.bolsaHorasSoporte > 0) {
+    sugerencias.push('Incluir bolsa de horas de soporte post-arranque y condiciones de consumo.');
+  }
+
+  return sugerencias;
+}
+
+function resolverBloquesActivosConContexto(
+  tipoPresupuesto: TipoPresupuestoWizard,
+  contexto: {
+    ubicacionIntervencion: UbicacionIntervencion;
+    retiradaEquipoAntiguo: boolean;
+    requiereFormacion: boolean;
+    integracionSistemas: IntegracionSistema;
+    requiereSubcontrata: boolean;
+    requiereDocumentacionLegal: boolean;
+    bolsaHorasSoporte: number;
+  }
+): BloqueMotor[] {
+  const bloques = new Set<BloqueMotor>(BLOQUES_ACTIVOS_POR_TIPO[tipoPresupuesto]);
+
+  if (contexto.ubicacionIntervencion !== 'INSTALACIONES_PROPIAS') {
+    bloques.add('C_MANO_OBRA');
+  }
+
+  if (contexto.retiradaEquipoAntiguo) {
+    bloques.add('C_MANO_OBRA');
+  }
+
+  if (contexto.requiereFormacion || contexto.integracionSistemas !== 'NINGUNA') {
+    bloques.add('E_OPCIONALES_4_5');
+  }
+
+  if (contexto.requiereSubcontrata || contexto.requiereDocumentacionLegal || contexto.bolsaHorasSoporte > 0) {
+    bloques.add('E_OPCIONALES_4_5');
+  }
+
+  return Array.from(bloques);
+}
+
+function construirLineasModulosOperativos(params: {
+  itemBySku: Map<string, any>;
+  multiplicador: number;
+  ordenInicial: number;
+  presupuestoId?: number;
+  requiereSubcontrata: boolean;
+  requiereDocumentacionLegal: boolean;
+  bolsaHorasSoporte: number;
+}): { lineas: LineaMotorDraft[]; modulosNoResueltos: string[] } {
+  const lineas: LineaMotorDraft[] = [];
+  const modulosNoResueltos: string[] = [];
+  let orden = params.ordenInicial;
+
+  const buildLinea = (args: {
+    sku: string;
+    bloque: BloqueMotor;
+    cantidad: number;
+    descripcionFallback: string;
+  }) => {
+    const item = params.itemBySku.get(args.sku);
+    if (!item) {
+      modulosNoResueltos.push(args.sku);
+      return;
+    }
+
+    const precioUnitario = Math.round(item.precioBase * params.multiplicador * 10000) / 10000;
+    const costeUnitario = Math.round(item.costeBase * params.multiplicador * 10000) / 10000;
+    const subtotal = Math.round(args.cantidad * precioUnitario * 100) / 100;
+    const costeSubtotal = Math.round(args.cantidad * costeUnitario * 100) / 100;
+
+    const linea: LineaMotorDraft = {
+      bloque: args.bloque,
+      itemCatalogoId: item.id,
+      codigo: item.sku,
+      descripcion: item.descripcion || args.descripcionFallback,
+      unidad: item.unidad,
+      cantidad: args.cantidad,
+      precioUnitario,
+      subtotal,
+      costeUnitario,
+      costeSubtotal,
+      origen: 'AUTO',
+      orden: orden++,
+    };
+
+    if (typeof params.presupuestoId === 'number') {
+      linea.presupuestoId = params.presupuestoId;
+    }
+
+    lineas.push(linea);
+  };
+
+  if (params.requiereSubcontrata) {
+    buildLinea({
+      sku: MODULO_OPERATIVO_SKUS.subcontrata,
+      bloque: 'E_OPCIONALES_4_5',
+      cantidad: 1,
+      descripcionFallback: 'Coordinación de subcontrata',
+    });
+  }
+
+  if (params.requiereDocumentacionLegal) {
+    buildLinea({
+      sku: MODULO_OPERATIVO_SKUS.documentacionLegal,
+      bloque: 'E_OPCIONALES_4_5',
+      cantidad: 1,
+      descripcionFallback: 'Documentación legal y PRL',
+    });
+  }
+
+  if (params.bolsaHorasSoporte > 0) {
+    buildLinea({
+      sku: MODULO_OPERATIVO_SKUS.bolsaHorasSoporte,
+      bloque: 'C_MANO_OBRA',
+      cantidad: params.bolsaHorasSoporte,
+      descripcionFallback: 'Bolsa de horas de soporte',
+    });
+  }
+
+  return { lineas, modulosNoResueltos };
+}
+
+function construirLineasContextoOperativo(params: {
+  itemBySku: Map<string, any>;
+  contextoSkus: ContextoOperativoSkus;
+  contextoCantidades: ContextoOperativoCantidades;
+  multiplicador: number;
+  ordenInicial: number;
+  presupuestoId?: number;
+  numVehiculos: number;
+  ubicacionIntervencion: UbicacionIntervencion;
+  horarioIntervencion?: string;
+  urgencia: UrgenciaIntervencion;
+  retiradaEquipoAntiguo: boolean;
+  requiereFormacion: boolean;
+  integracionSistemas: IntegracionSistema;
+}): { lineas: LineaMotorDraft[]; contextoNoResuelto: string[] } {
+  const lineas: LineaMotorDraft[] = [];
+  const contextoNoResuelto: string[] = [];
+  let orden = params.ordenInicial;
+
+  const buildLinea = (args: {
+    sku: string;
+    bloque: BloqueMotor;
+    cantidad: number;
+    descripcionFallback: string;
+  }) => {
+    const item = params.itemBySku.get(args.sku);
+    if (!item) {
+      contextoNoResuelto.push(args.sku);
+      return;
+    }
+
+    const precioUnitario = Math.round(item.precioBase * params.multiplicador * 10000) / 10000;
+    const costeUnitario = Math.round(item.costeBase * params.multiplicador * 10000) / 10000;
+    const subtotal = Math.round(args.cantidad * precioUnitario * 100) / 100;
+    const costeSubtotal = Math.round(args.cantidad * costeUnitario * 100) / 100;
+
+    const linea: LineaMotorDraft = {
+      bloque: args.bloque,
+      itemCatalogoId: item.id,
+      codigo: item.sku,
+      descripcion: item.descripcion || args.descripcionFallback,
+      unidad: item.unidad,
+      cantidad: args.cantidad,
+      precioUnitario,
+      subtotal,
+      costeUnitario,
+      costeSubtotal,
+      origen: 'AUTO',
+      orden: orden++,
+    };
+
+    if (typeof params.presupuestoId === 'number') {
+      linea.presupuestoId = params.presupuestoId;
+    }
+
+    lineas.push(linea);
+  };
+
+  if (params.ubicacionIntervencion !== 'INSTALACIONES_PROPIAS') {
+    buildLinea({
+      sku: params.contextoSkus.desplazamiento,
+      bloque: 'C_MANO_OBRA',
+      cantidad: params.urgencia === 'URGENTE'
+        ? params.contextoCantidades.desplazamientoUrgente
+        : params.contextoCantidades.desplazamientoBase,
+      descripcionFallback: 'Desplazamiento técnicos',
+    });
+  }
+
+  if (params.horarioIntervencion === 'nocturno' || params.horarioIntervencion === 'mixto') {
+    buildLinea({
+      sku: params.contextoSkus.nocturnidad,
+      bloque: 'C_MANO_OBRA',
+      cantidad: params.contextoCantidades.nocturnidadPorVehiculo
+        ? Math.max(1, params.numVehiculos)
+        : params.contextoCantidades.nocturnidadCantidad,
+      descripcionFallback: 'Recargo nocturnidad',
+    });
+  }
+
+  if (params.retiradaEquipoAntiguo) {
+    buildLinea({
+      sku: params.contextoSkus.retiradaEquipo,
+      bloque: 'C_MANO_OBRA',
+      cantidad: params.contextoCantidades.retiradaPorVehiculo
+        ? Math.max(1, params.numVehiculos)
+        : params.contextoCantidades.retiradaCantidad,
+      descripcionFallback: 'Retirada de equipamiento antiguo',
+    });
+  }
+
+  if (params.requiereFormacion) {
+    buildLinea({
+      sku: params.contextoSkus.formacion,
+      bloque: 'E_OPCIONALES_4_5',
+      cantidad: params.contextoCantidades.formacionCantidad,
+      descripcionFallback: 'Formación y puesta en marcha',
+    });
+  }
+
+  if (params.integracionSistemas !== 'NINGUNA') {
+    buildLinea({
+      sku: params.contextoSkus.integracion,
+      bloque: 'E_OPCIONALES_4_5',
+      cantidad: params.contextoCantidades.integracionCantidad,
+      descripcionFallback: 'Integración de sistemas',
+    });
+  }
+
+  if (params.urgencia === 'URGENTE') {
+    buildLinea({
+      sku: params.contextoSkus.urgencia,
+      bloque: 'E_OPCIONALES_4_5',
+      cantidad: params.contextoCantidades.urgenciaCantidad,
+      descripcionFallback: 'Servicio urgente',
+    });
+  }
+
+  return { lineas, contextoNoResuelto };
+}
+
 type ReglaLineaMotor = {
   sku: string;
   bloque: BloqueMotor;
@@ -54,8 +467,119 @@ type ReglasSolucion = {
     nocturnidadMultiplicador?: number;
     integracionesMultiplicador?: number;
     pilotoMultiplicador?: number;
+    contextoSkus?: Partial<ContextoOperativoSkus>;
+    contextoCantidades?: Partial<ContextoOperativoCantidades>;
   };
 };
+
+function resolverContextoOperativoSkus(reglas: ReglasSolucion): ContextoOperativoSkus {
+  const overrides = reglas.ajustes?.contextoSkus;
+  const base: ContextoOperativoSkus = { ...CONTEXTO_OPERATIVO_SKUS };
+
+  if (!overrides) {
+    return base;
+  }
+
+  const keys = Object.keys(base) as Array<keyof ContextoOperativoSkus>;
+  for (const key of keys) {
+    const override = overrides[key];
+    if (typeof override === 'string' && override.trim().length > 0) {
+      base[key] = override.trim();
+    }
+  }
+
+  return base;
+}
+
+function resolverContextoOperativoCantidades(reglas: ReglasSolucion): ContextoOperativoCantidades {
+  const overrides = reglas.ajustes?.contextoCantidades;
+  const base: ContextoOperativoCantidades = {
+    desplazamientoBase: 1,
+    desplazamientoUrgente: 2,
+    nocturnidadPorVehiculo: true,
+    nocturnidadCantidad: 1,
+    retiradaPorVehiculo: true,
+    retiradaCantidad: 1,
+    formacionCantidad: 1,
+    integracionCantidad: 1,
+    urgenciaCantidad: 1,
+  };
+
+  if (!overrides) {
+    return base;
+  }
+
+  if (typeof overrides.nocturnidadPorVehiculo === 'boolean') {
+    base.nocturnidadPorVehiculo = overrides.nocturnidadPorVehiculo;
+  }
+  if (typeof overrides.retiradaPorVehiculo === 'boolean') {
+    base.retiradaPorVehiculo = overrides.retiradaPorVehiculo;
+  }
+
+  const numericKeys: Array<keyof Omit<ContextoOperativoCantidades, 'nocturnidadPorVehiculo' | 'retiradaPorVehiculo'>> = [
+    'desplazamientoBase',
+    'desplazamientoUrgente',
+    'nocturnidadCantidad',
+    'retiradaCantidad',
+    'formacionCantidad',
+    'integracionCantidad',
+    'urgenciaCantidad',
+  ];
+
+  for (const key of numericKeys) {
+    const value = overrides[key];
+    if (typeof value === 'number' && Number.isFinite(value) && value > 0) {
+      base[key] = Math.round(value * 1000) / 1000;
+    }
+  }
+
+  return base;
+}
+
+type KitSeleccionadoResumen = {
+  codigo: string;
+  nombre: string;
+  skusIncluidos: string[];
+};
+
+function normalizarKitCodigo(raw: unknown): string | undefined {
+  if (typeof raw !== 'string') {
+    return undefined;
+  }
+
+  const value = raw.trim();
+  return value.length > 0 ? value : undefined;
+}
+
+function aplicarKitSobreReglas(lineas: ReglaLineaMotor[], kit?: { skusIncluidos: string[] }): ReglaLineaMotor[] {
+  if (!kit || !kit.skusIncluidos.length) {
+    return lineas;
+  }
+
+  const lineasSinBloqueB = lineas.filter((linea) => linea.bloque !== 'B_MATERIALES_INSTALACION');
+  const lineasKit: ReglaLineaMotor[] = kit.skusIncluidos.map((sku) => ({
+    sku,
+    bloque: 'B_MATERIALES_INSTALACION',
+    cantidad: {
+      tipo: 'POR_VEHICULO',
+      valor: 1,
+    },
+  }));
+
+  return [...lineasSinBloqueB, ...lineasKit];
+}
+
+function construirResumenKit(kit?: { codigo: string; nombre: string; skusIncluidos: string[] }): KitSeleccionadoResumen | undefined {
+  if (!kit) {
+    return undefined;
+  }
+
+  return {
+    codigo: kit.codigo,
+    nombre: kit.nombre,
+    skusIncluidos: kit.skusIncluidos,
+  };
+}
 
 const ESTADOS_BLOQUEADOS_EDICION = ['ACEPTADO', 'RECHAZADO', 'EXPIRADO'] as const;
 
@@ -202,8 +726,25 @@ const crearPresupuestoMotorSchema = z.object({
   piloto: z.boolean().default(false),
   objetivoProyecto: z.string().optional(),
   horarioIntervencion: z.string().optional(),
+  ubicacionIntervencion: z.enum(['TALLER_CLIENTE', 'INSTALACIONES_PROPIAS', 'REMOTO']).default('TALLER_CLIENTE'),
+  urgencia: z.enum(['ESTANDAR', 'URGENTE']).default('ESTANDAR'),
+  retiradaEquipoAntiguo: z.boolean().default(false),
+  requiereFormacion: z.boolean().default(false),
+  requiereSubcontrata: z.boolean().default(false),
+  requiereDocumentacionLegal: z.boolean().default(false),
+  bolsaHorasSoporte: z.number().min(0).default(0),
+  integracionSistemas: z.enum(['NINGUNA', 'SAE', 'TICKETING', 'CAN', 'EXPENDEDORA', 'OTRA']).default('NINGUNA'),
   nocturnidad: z.boolean().default(false),
   integraciones: z.boolean().default(false),
+  tipoPresupuesto: z.enum([
+    'SOLO_MATERIAL',
+    'SOLO_INSTALACION',
+    'MIXTO',
+    'MANTENIMIENTO_SOPORTE',
+    'PILOTO_PRUEBA',
+    'REPOSICION_REPARACION',
+    'PROYECTO_ESPECIAL',
+  ]).default('MIXTO'),
   extras: z.record(z.any()).optional(),
   validezDias: z.number().int().positive().default(30),
   ivaPorcentaje: z.number().min(0).max(100).default(21),
@@ -220,8 +761,25 @@ const recalcularPresupuestoSchema = z.object({
   piloto: z.boolean().optional(),
   objetivoProyecto: z.string().optional(),
   horarioIntervencion: z.string().optional(),
+  ubicacionIntervencion: z.enum(['TALLER_CLIENTE', 'INSTALACIONES_PROPIAS', 'REMOTO']).optional(),
+  urgencia: z.enum(['ESTANDAR', 'URGENTE']).optional(),
+  retiradaEquipoAntiguo: z.boolean().optional(),
+  requiereFormacion: z.boolean().optional(),
+  requiereSubcontrata: z.boolean().optional(),
+  requiereDocumentacionLegal: z.boolean().optional(),
+  bolsaHorasSoporte: z.number().min(0).optional(),
+  integracionSistemas: z.enum(['NINGUNA', 'SAE', 'TICKETING', 'CAN', 'EXPENDEDORA', 'OTRA']).optional(),
   nocturnidad: z.boolean().optional(),
   integraciones: z.boolean().optional(),
+  tipoPresupuesto: z.enum([
+    'SOLO_MATERIAL',
+    'SOLO_INSTALACION',
+    'MIXTO',
+    'MANTENIMIENTO_SOPORTE',
+    'PILOTO_PRUEBA',
+    'REPOSICION_REPARACION',
+    'PROYECTO_ESPECIAL',
+  ]).optional(),
   extras: z.record(z.any()).optional(),
   ivaPorcentaje: z.number().min(0).max(100).optional(),
   validezDias: z.number().int().positive().optional(),
@@ -236,6 +794,7 @@ const actualizarLineaMotorSchema = z.object({
   cantidad: z.number().positive().optional(),
   precioUnitario: z.number().min(0).optional(),
   costeUnitario: z.number().min(0).optional(),
+  itemCatalogoId: z.number().int().positive().nullable().optional(),
   bloque: z.enum([
     'A_SUMINISTRO_EQUIPOS',
     'B_MATERIALES_INSTALACION',
@@ -286,6 +845,23 @@ const TRANSICIONES_ESTADO_PERMITIDAS: Record<string, string[]> = {
   RECHAZADO: [],
   EXPIRADO: [],
 };
+
+async function validarProyectoPresupuesto(proyectoId: number): Promise<{ ok: true } | { ok: false; status: number; error: string }> {
+  const proyecto = await prisma.proyecto.findUnique({
+    where: { id: proyectoId },
+    select: { id: true, estado: true },
+  });
+
+  if (!proyecto) {
+    return { ok: false, status: 404, error: 'Proyecto no encontrado' };
+  }
+
+  if (proyecto.estado === 'CANCELADO') {
+    return { ok: false, status: 400, error: 'No se puede crear presupuesto sobre un proyecto cancelado' };
+  }
+
+  return { ok: true };
+}
 
 // ============================================================================
 // CRUD PRESUPUESTOS
@@ -400,8 +976,17 @@ router.post('/motor', validate(crearPresupuestoMotorSchema), async (req: Request
       piloto,
       objetivoProyecto,
       horarioIntervencion,
+      ubicacionIntervencion,
+      urgencia,
+      retiradaEquipoAntiguo,
+      requiereFormacion,
+      requiereSubcontrata,
+      requiereDocumentacionLegal,
+      bolsaHorasSoporte,
+      integracionSistemas,
       nocturnidad,
       integraciones,
+      tipoPresupuesto,
       extras,
       validezDias,
       ivaPorcentaje,
@@ -441,8 +1026,32 @@ router.post('/motor', validate(crearPresupuestoMotorSchema), async (req: Request
       res.status(400).json({ error: 'La solución no tiene reglas de cálculo configuradas' });
       return;
     }
+    const contextoSkus = resolverContextoOperativoSkus(reglas);
+    const contextoCantidades = resolverContextoOperativoCantidades(reglas);
 
-    const skus = [...new Set(reglas.lineas.map((linea) => linea.sku))];
+    const extrasEntrada = (extras || {}) as Record<string, unknown>;
+    const kitCodigo = normalizarKitCodigo(extrasEntrada.kitCodigo);
+    const kitSeleccionado = kitCodigo
+      ? await prisma.kit.findUnique({
+          where: { codigo: kitCodigo },
+          select: { codigo: true, nombre: true, skusIncluidos: true, activo: true },
+        })
+      : null;
+
+    if (kitCodigo && (!kitSeleccionado || !kitSeleccionado.activo)) {
+      res.status(400).json({ error: `Kit no encontrado o inactivo: ${kitCodigo}` });
+      return;
+    }
+
+    const reglasLineas = aplicarKitSobreReglas(
+      reglas.lineas,
+      kitSeleccionado ? { skusIncluidos: kitSeleccionado.skusIncluidos } : undefined
+    );
+
+    const skusReglas = [...new Set(reglasLineas.map((linea) => linea.sku))];
+    const skusModulos = Object.values(MODULO_OPERATIVO_SKUS);
+    const skusContexto = Object.values(contextoSkus);
+    const skus = [...new Set([...skusReglas, ...skusModulos, ...skusContexto])];
     const ahora = new Date();
     const itemsCatalogo = await prisma.itemCatalogo.findMany({
       where: {
@@ -454,7 +1063,7 @@ router.post('/motor', validate(crearPresupuestoMotorSchema), async (req: Request
     });
 
     const itemBySku = new Map(itemsCatalogo.map((item) => [item.sku, item]));
-    const skusNoEncontrados = skus.filter((sku) => !itemBySku.has(sku));
+    const skusNoEncontrados = skusReglas.filter((sku) => !itemBySku.has(sku));
     if (skusNoEncontrados.length > 0) {
       res.status(400).json({
         error: 'Hay SKUs sin precio vigente en catálogo',
@@ -467,14 +1076,98 @@ router.post('/motor', validate(crearPresupuestoMotorSchema), async (req: Request
     if (nocturnidad && reglas.ajustes?.nocturnidadMultiplicador) {
       multiplicador *= reglas.ajustes.nocturnidadMultiplicador;
     }
-    if (integraciones && reglas.ajustes?.integracionesMultiplicador) {
+    const integracionesFinal = integraciones || integracionSistemas !== 'NINGUNA';
+
+    if (integracionesFinal && reglas.ajustes?.integracionesMultiplicador) {
       multiplicador *= reglas.ajustes.integracionesMultiplicador;
     }
     if (piloto && reglas.ajustes?.pilotoMultiplicador) {
       multiplicador *= reglas.ajustes.pilotoMultiplicador;
     }
 
-    const lineasMotor = reglas.lineas
+    const tipoPresupuestoSeleccionado: TipoPresupuestoWizard = esTipoPresupuestoWizard(tipoPresupuesto)
+      ? tipoPresupuesto
+      : 'MIXTO';
+    const bloquesActivos = resolverBloquesActivosConContexto(tipoPresupuestoSeleccionado, {
+      ubicacionIntervencion,
+      retiradaEquipoAntiguo,
+      requiereFormacion,
+      integracionSistemas,
+      requiereSubcontrata,
+      requiereDocumentacionLegal,
+      bolsaHorasSoporte,
+    });
+    const sugerenciasContexto = construirSugerenciasContexto({
+      ubicacionIntervencion,
+      horarioIntervencion,
+      requiereFormacion,
+      retiradaEquipoAntiguo,
+      integracionSistemas,
+      urgencia,
+      requiereSubcontrata,
+      requiereDocumentacionLegal,
+      bolsaHorasSoporte,
+    });
+    const lineasModulos = construirLineasModulosOperativos({
+      itemBySku,
+      multiplicador,
+      ordenInicial: reglasLineas.length + 1,
+      requiereSubcontrata,
+      requiereDocumentacionLegal,
+      bolsaHorasSoporte,
+    });
+    const lineasContexto = construirLineasContextoOperativo({
+      itemBySku,
+      contextoSkus,
+      contextoCantidades,
+      multiplicador,
+      ordenInicial: reglasLineas.length + lineasModulos.lineas.length + 1,
+      numVehiculos,
+      ubicacionIntervencion,
+      horarioIntervencion,
+      urgencia,
+      retiradaEquipoAntiguo,
+      requiereFormacion,
+      integracionSistemas,
+    });
+
+    const kitExtras = kitSeleccionado
+      ? {
+          kitCodigo: kitSeleccionado.codigo,
+          kitSeleccionado: construirResumenKit({
+            codigo: kitSeleccionado.codigo,
+            nombre: kitSeleccionado.nombre,
+            skusIncluidos: kitSeleccionado.skusIncluidos,
+          }),
+        }
+      : {};
+
+    const extrasConWizard = {
+      ...extrasEntrada,
+      tipoPresupuesto: tipoPresupuestoSeleccionado,
+      ...kitExtras,
+      bloquesActivos,
+      contextoOperativo: {
+        ubicacionIntervencion,
+        urgencia,
+        retiradaEquipoAntiguo,
+        requiereFormacion,
+        requiereSubcontrata,
+        requiereDocumentacionLegal,
+        bolsaHorasSoporte,
+        integracionSistemas,
+      },
+      sugerenciasContexto,
+      modulosOperativos: {
+        requiereSubcontrata,
+        requiereDocumentacionLegal,
+        bolsaHorasSoporte,
+      },
+      modulosOperativosNoResueltos: [...lineasModulos.modulosNoResueltos, ...lineasContexto.contextoNoResuelto],
+    };
+
+    const lineasMotorBase: LineaMotorDraft[] = reglasLineas
+      .filter((regla) => bloquesActivos.includes(regla.bloque))
       .filter((regla) => (regla.soloSiPiloto ? piloto : true))
       .map((regla, index) => {
         const item = itemBySku.get(regla.sku)!;
@@ -502,6 +1195,15 @@ router.post('/motor', validate(crearPresupuestoMotorSchema), async (req: Request
           orden: index + 1,
         };
       });
+
+    const lineasMotorRaw: LineaMotorDraft[] = [
+      ...lineasMotorBase,
+      ...lineasModulos.lineas,
+      ...lineasContexto.lineas,
+    ];
+    const lineasMotor: LineaMotorDraft[] = consolidarLineasMotorAuto(
+      normalizarBloqueCanonicoPorSku(lineasMotorRaw)
+    );
 
     if (lineasMotor.length === 0) {
       res.status(400).json({ error: 'No se han generado líneas económicas con los parámetros recibidos' });
@@ -588,8 +1290,8 @@ router.post('/motor', validate(crearPresupuestoMotorSchema), async (req: Request
             piloto,
             horarioIntervencion,
             nocturnidad,
-            integraciones,
-            extrasJson: extras,
+            integraciones: integracionesFinal,
+            extrasJson: extrasConWizard,
             objetivoProyecto,
           },
         },
@@ -854,12 +1556,41 @@ const presupuestoSchema = z.object({
 
 router.post('/', validate(presupuestoSchema), async (req: Request, res: Response) => {
   try {
+    const payload = presupuestoSchema.parse(req.body);
+    const validacionProyecto = await validarProyectoPresupuesto(payload.proyectoId);
+    if (!validacionProyecto.ok) {
+      res.status(validacionProyecto.status).json({ error: validacionProyecto.error });
+      return;
+    }
+
     const codigo = generarCodigoPresupuesto();
+
+    if (payload.replanteoId) {
+      const replanteo = await prisma.replanteo.findUnique({
+        where: { id: payload.replanteoId },
+        select: { id: true, proyectoId: true },
+      });
+
+      if (!replanteo) {
+        res.status(404).json({ error: 'Replanteo no encontrado' });
+        return;
+      }
+
+      if (replanteo.proyectoId !== payload.proyectoId) {
+        res.status(400).json({ error: 'El replanteo no pertenece al proyecto indicado' });
+        return;
+      }
+    }
+
     const presupuesto = await prisma.presupuesto.create({
-      data: { ...req.body, codigo },
+      data: { ...payload, codigo },
     });
     res.status(201).json(presupuesto);
-  } catch (error) {
+  } catch (error: any) {
+    if (error?.code === 'P2003') {
+      res.status(400).json({ error: 'Proyecto o replanteo inválido para crear presupuesto' });
+      return;
+    }
     res.status(500).json({ error: 'Error al crear presupuesto' });
   }
 });
@@ -1103,14 +1834,133 @@ router.post('/:id/recalcular', validate(recalcularPresupuestoSchema), async (req
         res.status(400).json({ error: 'La solución no tiene reglas de cálculo configuradas' });
         return;
       }
+      const contextoSkus = resolverContextoOperativoSkus(reglas);
+      const contextoCantidades = resolverContextoOperativoCantidades(reglas);
 
       const numVehiculos = req.body.numVehiculos ?? presupuesto.contexto.numVehiculos;
       const piloto = req.body.piloto ?? presupuesto.contexto.piloto;
       const nocturnidad = req.body.nocturnidad ?? presupuesto.contexto.nocturnidad;
-      const integraciones = req.body.integraciones ?? presupuesto.contexto.integraciones;
+      const extrasContexto = (presupuesto.contexto.extrasJson || {}) as Record<string, any>;
+      const contextoOperativoPrevio = extrasContexto.contextoOperativo || {};
+
+      const ubicacionIntervencion: UbicacionIntervencion = req.body.ubicacionIntervencion
+        ?? contextoOperativoPrevio.ubicacionIntervencion
+        ?? 'TALLER_CLIENTE';
+      const urgencia: UrgenciaIntervencion = req.body.urgencia
+        ?? contextoOperativoPrevio.urgencia
+        ?? 'ESTANDAR';
+      const retiradaEquipoAntiguo = req.body.retiradaEquipoAntiguo
+        ?? contextoOperativoPrevio.retiradaEquipoAntiguo
+        ?? false;
+      const requiereFormacion = req.body.requiereFormacion
+        ?? contextoOperativoPrevio.requiereFormacion
+        ?? false;
+      const requiereSubcontrata = req.body.requiereSubcontrata
+        ?? contextoOperativoPrevio.requiereSubcontrata
+        ?? false;
+      const requiereDocumentacionLegal = req.body.requiereDocumentacionLegal
+        ?? contextoOperativoPrevio.requiereDocumentacionLegal
+        ?? false;
+      const bolsaHorasSoporte = req.body.bolsaHorasSoporte
+        ?? contextoOperativoPrevio.bolsaHorasSoporte
+        ?? 0;
+      const integracionSistemas: IntegracionSistema = req.body.integracionSistemas
+        ?? contextoOperativoPrevio.integracionSistemas
+        ?? 'NINGUNA';
+
+      const integracionesBase = req.body.integraciones ?? presupuesto.contexto.integraciones;
+      const integraciones = integracionesBase || integracionSistemas !== 'NINGUNA';
       const ivaPorcentaje = req.body.ivaPorcentaje ?? presupuesto.ivaPorcentaje;
 
-      const skus = [...new Set(reglas.lineas.map((linea) => linea.sku))];
+      const tipoPresupuestoBase: TipoPresupuestoWizard = esTipoPresupuestoWizard(extrasContexto.tipoPresupuesto)
+        ? extrasContexto.tipoPresupuesto
+        : 'MIXTO';
+      const tipoPresupuesto: TipoPresupuestoWizard = esTipoPresupuestoWizard(req.body.tipoPresupuesto)
+        ? req.body.tipoPresupuesto
+        : tipoPresupuestoBase;
+      const bloquesActivos = resolverBloquesActivosConContexto(tipoPresupuesto, {
+        ubicacionIntervencion,
+        retiradaEquipoAntiguo,
+        requiereFormacion,
+        integracionSistemas,
+        requiereSubcontrata,
+        requiereDocumentacionLegal,
+        bolsaHorasSoporte,
+      });
+      const sugerenciasContexto = construirSugerenciasContexto({
+        ubicacionIntervencion,
+        horarioIntervencion: req.body.horarioIntervencion ?? presupuesto.contexto.horarioIntervencion,
+        requiereFormacion,
+        retiradaEquipoAntiguo,
+        integracionSistemas,
+        urgencia,
+        requiereSubcontrata,
+        requiereDocumentacionLegal,
+        bolsaHorasSoporte,
+      });
+      const extrasEntrada = (req.body.extras || {}) as Record<string, unknown>;
+      const kitCodigoBodyTienePrioridad = Object.prototype.hasOwnProperty.call(extrasEntrada, 'kitCodigo');
+      const kitCodigo = normalizarKitCodigo(
+        kitCodigoBodyTienePrioridad ? extrasEntrada.kitCodigo : extrasContexto.kitCodigo
+      );
+
+      const kitSeleccionado = kitCodigo
+        ? await prisma.kit.findUnique({
+            where: { codigo: kitCodigo },
+            select: { codigo: true, nombre: true, skusIncluidos: true, activo: true },
+          })
+        : null;
+
+      if (kitCodigo && (!kitSeleccionado || !kitSeleccionado.activo)) {
+        res.status(400).json({ error: `Kit no encontrado o inactivo: ${kitCodigo}` });
+        return;
+      }
+
+      const reglasLineas = aplicarKitSobreReglas(
+        reglas.lineas,
+        kitSeleccionado ? { skusIncluidos: kitSeleccionado.skusIncluidos } : undefined
+      );
+
+      const extrasSinKit = {
+        ...extrasContexto,
+        ...extrasEntrada,
+      } as Record<string, unknown>;
+      delete extrasSinKit.kitCodigo;
+      delete extrasSinKit.kitSeleccionado;
+
+      const kitExtras = kitSeleccionado
+        ? {
+            kitCodigo: kitSeleccionado.codigo,
+            kitSeleccionado: construirResumenKit({
+              codigo: kitSeleccionado.codigo,
+              nombre: kitSeleccionado.nombre,
+              skusIncluidos: kitSeleccionado.skusIncluidos,
+            }),
+          }
+        : {};
+
+      const extrasConWizardBase = {
+        ...extrasSinKit,
+        tipoPresupuesto,
+        ...kitExtras,
+        bloquesActivos,
+        contextoOperativo: {
+          ubicacionIntervencion,
+          urgencia,
+          retiradaEquipoAntiguo,
+          requiereFormacion,
+          requiereSubcontrata,
+          requiereDocumentacionLegal,
+          bolsaHorasSoporte,
+          integracionSistemas,
+        },
+        sugerenciasContexto,
+      };
+
+      const skusReglas = [...new Set(reglasLineas.map((linea) => linea.sku))];
+      const skusModulos = Object.values(MODULO_OPERATIVO_SKUS);
+      const skusContexto = Object.values(contextoSkus);
+      const skus = [...new Set([...skusReglas, ...skusModulos, ...skusContexto])];
       const ahora = new Date();
       const itemsCatalogo = await prisma.itemCatalogo.findMany({
         where: {
@@ -1122,7 +1972,7 @@ router.post('/:id/recalcular', validate(recalcularPresupuestoSchema), async (req
       });
 
       const itemBySku = new Map(itemsCatalogo.map((item) => [item.sku, item]));
-      const skusNoEncontrados = skus.filter((sku) => !itemBySku.has(sku));
+      const skusNoEncontrados = skusReglas.filter((sku) => !itemBySku.has(sku));
       if (skusNoEncontrados.length > 0) {
         res.status(400).json({
           error: 'Hay SKUs sin precio vigente en catálogo',
@@ -1142,7 +1992,8 @@ router.post('/:id/recalcular', validate(recalcularPresupuestoSchema), async (req
         multiplicador *= reglas.ajustes.pilotoMultiplicador;
       }
 
-      const lineasAuto = reglas.lineas
+      const lineasAutoBase: LineaMotorDraft[] = reglasLineas
+        .filter((regla) => bloquesActivos.includes(regla.bloque))
         .filter((regla) => (regla.soloSiPiloto ? piloto : true))
         .map((regla, index) => {
           const item = itemBySku.get(regla.sku)!;
@@ -1171,6 +2022,54 @@ router.post('/:id/recalcular', validate(recalcularPresupuestoSchema), async (req
             orden: index + 1,
           };
         });
+
+      const lineasModulos = construirLineasModulosOperativos({
+        itemBySku,
+        multiplicador,
+        ordenInicial: lineasAutoBase.length + 1,
+        presupuestoId: id,
+        requiereSubcontrata,
+        requiereDocumentacionLegal,
+        bolsaHorasSoporte,
+      });
+      const lineasContexto = construirLineasContextoOperativo({
+        itemBySku,
+        contextoSkus,
+        contextoCantidades,
+        multiplicador,
+        ordenInicial: lineasAutoBase.length + lineasModulos.lineas.length + 1,
+        presupuestoId: id,
+        numVehiculos,
+        ubicacionIntervencion,
+        horarioIntervencion: req.body.horarioIntervencion ?? presupuesto.contexto.horarioIntervencion,
+        urgencia,
+        retiradaEquipoAntiguo,
+        requiereFormacion,
+        integracionSistemas,
+      });
+
+      const lineasAutoRaw: LineaMotorDraft[] = [
+        ...lineasAutoBase,
+        ...lineasModulos.lineas,
+        ...lineasContexto.lineas,
+      ];
+      const lineasAuto: LineaMotorDraft[] = consolidarLineasMotorAuto(
+        normalizarBloqueCanonicoPorSku(lineasAutoRaw)
+      );
+      const lineasAutoPersistencia = lineasAuto.map((linea) => ({
+        ...linea,
+        presupuestoId: linea.presupuestoId ?? id,
+      }));
+
+      const extrasConWizard = {
+        ...extrasConWizardBase,
+        modulosOperativos: {
+          requiereSubcontrata,
+          requiereDocumentacionLegal,
+          bolsaHorasSoporte,
+        },
+        modulosOperativosNoResueltos: [...lineasModulos.modulosNoResueltos, ...lineasContexto.contextoNoResuelto],
+      };
 
       const lineasManuales = presupuesto.lineasMotor.filter((linea) => linea.origen === 'MANUAL');
       const lineasConsolidadas = [
@@ -1211,8 +2110,8 @@ router.post('/:id/recalcular', validate(recalcularPresupuestoSchema), async (req
           where: { presupuestoId: id, OR: [{ origen: 'AUTO' }, { origen: null }] },
         });
 
-        if (lineasAuto.length > 0) {
-          await tx.presupuestoLineaMotor.createMany({ data: lineasAuto });
+        if (lineasAutoPersistencia.length > 0) {
+          await tx.presupuestoLineaMotor.createMany({ data: lineasAutoPersistencia });
         }
 
         for (const [idx, lineaManual] of lineasManuales.entries()) {
@@ -1234,7 +2133,7 @@ router.post('/:id/recalcular', validate(recalcularPresupuestoSchema), async (req
             horarioIntervencion: req.body.horarioIntervencion ?? presupuesto.contexto!.horarioIntervencion,
             nocturnidad,
             integraciones,
-            extrasJson: req.body.extras ?? presupuesto.contexto!.extrasJson,
+            extrasJson: extrasConWizard,
             objetivoProyecto: req.body.objetivoProyecto ?? presupuesto.contexto!.objetivoProyecto,
           },
         });
@@ -1569,6 +2468,7 @@ router.patch('/:id/lineas-motor/:lineaId', validate(actualizarLineaMotorSchema),
     const costeUnitario = req.body.costeUnitario ?? lineaActual.costeUnitario;
     const subtotal = Math.round(cantidad * precioUnitario * 100) / 100;
     const costeSubtotal = Math.round(cantidad * costeUnitario * 100) / 100;
+    const incluyeItemCatalogoId = Object.prototype.hasOwnProperty.call(req.body, 'itemCatalogoId');
 
     const lineaActualizada = await prisma.$transaction(async (tx) => {
       const linea = await tx.presupuestoLineaMotor.update({
@@ -1582,6 +2482,7 @@ router.patch('/:id/lineas-motor/:lineaId', validate(actualizarLineaMotorSchema),
           costeUnitario,
           subtotal,
           costeSubtotal,
+          itemCatalogoId: incluyeItemCatalogoId ? req.body.itemCatalogoId : lineaActual.itemCatalogoId,
           bloque: req.body.bloque ?? lineaActual.bloque,
           origen: 'MANUAL',
         },
@@ -1962,6 +2863,7 @@ router.get('/:id/impacto-aceptacion', async (req: Request, res: Response) => {
 
 router.get('/:id/oferta-html', async (req: Request, res: Response) => {
   try {
+    const t0 = nowMs();
     const id = Number(req.params.id);
     const templateCode = typeof req.query.template === 'string' ? req.query.template : undefined;
 
@@ -1990,14 +2892,30 @@ router.get('/:id/oferta-html', async (req: Request, res: Response) => {
 
     const anexosTecnicos = await resolverAnexosTecnicosOferta(presupuesto);
 
+    const tModules = nowMs();
     const modulosDocumento = await resolvePresupuestoModules(presupuesto, templateCode);
+    const resolveModulesMs = elapsedMs(tModules);
 
+    const tHtml = nowMs();
     const html = buildOfertaHtmlDocument({
       presupuesto,
       templateCode,
       anexosTecnicos,
       modulosDocumento,
     });
+    const buildHtmlMs = elapsedMs(tHtml);
+
+    const metrics: OfertaGenerationMetrics = {
+      presupuestoId: presupuesto.id,
+      templateCode: templateCode || OFERTA_TEMPLATE_DEFAULT_CODE,
+      timingMs: {
+        resolveModulesMs,
+        buildHtmlMs,
+        totalMs: elapsedMs(t0),
+      },
+      quality: buildOfertaQualityMetrics(presupuesto),
+    };
+    res.setHeader('X-Oferta-Metrics', serializeMetricsHeader(metrics));
 
     const download = String(req.query.download || '0') === '1';
     res.setHeader('Content-Type', 'text/html; charset=utf-8');
@@ -2134,6 +3052,7 @@ router.put('/:id/oferta-modulos', validate(ofertaModulosPayloadSchema), async (r
 
 router.get('/:id/oferta-pdf', async (req: Request, res: Response) => {
   try {
+    const t0 = nowMs();
     const id = Number(req.params.id);
     const templateCode = typeof req.query.template === 'string' ? req.query.template : undefined;
 
@@ -2162,19 +3081,38 @@ router.get('/:id/oferta-pdf', async (req: Request, res: Response) => {
 
     const anexosTecnicos = await resolverAnexosTecnicosOferta(presupuesto);
 
+    const tModules = nowMs();
     const modulosDocumento = await resolvePresupuestoModules(presupuesto, templateCode);
+    const resolveModulesMs = elapsedMs(tModules);
 
+    const tHtml = nowMs();
     const html = buildOfertaHtmlDocument({
       presupuesto,
       templateCode,
       anexosTecnicos,
       modulosDocumento,
     });
+    const buildHtmlMs = elapsedMs(tHtml);
 
     const fileBase = (presupuesto.codigoOferta || presupuesto.codigo || 'oferta').replace(/[^a-zA-Z0-9-_]/g, '_');
 
     try {
+      const tPdf = nowMs();
       const pdf = await renderOfertaPdf({ html, fileNameBase: fileBase });
+
+      const metrics: OfertaGenerationMetrics = {
+        presupuestoId: presupuesto.id,
+        templateCode: templateCode || OFERTA_TEMPLATE_DEFAULT_CODE,
+        timingMs: {
+          resolveModulesMs,
+          buildHtmlMs,
+          renderPdfMs: elapsedMs(tPdf),
+          totalMs: elapsedMs(t0),
+        },
+        quality: buildOfertaQualityMetrics(presupuesto),
+      };
+      res.setHeader('X-Oferta-Metrics', serializeMetricsHeader(metrics));
+
       res.setHeader('Content-Type', pdf.contentType);
       res.setHeader('Content-Disposition', `attachment; filename="${pdf.fileName}"`);
       res.send(pdf.content);
@@ -2192,6 +3130,7 @@ router.get('/:id/oferta-pdf', async (req: Request, res: Response) => {
 
 router.post('/:id/emitir', async (req: Request, res: Response) => {
   try {
+    const t0 = nowMs();
     const id = Number(req.params.id);
     const templateCode = typeof req.body?.templateCode === 'string' ? req.body.templateCode : undefined;
 
@@ -2234,8 +3173,11 @@ router.post('/:id/emitir', async (req: Request, res: Response) => {
     const codigoOferta = presupuesto.codigoOferta || generarCodigoOferta();
     const anexosTecnicos = await resolverAnexosTecnicosOferta(presupuesto);
 
+    const tModules = nowMs();
     const modulosDocumento = await resolvePresupuestoModules(presupuesto, templateCode);
+    const resolveModulesMs = elapsedMs(tModules);
 
+    const tPayload = nowMs();
     const payloadOferta = buildOfertaPayload({
       presupuesto,
       codigoOferta,
@@ -2245,8 +3187,10 @@ router.post('/:id/emitir', async (req: Request, res: Response) => {
       anexosTecnicos,
       modulosDocumento,
     });
+    const buildPayloadMs = elapsedMs(tPayload);
     const hashContenido = createHash('sha256').update(JSON.stringify(payloadOferta)).digest('hex');
 
+    const tPersist = nowMs();
     const snapshot = await prisma.$transaction(async (tx) => {
       const snapshotGuardado = presupuesto.snapshot
         ? await tx.presupuestoSnapshot.update({
@@ -2295,6 +3239,19 @@ router.post('/:id/emitir', async (req: Request, res: Response) => {
 
       return snapshotGuardado;
     });
+    const snapshotPersistMs = elapsedMs(tPersist);
+
+    const metrics: OfertaGenerationMetrics = {
+      presupuestoId: presupuesto.id,
+      templateCode: templateCode || OFERTA_TEMPLATE_DEFAULT_CODE,
+      timingMs: {
+        resolveModulesMs,
+        buildPayloadMs,
+        snapshotPersistMs,
+        totalMs: elapsedMs(t0),
+      },
+      quality: buildOfertaQualityMetrics(presupuesto),
+    };
 
     res.json({
       message: 'Oferta emitida correctamente',
@@ -2302,6 +3259,7 @@ router.post('/:id/emitir', async (req: Request, res: Response) => {
       codigoOferta,
       versionOferta,
       snapshotId: snapshot.id,
+      metrics,
     });
   } catch (error) {
     console.error(error);
