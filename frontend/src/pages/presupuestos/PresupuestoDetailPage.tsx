@@ -3,13 +3,16 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useApi, formatCurrency, formatDate } from '../../hooks/useApi';
 import Card, { StatCard } from '../../components/ui/Card';
 import Button from '../../components/ui/Button';
+import Modal from '../../components/ui/Modal';
+import SelectorConceptos from '../../components/presupuestos/SelectorConceptos';
 import { StatusBadge } from '../../components/ui/Badge';
 import { HiArrowLeft, HiCurrencyDollar, HiTrendingUp, HiCash, HiCalculator, HiDownload, HiEye, HiSave } from 'react-icons/hi';
 import api from '../../api/client';
 import toast from 'react-hot-toast';
-import type { Presupuesto, PresupuestoLineaMotor, BloqueEconomico, EmisionValidacion, PresupuestoVersionesResponse, PresupuestoImpactoAceptacion } from '../../types';
+import type { Presupuesto, PresupuestoLineaMotor, BloqueEconomico, EmisionValidacion, PresupuestoVersionesResponse, PresupuestoImpactoAceptacion, ItemCatalogoResumen } from '../../types';
 
 type EditableLineaMotor = {
+  itemCatalogoId?: number | null;
   bloque: BloqueEconomico;
   codigo: string;
   descripcion: string;
@@ -18,6 +21,8 @@ type EditableLineaMotor = {
   precioUnitario: number;
   costeUnitario: number;
 };
+
+type SelectorCatalogoModo = 'NUEVA_MATERIAL' | 'NUEVA_OGS' | 'EDITAR_LINEA';
 
 type OfertaTemplateCatalog = {
   defaultCode: string;
@@ -69,7 +74,12 @@ export default function PresupuestoDetailPage() {
   const [vista, setVista] = useState<'cliente' | 'interna'>('cliente');
   const [editandoLineaId, setEditandoLineaId] = useState<number | null>(null);
   const [editLinea, setEditLinea] = useState<EditableLineaMotor | null>(null);
+  const [selectorCatalogoOpen, setSelectorCatalogoOpen] = useState(false);
+  const [selectorCatalogoModo, setSelectorCatalogoModo] = useState<SelectorCatalogoModo>('NUEVA_MATERIAL');
+  const [selectorBloquesPermitidos, setSelectorBloquesPermitidos] = useState<BloqueEconomico[]>(['B_MATERIALES_INSTALACION']);
+  const [selectorBloqueFijo, setSelectorBloqueFijo] = useState<BloqueEconomico | undefined>('B_MATERIALES_INSTALACION');
   const [nuevaLinea, setNuevaLinea] = useState<EditableLineaMotor>({
+    itemCatalogoId: null,
     bloque: 'A_SUMINISTRO_EQUIPOS',
     codigo: '',
     descripcion: '',
@@ -87,7 +97,10 @@ export default function PresupuestoDetailPage() {
   const [cambiandoEstado, setCambiandoEstado] = useState<string | null>(null);
   const [modulosEditables, setModulosEditables] = useState<OfertaModulo[]>([]);
   const [guardandoModulos, setGuardandoModulos] = useState(false);
+  const [bloqueFiltroPartidas, setBloqueFiltroPartidas] = useState<BloqueEconomico | 'TODAS'>('TODAS');
   const presupuestoBloqueado = ['ACEPTADO', 'RECHAZADO', 'EXPIRADO'].includes(presupuesto?.estado || '');
+  const B_MATERIAL: BloqueEconomico = 'B_MATERIALES_INSTALACION';
+  const BLOQUES_OGS: BloqueEconomico[] = ['C_MANO_OBRA', 'D_MANTENIMIENTO_1_3', 'E_OPCIONALES_4_5'];
 
   useEffect(() => {
     if (templateCatalog?.defaultCode) {
@@ -136,6 +149,7 @@ export default function PresupuestoDetailPage() {
   const iniciarEdicionLinea = (linea: PresupuestoLineaMotor) => {
     setEditandoLineaId(linea.id);
     setEditLinea({
+      itemCatalogoId: linea.itemCatalogoId ?? null,
       bloque: linea.bloque,
       codigo: linea.codigo,
       descripcion: linea.descripcion,
@@ -155,7 +169,10 @@ export default function PresupuestoDetailPage() {
     if (!editLinea) return;
     try {
       setGuardandoLinea(true);
-      await api.patch(`/presupuestos/${id}/lineas-motor/${lineaId}`, editLinea);
+      await api.patch(`/presupuestos/${id}/lineas-motor/${lineaId}`, {
+        ...editLinea,
+        itemCatalogoId: editLinea.itemCatalogoId ?? null,
+      });
       toast.success('Línea actualizada');
       cancelarEdicionLinea();
       refetchDetalle();
@@ -177,6 +194,7 @@ export default function PresupuestoDetailPage() {
       await api.post(`/presupuestos/${id}/lineas-motor`, nuevaLinea);
       toast.success('Línea añadida');
       setNuevaLinea({
+        itemCatalogoId: null,
         bloque: 'A_SUMINISTRO_EQUIPOS',
         codigo: '',
         descripcion: '',
@@ -191,6 +209,66 @@ export default function PresupuestoDetailPage() {
     } finally {
       setGuardandoLinea(false);
     }
+  };
+
+  const abrirSelectorCatalogo = (modo: SelectorCatalogoModo, bloqueLinea?: BloqueEconomico) => {
+    if (presupuestoBloqueado) {
+      toast.error(`El presupuesto está en estado ${presupuesto?.estado} y no permite editar líneas.`);
+      return;
+    }
+
+    if (modo === 'NUEVA_MATERIAL') {
+      setSelectorBloquesPermitidos([B_MATERIAL]);
+      setSelectorBloqueFijo(B_MATERIAL);
+    } else if (modo === 'NUEVA_OGS') {
+      setSelectorBloquesPermitidos(BLOQUES_OGS);
+      setSelectorBloqueFijo(undefined);
+    } else {
+      const esMaterial = bloqueLinea === B_MATERIAL;
+      setSelectorBloquesPermitidos(esMaterial ? [B_MATERIAL] : BLOQUES_OGS);
+      setSelectorBloqueFijo(esMaterial ? B_MATERIAL : undefined);
+    }
+
+    setSelectorCatalogoModo(modo);
+    setSelectorCatalogoOpen(true);
+  };
+
+  const aplicarItemCatalogoEnLinea = (item: ItemCatalogoResumen, cantidad: number) => {
+    const bloqueItem = item.bloque as BloqueEconomico | null | undefined;
+
+    if (!bloqueItem) {
+      toast.error('El item seleccionado no tiene bloque económico asignado');
+      return;
+    }
+
+    if (!selectorBloquesPermitidos.includes(bloqueItem)) {
+      const mensaje = selectorBloquesPermitidos.includes(B_MATERIAL)
+        ? 'En Materiales solo puedes seleccionar conceptos del bloque B'
+        : 'En Operaciones/Gastos/Servicios solo se permiten bloques C, D o E';
+      toast.error(mensaje);
+      return;
+    }
+
+    const baseLinea: EditableLineaMotor = {
+      itemCatalogoId: item.id,
+      bloque: bloqueItem,
+      codigo: item.sku,
+      descripcion: item.descripcion,
+      unidad: item.unidad,
+      cantidad,
+      precioUnitario: item.precioBase,
+      costeUnitario: item.costeBase ?? 0,
+    };
+
+    if (selectorCatalogoModo === 'EDITAR_LINEA') {
+      setEditLinea((prev) => (prev ? { ...prev, ...baseLinea } : prev));
+      toast.success('Concepto aplicado a la línea en edición');
+    } else {
+      setNuevaLinea(baseLinea);
+      toast.success('Concepto aplicado al formulario de nueva línea');
+    }
+
+    setSelectorCatalogoOpen(false);
   };
 
   const eliminarLinea = async (lineaId: number) => {
@@ -497,6 +575,10 @@ export default function PresupuestoDetailPage() {
   const lineasTrabajo = presupuesto.lineasTrabajo || [];
   const lineasMaterial = presupuesto.lineasMaterial || [];
   const lineasDesplazamiento = presupuesto.lineasDesplazamiento || [];
+  const lineasMotorFiltradas = bloqueFiltroPartidas === 'TODAS'
+    ? lineasMotor
+    : lineasMotor.filter((linea) => linea.bloque === bloqueFiltroPartidas);
+  const mostrarSoloLineasMotorFiltradas = lineasMotor.length > 0 && bloqueFiltroPartidas !== 'TODAS';
   const fechaBase = new Date(presupuesto.fecha);
   const fechaCaducidad = new Date(fechaBase);
   fechaCaducidad.setDate(fechaCaducidad.getDate() + presupuesto.validezDias);
@@ -511,6 +593,20 @@ export default function PresupuestoDetailPage() {
   const totalPartidas = lineasMotor.length > 0
     ? lineasMotor.length
     : lineasTrabajo.length + lineasMaterial.length + lineasDesplazamiento.length;
+  const totalPartidasVisibles = lineasMotor.length > 0
+    ? lineasMotorFiltradas.length + (mostrarSoloLineasMotorFiltradas ? 0 : (lineasTrabajo.length + lineasMaterial.length + lineasDesplazamiento.length))
+    : lineasTrabajo.length + lineasMaterial.length + lineasDesplazamiento.length;
+  const extrasWizard = presupuesto.contexto?.extrasJson;
+  const modulosOperativos = extrasWizard?.modulosOperativos;
+  const modulosOperativosActivos: string[] = [];
+  if (modulosOperativos?.requiereSubcontrata) modulosOperativosActivos.push('Subcontrata');
+  if (modulosOperativos?.requiereDocumentacionLegal) modulosOperativosActivos.push('Documentación legal / PRL');
+  if ((modulosOperativos?.bolsaHorasSoporte ?? 0) > 0) {
+    modulosOperativosActivos.push(`Bolsa soporte (${modulosOperativos?.bolsaHorasSoporte}h)`);
+  }
+  const modulosOperativosNoResueltos = Array.isArray(extrasWizard?.modulosOperativosNoResueltos)
+    ? extrasWizard.modulosOperativosNoResueltos.filter((sku): sku is string => typeof sku === 'string')
+    : [];
 
   return (
     <div className="flex flex-col gap-6">
@@ -813,6 +909,23 @@ export default function PresupuestoDetailPage() {
           <Button variant={vista === 'interna' ? 'primary' : 'outline'} size="sm" onClick={() => setVista('interna')}>Vista Interna</Button>
         </div>
 
+        {(modulosOperativosActivos.length > 0 || modulosOperativosNoResueltos.length > 0) && (
+          <div className="mb-4 space-y-2">
+            {modulosOperativosActivos.length > 0 && (
+              <div className="rounded-md border border-blue-200 bg-blue-50 px-3 py-2.5">
+                <p className="text-xs font-semibold uppercase tracking-wide text-blue-700">Módulos operativos aplicados</p>
+                <p className="mt-1 text-sm text-blue-800">{modulosOperativosActivos.join(' · ')}</p>
+              </div>
+            )}
+            {modulosOperativosNoResueltos.length > 0 && (
+              <div className="rounded-md border border-amber-200 bg-amber-50 px-3 py-2.5">
+                <p className="text-xs font-semibold uppercase tracking-wide text-amber-700">Módulos sin SKU vigente</p>
+                <p className="mt-1 text-sm text-amber-800">No se añadieron automáticamente estas referencias: {modulosOperativosNoResueltos.join(', ')}</p>
+              </div>
+            )}
+          </div>
+        )}
+
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
           <div className="rounded-md border border-border p-3.5">
             <p className="text-xs font-semibold text-muted-foreground mb-2 uppercase tracking-wide">Datos generales</p>
@@ -891,10 +1004,49 @@ export default function PresupuestoDetailPage() {
                 value={nuevaLinea.precioUnitario}
                 onChange={(e) => setNuevaLinea((prev) => ({ ...prev, precioUnitario: Number(e.target.value) }))}
               />
-              <div className="flex items-center justify-end">
+              <div className="flex items-center justify-end gap-2 flex-wrap">
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => abrirSelectorCatalogo('NUEVA_MATERIAL')}
+                  disabled={guardandoLinea || presupuestoBloqueado}
+                >
+                  Desde Materiales
+                </Button>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => abrirSelectorCatalogo('NUEVA_OGS')}
+                  disabled={guardandoLinea || presupuestoBloqueado}
+                >
+                  Desde Oper./Gastos/Servicios
+                </Button>
                 <Button size="sm" onClick={crearLinea} disabled={guardandoLinea || presupuestoBloqueado}>Añadir línea</Button>
               </div>
             </div>
+          </div>
+        )}
+
+        {lineasMotor.length > 0 && (
+          <div className="mb-4 flex flex-wrap items-center gap-2">
+            <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Filtrar bloque:</span>
+            <Button
+              size="sm"
+              variant={bloqueFiltroPartidas === 'TODAS' ? 'primary' : 'outline'}
+              onClick={() => setBloqueFiltroPartidas('TODAS')}
+            >
+              Todas
+            </Button>
+            {Object.entries(BLOQUE_LABELS).map(([key, label]) => (
+              <Button
+                key={key}
+                size="sm"
+                variant={bloqueFiltroPartidas === key ? 'primary' : 'outline'}
+                onClick={() => setBloqueFiltroPartidas(key as BloqueEconomico)}
+              >
+                {label}
+              </Button>
+            ))}
           </div>
         )}
 
@@ -912,7 +1064,7 @@ export default function PresupuestoDetailPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-border">
-              {lineasMotor.map((linea) => {
+              {lineasMotorFiltradas.map((linea) => {
                 const enEdicion = editandoLineaId === linea.id && editLinea;
                 const precioVista = vista === 'cliente'
                   ? (enEdicion ? editLinea.precioUnitario : linea.precioUnitario)
@@ -979,6 +1131,17 @@ export default function PresupuestoDetailPage() {
                         </div>
                       ) : (
                         <div className="flex justify-end gap-2">
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => {
+                              iniciarEdicionLinea(linea);
+                              abrirSelectorCatalogo('EDITAR_LINEA', linea.bloque);
+                            }}
+                            disabled={guardandoLinea || presupuestoBloqueado}
+                          >
+                            Catálogo
+                          </Button>
                           <Button size="sm" variant="outline" onClick={() => iniciarEdicionLinea(linea)} disabled={guardandoLinea || presupuestoBloqueado}>Editar</Button>
                           <Button size="sm" variant="danger" onClick={() => eliminarLinea(linea.id)} disabled={guardandoLinea || presupuestoBloqueado}>Eliminar</Button>
                         </div>
@@ -988,7 +1151,7 @@ export default function PresupuestoDetailPage() {
                 );
               })}
 
-              {lineasTrabajo.map((linea: any) => (
+              {!mostrarSoloLineasMotorFiltradas && lineasTrabajo.map((linea: any) => (
                 <tr key={`trabajo-${linea.id}`}>
                   <td className="table-cell text-muted-foreground">Trabajo</td>
                   <td className="table-cell">-</td>
@@ -1003,7 +1166,7 @@ export default function PresupuestoDetailPage() {
                   {lineasMotor.length > 0 && <td className="table-cell" />}
                 </tr>
               ))}
-              {lineasMaterial.map((linea: any) => (
+              {!mostrarSoloLineasMotorFiltradas && lineasMaterial.map((linea: any) => (
                 <tr key={`material-${linea.id}`}>
                   <td className="table-cell text-muted-foreground">Material</td>
                   <td className="table-cell">-</td>
@@ -1018,7 +1181,7 @@ export default function PresupuestoDetailPage() {
                   {lineasMotor.length > 0 && <td className="table-cell" />}
                 </tr>
               ))}
-              {lineasDesplazamiento.map((linea: any) => (
+              {!mostrarSoloLineasMotorFiltradas && lineasDesplazamiento.map((linea: any) => (
                 <tr key={`desplazamiento-${linea.id}`}>
                   <td className="table-cell text-muted-foreground">Desplazamiento</td>
                   <td className="table-cell">-</td>
@@ -1033,7 +1196,7 @@ export default function PresupuestoDetailPage() {
                   {lineasMotor.length > 0 && <td className="table-cell" />}
                 </tr>
               ))}
-              {totalPartidas === 0 && (
+              {totalPartidasVisibles === 0 && (
                 <tr>
                   <td colSpan={lineasMotor.length > 0 ? 7 : 6} className="table-cell text-center text-muted-foreground py-8">No hay partidas en este presupuesto</td>
                 </tr>
@@ -1042,6 +1205,30 @@ export default function PresupuestoDetailPage() {
           </table>
         </div>
       </Card>
+
+      <Modal
+        isOpen={selectorCatalogoOpen}
+        onClose={() => setSelectorCatalogoOpen(false)}
+        title={selectorCatalogoModo === 'NUEVA_MATERIAL'
+          ? 'Seleccionar concepto: Materiales'
+          : selectorCatalogoModo === 'NUEVA_OGS'
+            ? 'Seleccionar concepto: Operaciones / Gastos / Servicios'
+            : 'Cambiar línea desde catálogo'}
+        size="lg"
+      >
+        <div className="space-y-3">
+          <p className="text-sm text-slate-500">
+            {selectorCatalogoModo === 'NUEVA_MATERIAL'
+              ? 'Solo se mostrarán conceptos del bloque B (Materiales de instalación).'
+              : 'Selecciona un concepto de bloques C, D o E para aplicarlo a la línea.'}
+          </p>
+          <SelectorConceptos
+            onAdd={aplicarItemCatalogoEnLinea}
+            bloqueFilter={selectorBloqueFijo}
+            bloquesPermitidos={selectorBloquesPermitidos}
+          />
+        </div>
+      </Modal>
     </div>
   );
 }
